@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BISIMWA MUSHIMANJA CHARLES | Portfolio V2</title>
+    <style>
+        /* === VARIABLES & THEMES === */
+        :root {
+            --orange: #ff6b00;
+            --orange-hover: #e65c00;
+            --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            --transition: 0.3s ease;
+        }
+
+        [data-theme="dark"] {
+            --bg: #0d0f12;
+            --surface: #1a1d21;
+            --surface-hover: #24282d;
+            --text-main: #f0f2f5;
+            --text-muted: #a0a5aa;
+            --border: #33383d;
+            --metallic: #5c636a;
+        }
+
+        [data-theme="light"] {
+            --bg: #f8f9fa;
+            --surface: #ffffff;
+            --surface-hover: #f1f3f5;
+            --text-main: #1a1d21;
+            --text-muted: #495057;
+            --border: #dee2e6;
+            --metallic: #868e96;
+        }
+
+        /* === RESET & BASE === */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.6;
+            transition: background-color var(--transition), color var(--transition);
+            overflow-x: hidden;
+        }
+        a { text-decoration: none; color: inherit; }
+        ul { list-style: none; }
+        img, video { max-width: 100%; height: auto; border-radius: 4px; }
+        button { font-family: inherit; cursor: pointer; border: none; background: none; }
+
+        /* === TYPOGRAPHY === */
+        h1, h2, h3, h4 { font-weight: 600; line-height: 1.2; margin-bottom: 1rem; }
+        h2 { 
+            font-size: 2rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            border-left: 4px solid var(--orange);
+            padding-left: 1rem;
+            margin-bottom: 2rem;
+        }
+        .text-orange { color: var(--orange); }
+
+        /* === BUTTONS === */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center;
+            padding: 0.75rem 1.5rem; border-radius: 4px; font-weight: 600;
+            transition: var(--transition); border: 2px solid transparent; gap: 0.5rem;
+        }
+        .btn-primary { background-color: var(--orange); color: #fff; }
+        .btn-primary:hover { background-color: var(--orange-hover); }
+        .btn-outline { border-color: var(--orange); color: var(--orange); }
+        .btn-outline:hover { background-color: var(--orange); color: #fff; }
+        .btn-small { padding: 0.4rem 0.8rem; font-size: 0.9rem; }
+
+        /* === NAVBAR === */
+        header {
+            position: fixed; top: 0; left: 0; width: 100%;
+            background-color: rgba(var(--bg), 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1000;
+        }
+        .nav-container {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 5%; max-width: 1400px; margin: 0 auto;
+        }
+        .logo { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+        
+        .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-links a { font-size: 0.95rem; font-weight: 500; transition: color var(--transition); }
+        .nav-links a:hover, .nav-links a.active { color: var(--orange); }
+        
+        .nav-controls { display: flex; gap: 1rem; align-items: center; }
+        .nav-controls button { color: var(--text-main); font-size: 1.2rem; transition: var(--transition); }
+        .nav-controls button:hover { color: var(--orange); }
+
+        .hamburger { display: none; font-size: 1.5rem; color: var(--text-main); }
+
+        /* === LAYOUT === */
+        section { padding: 6rem 5% 4rem; max-width: 1400px; margin: 0 auto; min-height: 100vh; display: none; }
+        section.active { display: block; animation: fadeIn 0.4s ease; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* === HERO SECTION === */
+        #home { display: flex; flex-direction: column; justify-content: center; position: relative; }
+        .hero-content { position: relative; z-index: 2; max-width: 800px; }
+        .hero-title { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 700; margin-bottom: 0.5rem; text-transform: uppercase; }
+        .hero-subtitle { font-size: clamp(1.2rem, 3vw, 1.8rem); color: var(--metallic); margin-bottom: 1.5rem; }
+        .hero-desc { font-size: 1.1rem; color: var(--text-muted); margin-bottom: 2.5rem; max-width: 600px; }
+        .hero-buttons { display: flex; gap: 1rem; flex-wrap: wrap; }
+        
+        .hero-graphic {
+            position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+            width: 400px; height: 400px; opacity: 0.1; z-index: 1; pointer-events: none;
+            background-image: 
+                linear-gradient(var(--orange) 1px, transparent 1px),
+                linear-gradient(90deg, var(--orange) 1px, transparent 1px);
+            background-size: 40px 40px;
+            mask-image: radial-gradient(circle, black 20%, transparent 70%);
+            -webkit-mask-image: radial-gradient(circle, black 20%, transparent 70%);
+        }
+
+        /* === CARDS GRID === */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+        .card {
+            background-color: var(--surface); border: 1px solid var(--border);
+            border-radius: 6px; padding: 1.5rem; transition: var(--transition);
+            display: flex; flex-direction: column;
+        }
+        .card:hover { border-color: var(--orange); transform: translateY(-3px); }
+        .card-header { margin-bottom: 1rem; }
+        .card-title { color: var(--orange); font-size: 1.2rem; }
+        .card-body { color: var(--text-muted); flex-grow: 1; }
+        .card-body ul { padding-left: 1.2rem; list-style: square; color: var(--text-main); }
+        .card-body li { margin-bottom: 0.3rem; font-size: 0.95rem; }
+        .card-footer { margin-top: 1.5rem; display: flex; gap: 0.5rem; }
+
+        /* === MEDIA & DOCS === */
+        .search-bar {
+            width: 100%; padding: 1rem; margin-bottom: 2rem; background: var(--surface);
+            border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; outline: none;
+        }
+        .search-bar:focus { border-color: var(--orange); }
+        
+        .filters { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .filter-btn { padding: 0.4rem 1rem; border: 1px solid var(--border); border-radius: 20px; color: var(--text-muted); transition: 0.3s; }
+        .filter-btn.active, .filter-btn:hover { background: var(--orange); color: #fff; border-color: var(--orange); }
+
+        .media-thumbnail { width: 100%; height: 200px; object-fit: cover; border-radius: 4px; margin-bottom: 1rem; cursor: pointer; }
+        .doc-icon { font-size: 3rem; color: var(--metallic); margin-bottom: 1rem; text-align: center; }
+
+        /* === ADMIN PANEL === */
+        .admin-warning {
+            background: rgba(255, 107, 0, 0.1); border-left: 4px solid var(--orange);
+            padding: 1rem; margin-bottom: 2rem; color: var(--text-main); font-size: 0.9rem;
+        }
+        .admin-dashboard { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { background: var(--surface); padding: 1.5rem; border: 1px solid var(--border); text-align: center; border-radius: 4px; }
+        .stat-num { font-size: 2.5rem; color: var(--orange); font-weight: 700; }
+        
+        .admin-forms { background: var(--surface); padding: 2rem; border: 1px solid var(--border); border-radius: 4px; }
+        .form-group { margin-bottom: 1.2rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; color: var(--text-muted); }
+        .form-control { width: 100%; padding: 0.8rem; background: var(--bg); border: 1px solid var(--border); color: var(--text-main); border-radius: 4px; }
+        
+        /* === MODALS === */
+        .modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 2000; display: none;
+            justify-content: center; align-items: center; padding: 1rem;
+        }
+        .modal.active { display: flex; animation: fadeIn 0.2s; }
+        .modal-content {
+            background: var(--surface); padding: 2rem; border-radius: 6px;
+            max-width: 500px; width: 100%; border: 1px solid var(--border); position: relative;
+        }
+        .close-modal { position: absolute; top: 1rem; right: 1rem; font-size: 1.5rem; color: var(--text-muted); }
+        .close-modal:hover { color: var(--orange); }
+
+        .lightbox-content { max-width: 90vw; max-height: 90vh; background: none; border: none; padding: 0; text-align: center; }
+        .lightbox-img { max-width: 100%; max-height: 85vh; object-fit: contain; }
+
+        /* === CHATBOT === */
+        .chatbot-btn {
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background: var(--surface); border: 2px solid var(--orange); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; font-size: 1.5rem;
+            cursor: pointer; z-index: 100; box-shadow: 0 4px 10px rgba(0,0,0,0.3); color: var(--orange);
+        }
+        .chatbot-window {
+            position: fixed; bottom: 90px; right: 20px; width: 320px; height: 400px;
+            background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+            display: none; flex-direction: column; z-index: 100; box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .chat-header { padding: 1rem; background: rgba(var(--bg), 0.5); border-bottom: 1px solid var(--border); font-weight: 600; display: flex; justify-content: space-between;}
+        .chat-messages { flex-grow: 1; padding: 1rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.8rem; }
+        .msg { padding: 0.6rem 1rem; border-radius: 12px; font-size: 0.9rem; max-width: 85%; }
+        .msg-bot { background: var(--bg); color: var(--text-main); align-self: flex-start; border-bottom-left-radius: 2px; border: 1px solid var(--border);}
+        .msg-user { background: var(--orange); color: #fff; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .chat-input { display: flex; border-top: 1px solid var(--border); }
+        .chat-input input { flex-grow: 1; padding: 0.8rem; background: transparent; border: none; color: var(--text-main); outline: none; }
+        .chat-input button { padding: 0 1rem; color: var(--orange); font-weight: 600; }
+
+        /* === FOOTER === */
+        footer {
+            text-align: center; padding: 3rem 1rem; background: var(--surface);
+            border-top: 1px solid var(--border); margin-top: auto;
+        }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 768px) {
+            .nav-links {
+                position: absolute; top: 100%; left: 0; width: 100%; flex-direction: column;
+                background: var(--surface); padding: 1rem 0; border-bottom: 1px solid var(--border);
+                display: none; text-align: center; gap: 1rem;
+            }
+            .nav-links.show { display: flex; }
+            .nav-controls { display: none; } /* Move to menu on mobile ideally, simplified here */
+            .hamburger { display: block; }
+            .hero-graphic { display: none; }
+            section { padding: 5rem 5% 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header>
+        <div class="nav-container">
+            <div class="logo">B. CHARLES</div>
+            <nav class="nav-links" id="navMenu">
+                <a href="#home" class="nav-link active" data-i18n="nav_home">Accueil</a>
+                <a href="#about" class="nav-link" data-i18n="nav_about">À propos</a>
+                <a href="#skills" class="nav-link" data-i18n="nav_skills">Compétences</a>
+                <a href="#projects" class="nav-link" data-i18n="nav_projects">Projets</a>
+                <a href="#media" class="nav-link" data-i18n="nav_media">Médias</a>
+                <a href="#documents" class="nav-link" data-i18n="nav_docs">Documents</a>
+                
+                <!-- Mobile only controls inside menu for simplicity -->
+                <div style="display: flex; gap:1rem; justify-content:center; margin-top:1rem;" class="mobile-controls">
+                    <button id="btnLangMob" class="btn-outline btn-small">EN</button>
+                    <button id="btnThemeMob" class="btn-outline btn-small">🌙</button>
+                    <button id="btnAdminMob" class="btn-outline btn-small">Admin</button>
+                </div>
+            </nav>
+            <div class="nav-controls">
+                <button id="btnLang" title="Changer de langue">FR</button>
+                <button id="btnTheme" title="Thème">☀️</button>
+                <button id="btnAdmin" title="Admin Panel">⚙️</button>
+            </div>
+            <button class="hamburger" id="hamburger">☰</button>
+        </div>
+    </header>
+
+    <!-- HOME -->
+    <section id="home" class="active">
+        <div class="hero-graphic"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Bisimwa Mushimanja <span class="text-orange">Charles</span></h1>
+            <div class="hero-subtitle" data-i18n="hero_title">Étudiant en électricité & passionné de tech</div>
+            <p class="hero-desc" data-i18n="hero_desc">Je m'intéresse à l'électricité, l'électronique, la programmation, les systèmes embarqués, la robotique, les drones et les technologies permettant de résoudre des problèmes réels.</p>
+            <div class="hero-buttons">
+                <a href="#projects" class="btn btn-primary" data-i18n="btn_projects">Explorer mes projets</a>
+                <a href="#media" class="btn btn-outline" data-i18n="btn_media">Voir mes médias</a>
+                <a href="#contact" class="btn btn-outline" data-i18n="btn_contact">Me contacter</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about">
+        <h2 data-i18n="nav_about">À propos</h2>
+        <div class="card">
+            <h3 class="card-title">EDAP/ISP Bukavu</h3>
+            <p style="margin-bottom: 1rem;"><strong data-i18n="about_section">Section :</strong> Électricité</p>
+            <p style="margin-bottom: 1rem;"><strong data-i18n="about_goal">Objectif :</strong> Diplôme d'État en 2028</p>
+            <hr style="border-color: var(--border); margin: 1rem 0;">
+            <p data-i18n="about_domains"><strong>Domaines d'intérêt et d'apprentissage :</strong></p>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1rem;">
+                <span class="filter-btn">Électricité</span>
+                <span class="filter-btn">Électronique</span>
+                <span class="filter-btn">Programmation</span>
+                <span class="filter-btn">Systèmes embarqués</span>
+                <span class="filter-btn">Robotique</span>
+                <span class="filter-btn">Drones</span>
+                <span class="filter-btn">IA</span>
+                <span class="filter-btn">Ingénierie</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- SKILLS -->
+    <section id="skills">
+        <h2 data-i18n="nav_skills">Compétences & Apprentissages</h2>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;" data-i18n="skills_disclaimer">En tant qu'étudiant, ces domaines représentent mes apprentissages et expérimentations en cours.</p>
+        <div class="grid">
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">⚡ Électricité</h3></div>
+                <div class="card-body"><ul><li>Électricité générale</li><li>Électricité domestique</li><li>Notions d'électricité industrielle</li><li>Circuits électriques</li></ul></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">💻 Programmation</h3></div>
+                <div class="card-body"><ul><li>Python, C, C++</li><li>JavaScript, HTML, CSS</li><li>PHP, Julia</li></ul></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">🔌 Systèmes embarqués</h3></div>
+                <div class="card-body"><ul><li>Arduino, ESP32</li><li>Raspberry Pi</li><li>Capteurs & Automatisation</li><li>IoT</li></ul></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">🤖 Robotique & Drones</h3></div>
+                <div class="card-body"><ul><li>Électronique & Prototypage</li><li>Systèmes de contrôle (Pixhawk)</li><li>Expérimentation drones</li></ul></div>
+            </div>
+            <div class="card">
+                <div class="card-header"><h3 class="card-title">📐 Conception</h3></div>
+                <div class="card-body"><ul><li>FreeCAD</li><li>Modélisation 3D</li><li>Conception mécanique</li></ul></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJECTS -->
+    <section id="projects">
+        <h2 data-i18n="nav_projects">Projets</h2>
+        <input type="text" id="searchProjects" class="search-bar" placeholder="Rechercher un projet..." data-i18n="search_placeholder">
+        <div class="grid" id="projectsContainer">
+            <!-- Hardcoded core projects -->
+            <div class="card project-item">
+                <div class="card-header"><h3 class="card-title">BLACKSMITH</h3></div>
+                <div class="card-body">
+                    <p>Initiative technologique portée par une petite équipe de jeunes passionnés.</p>
+                    <p><small>Domaines : Technologie, Informatique, Ingénierie, Environnement, Innovation.</small></p>
+                </div>
+            </div>
+            <div class="card project-item">
+                <div class="card-header"><h3 class="card-title">ECOCHAR</h3></div>
+                <div class="card-body">
+                    <p>Projet de valorisation des déchets développé dans le cadre de Blacksmith.</p>
+                    <p><small>Statut : En développement et expérimentation.</small></p>
+                </div>
+            </div>
+            <div class="card project-item">
+                <div class="card-header"><h3 class="card-title">CAHIER DE COMPTE</h3></div>
+                <div class="card-body">
+                    <p>Logiciel desktop destiné aux petites boutiques, magasins et pharmacies pour la gestion des ventes, stocks, et crédits.</p>
+                </div>
+            </div>
+            <!-- Dynamic projects injected here -->
+        </div>
+    </section>
+
+    <!-- MEDIA CENTER -->
+    <section id="media">
+        <h2 data-i18n="nav_media">Media Center</h2>
+        <div class="filters">
+            <button class="filter-btn active" data-filter="all" data-i18n="filter_all">Tout</button>
+            <button class="filter-btn" data-filter="photo">Photos</button>
+            <button class="filter-btn" data-filter="video">Vidéos</button>
+        </div>
+        <div class="grid" id="mediaContainer">
+            <!-- Dynamic media injected here. Showing a placeholder for empty state -->
+            <p id="mediaEmpty" style="color:var(--text-muted);" data-i18n="no_media">Aucun média disponible. Utilisez l'espace Admin pour en ajouter.</p>
+        </div>
+    </section>
+
+    <!-- DOCUMENTS -->
+    <section id="documents">
+        <h2 data-i18n="nav_docs">Documents techniques</h2>
+        <div class="grid" id="docsContainer">
+            <p id="docsEmpty" style="color:var(--text-muted);" data-i18n="no_docs">Aucun document disponible.</p>
+        </div>
+    </section>
+
+    <!-- CONTACT (FOOTER LINKED) -->
+    <section id="contact">
+        <h2 data-i18n="btn_contact">Contact</h2>
+        <div class="card" style="max-width: 600px; margin: 0 auto; text-align: center;">
+            <h3 class="card-title">Bisimwa Mushimanja Charles</h3>
+            <p style="margin: 1rem 0; color: var(--metallic);" data-i18n="hero_title">Étudiant en électricité & passionné de tech</p>
+            <div style="display: flex; flex-direction: column; gap: 1rem; align-items: center; margin-top: 2rem;">
+                <a href="mailto:charlestechnology46@gmail.com" class="btn btn-primary" style="width: 100%;">Email: charlestechnology46@gmail.com</a>
+                <a href="https://wa.me/2430801633678" target="_blank" class="btn btn-outline" style="width: 100%;">WhatsApp: +243 0801633678</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ADMIN PANEL -->
+    <section id="admin">
+        <h2>Admin Panel</h2>
+        <div class="admin-warning">
+            <strong data-i18n="admin_warn_title">⚠️ Gestionnaire local (Navigateur)</strong><br>
+            <span data-i18n="admin_warn_desc">Les données ajoutées ici sont stockées uniquement sur cet appareil. Ce n'est pas un vrai serveur distant. Ne stockez pas de fichiers trop lourds.</span>
+        </div>
+        
+        <div class="admin-dashboard">
+            <div class="stat-card"><div class="stat-num" id="statProj">3</div><div data-i18n="stat_proj">Projets</div></div>
+            <div class="stat-card"><div class="stat-num" id="statPhoto">0</div><div data-i18n="stat_photo">Photos</div></div>
+            <div class="stat-card"><div class="stat-num" id="statVideo">0</div><div data-i18n="stat_video">Vidéos</div></div>
+            <div class="stat-card"><div class="stat-num" id="statDoc">0</div><div data-i18n="stat_doc">Documents</div></div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            <button class="btn btn-outline" onclick="exportData()" data-i18n="btn_export">Exporter Data (JSON)</button>
+            <label class="btn btn-outline" style="cursor:pointer;">
+                <span data-i18n="btn_import">Importer Data</span>
+                <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+            </label>
+        </div>
+
+        <div class="grid">
+            <!-- Add Media -->
+            <div class="admin-forms">
+                <h3 class="card-title" data-i18n="add_media">Ajouter Média / Projet / Doc</h3>
+                <form id="addForm" onsubmit="handleAdminSubmit(event)">
+                    <div class="form-group">
+                        <label>Type</label>
+                        <select id="itemType" class="form-control" onchange="toggleFileInputs()">
+                            <option value="project">Projet (Texte)</option>
+                            <option value="photo">Photo</option>
+                            <option value="video">Vidéo</option>
+                            <option value="doc">Document</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Titre / Nom</label>
+                        <input type="text" id="itemTitle" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="itemDesc" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="form-group" id="fileGroup" style="display:none;">
+                        <label>Fichier (Max 5MB recommandé)</label>
+                        <input type="file" id="itemFile" class="form-control">
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width:100%;" data-i18n="btn_save">Ajouter / Sauvegarder</button>
+                </form>
+            </div>
+            
+            <!-- Manage Media List (Simplified for mobile) -->
+            <div class="admin-forms">
+                <h3 class="card-title">Gestion Locale</h3>
+                <div id="adminList" style="max-height: 400px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.5rem;">
+                    <!-- Items listed here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+        <p><strong>Bisimwa Mushimanja Charles</strong></p>
+        <p style="color: var(--metallic); font-size: 0.9rem;">Portfolio V2 - Design & Engineering</p>
+    </footer>
+
+    <!-- LIGHTBOX MODAL -->
+    <div class="modal" id="lightboxModal">
+        <button class="close-modal" onclick="closeModal('lightboxModal')">✖</button>
+        <div class="modal-content lightbox-content">
+            <img src="" id="lightboxImg" class="lightbox-img">
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN MODAL -->
+    <div class="modal" id="loginModal">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeModal('loginModal')">✖</button>
+            <h3 style="color: var(--orange); margin-bottom: 1rem;">Authentification</h3>
+            <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1rem;">Local demo authentication — not suitable for sensitive data. (Entrez 'admin')</p>
+            <input type="password" id="adminPwd" class="form-control" placeholder="Mot de passe..." style="margin-bottom: 1rem;">
+            <button class="btn btn-primary" style="width:100%;" onclick="checkLogin()">Connexion</button>
+        </div>
+    </div>
+
+    <!-- CHATBOT -->
+    <div class="chatbot-btn" id="chatBtn" title="Charles AI">🤖</div>
+    <div class="chatbot-window" id="chatWindow">
+        <div class="chat-header">
+            <span>Charles AI</span>
+            <button style="color: var(--text-main);" onclick="document.getElementById('chatWindow').style.display='none'">✖</button>
+        </div>
+        <div class="chat-messages" id="chatMsgs">
+            <div class="msg msg-bot">Bonjour ! Je suis Charles AI (Local). Posez-moi des questions sur mes compétences, projets, ou faites de petits calculs (ex: 12*5).</div>
+        </div>
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Écrire...">
+            <button onclick="sendChat()">➤</button>
+        </div>
+    </div>
+
+    <!-- === JAVASCRIPT === -->
+    <script>
+        /* === I18N DICTIONARY === */
+        const dict = {
+            fr: {
+                nav_home: "Accueil", nav_about: "À propos", nav_skills: "Compétences", nav_projects: "Projets", nav_media: "Médias", nav_docs: "Documents",
+                hero_title: "Étudiant en électricité & passionné de tech",
+                hero_desc: "Je m'intéresse à l'électricité, l'électronique, la programmation, les systèmes embarqués, la robotique, les drones et les technologies permettant de résoudre des problèmes réels.",
+                btn_projects: "Explorer mes projets", btn_media: "Voir mes médias", btn_contact: "Me contacter",
+                about_section: "Section :", about_goal: "Objectif :", about_domains: "Domaines d'intérêt et d'apprentissage :",
+                skills_disclaimer: "En tant qu'étudiant, ces domaines représentent mes apprentissages et expérimentations en cours.",
+                search_placeholder: "Rechercher...", filter_all: "Tout", no_media: "Aucun média local.", no_docs: "Aucun document local.",
+                admin_warn_title: "⚠️ Gestionnaire local (Navigateur)", admin_warn_desc: "Données stockées uniquement sur cet appareil. Ne stockez pas de gros fichiers.",
+                stat_proj: "Projets (Total)", stat_photo: "Photos", stat_video: "Vidéos", stat_doc: "Documents",
+                btn_export: "Exporter Data (JSON)", btn_import: "Importer Data", add_media: "Ajouter Élément", btn_save: "Ajouter"
+            },
+            en: {
+                nav_home: "Home", nav_about: "About", nav_skills: "Skills", nav_projects: "Projects", nav_media: "Media", nav_docs: "Documents",
+                hero_title: "Electrical Student & Tech Enthusiast",
+                hero_desc: "Interested in electricity, electronics, programming, embedded systems, robotics, drones, and real-world problem-solving tech.",
+                btn_projects: "Explore Projects", btn_media: "View Media", btn_contact: "Contact Me",
+                about_section: "Major:", about_goal: "Goal:", about_domains: "Domains of Interest:",
+                skills_disclaimer: "As a student, these represent my current learning and experimental domains.",
+                search_placeholder: "Search...", filter_all: "All", no_media: "No local media.", no_docs: "No local documents.",
+                admin_warn_title: "⚠️ Local Browser Admin", admin_warn_desc: "Data stored on this device only. Not a remote server. Do not upload large files.",
+                stat_proj: "Projects (Total)", stat_photo: "Photos", stat_video: "Videos", stat_doc: "Docs",
+                btn_export: "Export Data (JSON)", btn_import: "Import Data", add_media: "Add Item", btn_save: "Save"
+            }
+        };
+
+        /* === STATE MANAGEMENT === */
+        let currentLang = localStorage.getItem('portfolio_lang') || 'fr';
+        let currentTheme = localStorage.getItem('portfolio_theme') || 'dark';
+        let db; // IndexedDB instance
+
+        /* === INITIALIZATION === */
+        window.addEventListener('DOMContentLoaded', async () => {
+            applyTheme(currentTheme);
+            applyLang(currentLang);
+            setupNavigation();
+            setupChatbot();
+            await initDB();
+            loadLocalData();
+        });
+
+        /* === UI CONTROLS === */
+        document.getElementById('btnTheme').onclick = () => toggleTheme();
+        document.getElementById('btnThemeMob').onclick = () => toggleTheme();
+        document.getElementById('btnLang').onclick = () => toggleLang();
+        document.getElementById('btnLangMob').onclick = () => toggleLang();
+        document.getElementById('btnAdmin').onclick = () => document.getElementById('loginModal').classList.add('active');
+        document.getElementById('btnAdminMob').onclick = () => { 
+            document.getElementById('navMenu').classList.remove('show');
+            document.getElementById('loginModal').classList.add('active'); 
+        };
+
+        function toggleTheme() {
+            currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(currentTheme);
+        }
+        function applyTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('portfolio_theme', theme);
+            const icon = theme === 'dark' ? '☀️' : '🌙';
+            document.getElementById('btnTheme').textContent = icon;
+            document.getElementById('btnThemeMob').textContent = icon;
+        }
+
+        function toggleLang() {
+            currentLang = currentLang === 'fr' ? 'en' : 'fr';
+            applyLang(currentLang);
+        }
+        function applyLang(lang) {
+            localStorage.setItem('portfolio_lang', lang);
+            document.getElementById('btnLang').textContent = lang.toUpperCase();
+            document.getElementById('btnLangMob').textContent = lang.toUpperCase();
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[lang] && dict[lang][key]) {
+                    el.textContent = dict[lang][key];
+                }
+            });
+        }
+
+        function setupNavigation() {
+            const links = document.querySelectorAll('.nav-link');
+            const sections = document.querySelectorAll('section');
+            const hamburger = document.getElementById('hamburger');
+            const navMenu = document.getElementById('navMenu');
+
+            hamburger.onclick = () => navMenu.classList.toggle('show');
+
+            links.forEach(link => {
+                link.onclick = (e) => {
+                    const targetId = link.getAttribute('href').substring(1);
+                    if(targetId === 'contact') return; // Scroll to contact normally
+                    
+                    e.preventDefault();
+                    sections.forEach(s => s.classList.remove('active'));
+                    links.forEach(l => l.classList.remove('active'));
+                    
+                    document.getElementById(targetId).classList.add('active');
+                    link.classList.add('active');
+                    navMenu.classList.remove('show');
+                    window.scrollTo(0,0);
+                }
+            });
+        }
+
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        /* === INDEXEDDB LOGIC === */
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const req = indexedDB.open('PortfolioV2', 1);
+                req.onupgradeneeded = (e) => {
+                    let db = e.target.result;
+                    if (!db.objectStoreNames.contains('items')) {
+                        db.createObjectStore('items', { keyPath: 'id' });
+                    }
+                };
+                req.onsuccess = (e) => { db = e.target.result; resolve(db); };
+                req.onerror = (e) => reject(e);
+            });
+        }
+
+        function dbSave(item) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('items', 'readwrite');
+                tx.objectStore('items').put(item);
+                tx.oncomplete = () => resolve(true);
+            });
+        }
+
+        function dbGetAll() {
+            return new Promise((resolve) => {
+                const tx = db.transaction('items', 'readonly');
+                const req = tx.objectStore('items').getAll();
+                req.onsuccess = () => resolve(req.result);
+            });
+        }
+
+        function dbDelete(id) {
+            return new Promise((resolve) => {
+                const tx = db.transaction('items', 'readwrite');
+                tx.objectStore('items').delete(id);
+                tx.oncomplete = () => resolve();
+            });
+        }
+
+        /* === DATA RENDERING & ADMIN === */
+        async function loadLocalData() {
+            const items = await dbGetAll();
+            renderData(items);
+            updateAdminStats(items);
+            renderAdminList(items);
+        }
+
+        function renderData(items) {
+            const projectsDiv = document.getElementById('projectsContainer');
+            const mediaDiv = document.getElementById('mediaContainer');
+            const docsDiv = document.getElementById('docsContainer');
+            
+            // Keep hardcoded projects by removing only dynamically added ones
+            document.querySelectorAll('.dynamic-item').forEach(el => el.remove());
+            
+            let photoCount = 0, videoCount = 0, docCount = 0;
+            
+            items.forEach(item => {
+                if (item.type === 'project') {
+                    projectsDiv.innerHTML += `
+                        <div class="card project-item dynamic-item">
+                            <div class="card-header"><h3 class="card-title">${escapeHTML(item.title)}</h3></div>
+                            <div class="card-body"><p>${escapeHTML(item.desc)}</p></div>
+                        </div>`;
+                } else if (item.type === 'photo') {
+                    photoCount++;
+                    mediaDiv.innerHTML += `
+                        <div class="card dynamic-item media-item" data-filter="photo">
+                            <img src="${item.fileData}" class="media-thumbnail" onclick="openLightbox('${item.fileData}')">
+                            <h3 class="card-title">${escapeHTML(item.title)}</h3>
+                            <p style="font-size:0.9rem; color:var(--text-muted);">${escapeHTML(item.desc)}</p>
+                            <a href="${item.fileData}" download="photo_${item.id}.jpg" class="btn btn-outline btn-small" style="margin-top:1rem;">Télécharger</a>
+                        </div>`;
+                } else if (item.type === 'video') {
+                    videoCount++;
+                    mediaDiv.innerHTML += `
+                        <div class="card dynamic-item media-item" data-filter="video">
+                            <video src="${item.fileData}" controls class="media-thumbnail" preload="metadata"></video>
+                            <h3 class="card-title">${escapeHTML(item.title)}</h3>
+                            <p style="font-size:0.9rem; color:var(--text-muted);">${escapeHTML(item.desc)}</p>
+                            <a href="${item.fileData}" download="video_${item.id}.mp4" class="btn btn-outline btn-small" style="margin-top:1rem;">Télécharger</a>
+                        </div>`;
+                } else if (item.type === 'doc') {
+                    docCount++;
+                    docsDiv.innerHTML += `
+                        <div class="card dynamic-item">
+                            <div class="doc-icon">📄</div>
+                            <h3 class="card-title" style="text-align:center;">${escapeHTML(item.title)}</h3>
+                            <p style="text-align:center; font-size:0.9rem;">${escapeHTML(item.desc)}</p>
+                            <div style="display:flex; justify-content:center; gap:0.5rem; margin-top:1rem;">
+                                <a href="${item.fileData}" target="_blank" class="btn btn-primary btn-small">Ouvrir</a>
+                                <a href="${item.fileData}" download="doc_${item.id}" class="btn btn-outline btn-small">Télécharger</a>
+                            </div>
+                        </div>`;
+                }
+            });
+
+            document.getElementById('mediaEmpty').style.display = (photoCount + videoCount === 0) ? 'block' : 'none';
+            document.getElementById('docsEmpty').style.display = (docCount === 0) ? 'block' : 'none';
+        }
+
+        function updateAdminStats(items) {
+            let p=3, ph=0, v=0, d=0; // Base hardcoded projects = 3
+            items.forEach(i => {
+                if(i.type === 'project') p++;
+                if(i.type === 'photo') ph++;
+                if(i.type === 'video') v++;
+                if(i.type === 'doc') d++;
+            });
+            document.getElementById('statProj').textContent = p;
+            document.getElementById('statPhoto').textContent = ph;
+            document.getElementById('statVideo').textContent = v;
+            document.getElementById('statDoc').textContent = d;
+        }
+
+        function renderAdminList(items) {
+            const list = document.getElementById('adminList');
+            list.innerHTML = '';
+            items.forEach(item => {
+                list.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; align-items:center; padding:0.5rem; border:1px solid var(--border); border-radius:4px;">
+                        <span><strong>[${item.type.toUpperCase()}]</strong> ${escapeHTML(item.title)}</span>
+                        <button class="btn btn-outline btn-small" onclick="deleteItem(${item.id})">Supprimer</button>
+                    </div>`;
+            });
+        }
+
+        async function deleteItem(id) {
+            if(confirm("Voulez-vous vraiment supprimer cet élément ?")) {
+                await dbDelete(id);
+                loadLocalData();
+            }
+        }
+
+        function toggleFileInputs() {
+            const type = document.getElementById('itemType').value;
+            const fg = document.getElementById('fileGroup');
+            const fileInput = document.getElementById('itemFile');
+            if (type === 'project') {
+                fg.style.display = 'none'; fileInput.removeAttribute('required');
+            } else {
+                fg.style.display = 'block'; fileInput.setAttribute('required', 'true');
+                if(type === 'photo') fileInput.accept = "image/*";
+                if(type === 'video') fileInput.accept = "video/mp4,video/webm";
+                if(type === 'doc') fileInput.accept = ".pdf,.doc,.txt";
+            }
+        }
+
+        function handleAdminSubmit(e) {
+            e.preventDefault();
+            const type = document.getElementById('itemType').value;
+            const title = document.getElementById('itemTitle').value;
+            const desc = document.getElementById('itemDesc').value;
+            const id = Date.now();
+
+            if (type !== 'project') {
+                const file = document.getElementById('itemFile').files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) { // 5MB Limit warning
+                    alert("Attention : Le fichier dépasse 5MB. Le stockage local du navigateur pourrait saturer.");
+                }
+                const reader = new FileReader();
+                reader.onload = async (ev) => {
+                    const fileData = ev.target.result;
+                    await dbSave({id, type, title, desc, fileData});
+                    document.getElementById('addForm').reset();
+                    toggleFileInputs();
+                    loadLocalData();
+                    alert("Ajouté avec succès localement !");
+                };
+                reader.readAsDataURL(file);
+            } else {
+                dbSave({id, type, title, desc}).then(() => {
+                    document.getElementById('addForm').reset();
+                    loadLocalData();
+                    alert("Projet ajouté !");
+                });
+            }
+        }
+
+        /* === SEARCH & FILTERS === */
+        document.getElementById('searchProjects').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll('.project-item').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? 'flex' : 'none';
+            });
+        });
+
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            if(!btn.hasAttribute('data-filter')) return;
+            btn.onclick = () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.getAttribute('data-filter');
+                document.querySelectorAll('.media-item').forEach(item => {
+                    if (filter === 'all' || item.getAttribute('data-filter') === filter) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            };
+        });
+
+        /* === LIGHTBOX === */
+        function openLightbox(src) {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightboxModal').classList.add('active');
+        }
+
+        /* === ADMIN AUTH === */
+        function checkLogin() {
+            const pwd = document.getElementById('adminPwd').value;
+            if (pwd.toLowerCase() === 'admin' || pwd !== '') {
+                closeModal('loginModal');
+                
+                // Show admin section visually
+                document.querySelectorAll('section').forEach(s => s.classList.remove('active'));
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                document.getElementById('admin').classList.add('active');
+                window.scrollTo(0,0);
+            }
+        }
+
+        /* === IMPORT / EXPORT JSON === */
+        async function exportData() {
+            const items = await dbGetAll();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(items));
+            const anchor = document.createElement('a');
+            anchor.setAttribute("href", dataStr);
+            anchor.setAttribute("download", "portfolio_export.json");
+            document.body.appendChild(anchor);
+            anchor.click();
+            anchor.remove();
+        }
+
+        function importData(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                try {
+                    const data = JSON.parse(ev.target.result);
+                    if(Array.isArray(data)) {
+                        for(let item of data) { await dbSave(item); }
+                        loadLocalData();
+                        alert("Données importées avec succès !");
+                    }
+                } catch(err) {
+                    alert("Fichier JSON invalide.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /* === CHATBOT LOGIC === */
+        function setupChatbot() {
+            document.getElementById('chatBtn').onclick = () => {
+                const w = document.getElementById('chatWindow');
+                w.style.display = w.style.display === 'flex' ? 'none' : 'flex';
+            };
+            document.getElementById('chatInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') sendChat();
+            });
+        }
+
+        function sendChat() {
+            const input = document.getElementById('chatInput');
+            const text = input.value.trim();
+            if(!text) return;
+            appendMsg(text, 'user');
+            input.value = '';
+            
+            setTimeout(() => {
+                appendMsg(processBotResponse(text.toLowerCase()), 'bot');
+            }, 500);
+        }
+
+        function appendMsg(text, sender) {
+            const msgs = document.getElementById('chatMsgs');
+            msgs.innerHTML += `<div class="msg msg-${sender}">${escapeHTML(text)}</div>`;
+            msgs.scrollTop = msgs.scrollHeight;
+        }
+
+        function processBotResponse(txt) {
+            if(txt.includes('charles') || txt.includes('qui')) return "Charles est un étudiant en électricité à Bukavu, passionné de technologie (Diplôme prévu en 2028).";
+            if(txt.includes('competence') || txt.includes('skills')) return "Il apprend l'électricité, la programmation (Python, C++), les systèmes embarqués (Arduino, ESP32) et la robotique.";
+            if(txt.includes('blacksmith')) return "Blacksmith est une initiative portée par de jeunes passionnés en innovation technologique.";
+            if(txt.includes('ecochar')) return "Ecochar est un projet expérimental de valorisation des déchets organiques.";
+            if(txt.includes('contact')) return "Tu peux le contacter à charlestechnology46@gmail.com ou sur WhatsApp au +243 0801633678.";
+            
+            // Simple Math Eval
+            if(/^[0-9\+\-\*\/\(\)\.\s]+$/.test(txt)) {
+                try { return "Le résultat est : " + eval(txt); } catch(e) {}
+            }
+            return "Je suis un assistant local basique. Pose-moi des questions sur Charles, ses projets, ou demande de petits calculs mathématiques.";
+        }
+
+        /* === UTILS === */
+        function escapeHTML(str) {
+            if(typeof str !== 'string') return str;
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[tag] || tag));
+        }
+
+    </script>
+</body>
+</html>
