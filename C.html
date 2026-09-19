@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BISIMWA MUSHIMANJA CHARLES | Portfolio</title>
+    <style>
+        /* VARIABLES & THEMES */
+        :root {
+            --bg-color: #121212;
+            --text-color: #f5f5f5;
+            --text-muted: #aaaaaa;
+            --card-bg: #1e1e1e;
+            --accent-color: #ff7a00;
+            --accent-hover: #e66a00;
+            --border-color: #333333;
+            --nav-bg: rgba(18, 18, 18, 0.95);
+        }
+
+        [data-theme="light"] {
+            --bg-color: #fcfcfc;
+            --text-color: #222222;
+            --text-muted: #555555;
+            --card-bg: #ffffff;
+            --accent-color: #ff7a00;
+            --accent-hover: #e66a00;
+            --border-color: #e0e0e0;
+            --nav-bg: rgba(252, 252, 252, 0.95);
+        }
+
+        /* RESET & BASE */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* TYPOGRAPHY */
+        h1, h2, h3 {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 0.5rem;
+        }
+
+        .highlight {
+            color: var(--accent-color);
+        }
+
+        /* NAVBAR */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background-color: var(--nav-bg);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 1000;
+            padding: 1rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+        }
+
+        .nav-links a {
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--accent-color);
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hamburger {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0 5%;
+            position: relative;
+            background-image: radial-gradient(circle at 80% 20%, var(--border-color) 1px, transparent 1px),
+                              radial-gradient(circle at 20% 80%, var(--border-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h2 {
+            font-size: clamp(1.2rem, 3vw, 1.8rem);
+            color: var(--text-color);
+            border: none;
+            text-transform: none;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+
+        .hero p {
+            max-width: 600px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: 2px solid var(--accent-color);
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: #ffffff !important;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            color: var(--text-color);
+        }
+
+        .btn-outline:hover {
+            background-color: var(--accent-color);
+            color: #ffffff;
+        }
+
+        /* SECTIONS */
+        section {
+            padding: 5rem 5%;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* CARDS GRID */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+        }
+
+        .card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card h3::before {
+            content: "";
+            display: block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+        }
+
+        .card ul {
+            color: var(--text-muted);
+            margin-left: 1rem;
+        }
+
+        .card ul li {
+            margin-bottom: 0.5rem;
+            position: relative;
+        }
+
+        .card ul li::before {
+            content: "▹";
+            color: var(--accent-color);
+            position: absolute;
+            left: -1rem;
+        }
+
+        .card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: rgba(255, 122, 0, 0.1);
+            color: var(--accent-color);
+            padding: 0.2rem 0.5rem;
+            font-size: 0.8rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        /* TIMELINE */
+        .timeline {
+            position: relative;
+            max-width: 800px;
+            margin: 0 auto;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background-color: var(--border-color);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -2.35rem;
+            top: 0.3rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--accent-color);
+            border: 3px solid var(--bg-color);
+        }
+
+        .timeline-date {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-weight: bold;
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-text {
+            color: var(--text-muted);
+        }
+
+        /* CONTACT */
+        .contact-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .contact-info p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ANIMATIONS */
+        .fade-in {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* ASSISTANT CHARLES AI */
+        .ai-bot-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background-color: var(--accent-color);
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 122, 0, 0.4);
+            z-index: 999;
+            transition: transform 0.3s;
+        }
+
+        .ai-bot-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .ai-window {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 300px;
+            height: 400px;
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 998;
+            transform: scale(0);
+            transform-origin: bottom right;
+            transition: transform 0.3s ease;
+        }
+
+        .ai-window.open {
+            transform: scale(1);
+        }
+
+        .ai-header {
+            background-color: var(--accent-color);
+            color: #fff;
+            padding: 10px;
+            font-weight: bold;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .ai-close {
+            cursor: pointer;
+        }
+
+        .ai-messages {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .ai-msg {
+            padding: 8px 12px;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 0.9rem;
+        }
+
+        .msg-bot {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            align-self: flex-start;
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 0;
+        }
+
+        .msg-user {
+            background-color: var(--accent-color);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+
+        .ai-input-area {
+            display: flex;
+            border-top: 1px solid var(--border-color);
+            padding: 5px;
+        }
+
+        .ai-input-area input {
+            flex-grow: 1;
+            background: none;
+            border: none;
+            color: var(--text-color);
+            padding: 8px;
+            outline: none;
+        }
+
+        .ai-input-area button {
+            background-color: transparent;
+            color: var(--accent-color);
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        /* RESPONSIVE MEDIA QUERIES */
+        @media screen and (max-width: 768px) {
+            .nav-links {
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background-color: var(--nav-bg);
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 1rem 5%;
+                border-bottom: 1px solid var(--border-color);
+                display: none;
+            }
+
+            .nav-links.active {
+                display: flex;
+            }
+
+            .nav-links a {
+                width: 100%;
+                padding: 10px 0;
+                border-bottom: 1px solid var(--border-color);
+            }
+
+            .nav-links button {
+                margin-top: 10px;
+            }
+
+            .hamburger {
+                display: block;
+            }
+
+            .ai-window {
+                width: calc(100% - 40px);
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo">B. CHARLES</div>
+        <button class="hamburger" id="hamburger">☰</button>
+        <div class="nav-links" id="nav-links">
+            <a href="#accueil" class="nav-item">Accueil</a>
+            <a href="#apropos" class="nav-item">À propos</a>
+            <a href="#competences" class="nav-item">Compétences</a>
+            <a href="#projets" class="nav-item">Projets</a>
+            <a href="#formation" class="nav-item">Formation</a>
+            <a href="#contact" class="nav-item">Contact</a>
+            <button class="theme-toggle" id="theme-toggle">🌙</button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="accueil" class="hero">
+        <h1 class="fade-in">BISIMWA MUSHIMANJA <span class="highlight">CHARLES</span></h1>
+        <h2 class="fade-in">Étudiant en électricité & passionné par les nouvelles technologies</h2>
+        <p class="fade-in">Je m'intéresse à l'électricité, l'électronique, la programmation, les systèmes embarqués, la robotique, les drones et les technologies permettant de résoudre des problèmes réels.</p>
+        <div class="btn-group fade-in">
+            <a href="#projets" class="btn btn-primary">Découvrir mes projets</a>
+            <a href="#contact" class="btn btn-outline">Me contacter</a>
+        </div>
+    </section>
+
+    <!-- A PROPOS -->
+    <section id="apropos">
+        <div class="section-content">
+            <h2 class="fade-in">À propos de moi</h2>
+            <div class="card fade-in">
+                <p>Je suis étudiant à l'<strong>EDAP/ISP Bukavu</strong> dans la section <strong>Électricité</strong>.</p>
+                <br>
+                <p>Curieux et motivé, je développe progressivement mes connaissances dans divers domaines tels que l'électricité, l'électronique, l'informatique, la programmation, les systèmes embarqués, la robotique, les technologies numériques et l'ingénierie.</p>
+                <br>
+                <p>Mon objectif est de continuer mes études et de bâtir une base solide pour concevoir des solutions technologiques utiles. J'apprends chaque jour pour transformer mes idées en réalité.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPETENCES -->
+    <section id="competences">
+        <div class="section-content">
+            <h2 class="fade-in">Mes Compétences & Apprentissages</h2>
+            <div class="grid">
+                <div class="card fade-in">
+                    <h3>Électricité</h3>
+                    <ul>
+                        <li>Électricité générale</li>
+                        <li>Électricité domestique</li>
+                        <li>Notions d'électricité industrielle</li>
+                        <li>Circuits électriques</li>
+                    </ul>
+                </div>
+                <div class="card fade-in">
+                    <h3>Programmation</h3>
+                    <ul>
+                        <li>Python, C, C++</li>
+                        <li>JavaScript, HTML, CSS, PHP</li>
+                        <li>Julia</li>
+                    </ul>
+                </div>
+                <div class="card fade-in">
+                    <h3>Systèmes embarqués</h3>
+                    <ul>
+                        <li>Arduino, ESP32, Raspberry Pi</li>
+                        <li>Capteurs et IoT</li>
+                        <li>Automatisation</li>
+                    </ul>
+                </div>
+                <div class="card fade-in">
+                    <h3>Robotique</h3>
+                    <ul>
+                        <li>Électronique et Programmation</li>
+                        <li>Prototypage</li>
+                        <li>Systèmes de contrôle</li>
+                    </ul>
+                </div>
+                <div class="card fade-in">
+                    <h3>Drones</h3>
+                    <ul>
+                        <li>Construction et expérimentation</li>
+                        <li>Pixhawk, Raspberry Pi</li>
+                        <li>Capteurs et Systèmes embarqués</li>
+                    </ul>
+                </div>
+                <div class="card fade-in">
+                    <h3>Conception</h3>
+                    <ul>
+                        <li>FreeCAD</li>
+                        <li>Modélisation 3D</li>
+                        <li>Conception mécanique</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PROJETS -->
+    <section id="projets">
+        <div class="section-content">
+            <h2 class="fade-in">Projets & Expérimentations</h2>
+            <div class="grid">
+                <div class="card fade-in">
+                    <span class="badge">Initiative</span>
+                    <h3>BLACKSMITH</h3>
+                    <p>Une initiative technologique portée par une petite équipe de jeunes passionnés. Nous explorons les domaines de la technologie, de l'informatique, de l'ingénierie, de l'environnement et de l'innovation pour créer des solutions locales.</p>
+                </div>
+                <div class="card fade-in">
+                    <span class="badge">En développement</span>
+                    <h3>ECOCHAR</h3>
+                    <p>Projet de valorisation des déchets développé dans le cadre de l'initiative Blacksmith. Ce système de traitement est actuellement en phase de développement et d'expérimentation pour évaluer sa viabilité technique.</p>
+                </div>
+                <div class="card fade-in">
+                    <span class="badge">Logiciel</span>
+                    <h3>CAHIER DE COMPTE</h3>
+                    <p>Projet de logiciel desktop destiné aux petites boutiques, magasins et pharmacies. L'objectif est de permettre une meilleure gestion numérique des ventes, stocks, crédits, approvisionnements et historiques. Actuellement en cours de création.</p>
+                </div>
+                <div class="card fade-in">
+                    <span class="badge">À venir</span>
+                    <h3>PROJETS ÉLECTRONIQUES</h3>
+                    <p>Une série d'expérimentations futures utilisant Arduino, ESP32 et Raspberry Pi. Cette section évoluera au fur et à mesure que je développerai mes projets en robotique, automatisation et électronique appliquée.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FORMATION -->
+    <section id="formation">
+        <div class="section-content">
+            <h2 class="fade-in">Formation</h2>
+            <div class="timeline fade-in">
+                <div class="timeline-item">
+                    <div class="timeline-date">En cours (Objectif: 2028)</div>
+                    <div class="timeline-title">Diplôme d'État - Section Électricité</div>
+                    <div class="timeline-text">
+                        <strong>EDAP/ISP Bukavu</strong><br>
+                        Apprentissage fondamental et pratique. Domaines étudiés et centres d'intérêt : Mathématiques, Physique, Électricité, Électronique, Informatique et Mécanique.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact">
+        <div class="section-content">
+            <h2 class="fade-in">Contact</h2>
+            <div class="contact-container fade-in">
+                <div>
+                    <h3>BISIMWA MUSHIMANJA CHARLES</h3>
+                    <p style="color: var(--text-muted); margin-top: 10px;">N'hésitez pas à me contacter pour échanger sur la technologie, l'ingénierie ou de potentiels projets.</p>
+                </div>
+                <div class="contact-info">
+                    <p>✉️ charlestechnology46@gmail.com</p>
+                    <p>📞 +243 0801633678</p>
+                </div>
+                <div class="btn-group" style="justify-content: center;">
+                    <a href="mailto:charlestechnology46@gmail.com" class="btn btn-primary">Envoyer un Email</a>
+                    <a href="https://wa.me/2430801633678" target="_blank" class="btn btn-outline">WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHARLES AI ASSISTANT -->
+    <div class="ai-bot-btn" id="ai-toggle">🤖</div>
+    <div class="ai-window" id="ai-window">
+        <div class="ai-header">
+            <span>Charles AI</span>
+            <span class="ai-close" id="ai-close">✖</span>
+        </div>
+        <div class="ai-messages" id="ai-messages">
+            <div class="ai-msg msg-bot">Bonjour ! Je suis le petit assistant virtuel de ce portfolio. Posez-moi des questions sur Charles, ses compétences, ses projets ou faites un petit calcul (ex: 12 * 5, sin(30)).</div>
+        </div>
+        <div class="ai-input-area">
+            <input type="text" id="ai-input" placeholder="Écrivez ici...">
+            <button id="ai-send">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // 1. MENU MOBILE
+        const hamburger = document.getElementById('hamburger');
+        const navLinks = document.getElementById('nav-links');
+        const navItems = document.querySelectorAll('.nav-item');
+
+        hamburger.addEventListener('click', () => {
+            navLinks.classList.toggle('active');
+            hamburger.textContent = navLinks.classList.contains('active') ? '✖' : '☰';
+        });
+
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navLinks.classList.remove('active');
+                hamburger.textContent = '☰';
+            });
+        });
+
+        // 2. MODE SOMBRE / CLAIR
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        
+        const savedTheme = localStorage.getItem('portfolio-theme');
+        if (savedTheme) {
+            html.setAttribute('data-theme', savedTheme);
+            themeToggle.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('portfolio-theme', newTheme);
+            themeToggle.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+        });
+
+        // 3. ANIMATIONS (Intersection Observer)
+        const fadeElements = document.querySelectorAll('.fade-in');
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, observerOptions);
+
+        fadeElements.forEach(el => observer.observe(el));
+
+        // 4. CHARLES AI ASSISTANT
+        const aiToggle = document.getElementById('ai-toggle');
+        const aiWindow = document.getElementById('ai-window');
+        const aiClose = document.getElementById('ai-close');
+        const aiInput = document.getElementById('ai-input');
+        const aiSend = document.getElementById('ai-send');
+        const aiMessages = document.getElementById('ai-messages');
+
+        aiToggle.addEventListener('click', () => aiWindow.classList.add('open'));
+        aiClose.addEventListener('click', () => aiWindow.classList.remove('open'));
+
+        function addMessage(text, isUser) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `ai-msg ${isUser ? 'msg-user' : 'msg-bot'}`;
+            msgDiv.textContent = text;
+            aiMessages.appendChild(msgDiv);
+            aiMessages.scrollTop = aiMessages.scrollHeight;
+        }
+
+        function getBotResponse(input) {
+            const lowerInput = input.toLowerCase();
+
+            // Mot-clés simples
+            if (lowerInput.includes('charles') || lowerInput.includes('qui es tu') || lowerInput.includes('qui etes vous')) {
+                return "Charles est un étudiant en électricité à Bukavu, passionné par la technologie, l'informatique et les systèmes embarqués.";
+            }
+            if (lowerInput.includes('competence') || lowerInput.includes('compétence') || lowerInput.includes('savoir faire')) {
+                return "Charles apprend l'électricité, la programmation (Python, C++, JS), la robotique et la conception 3D.";
+            }
+            if (lowerInput.includes('blacksmith')) {
+                return "Blacksmith est une initiative de jeunes passionnés explorant l'ingénierie et l'innovation.";
+            }
+            if (lowerInput.includes('ecochar')) {
+                return "Ecochar est un projet en développement visant à valoriser les déchets locaux.";
+            }
+            if (lowerInput.includes('cahier')) {
+                return "Cahier de compte est un futur logiciel de gestion pour les petites boutiques.";
+            }
+            if (lowerInput.includes('etude') || lowerInput.includes('étude') || lowerInput.includes('formation')) {
+                return "Il étudie à l'EDAP/ISP Bukavu en section Électricité, avec pour objectif le Diplôme d'État en 2028.";
+            }
+            if (lowerInput.includes('contact') || lowerInput.includes('whatsapp') || lowerInput.includes('email')) {
+                return "Vous pouvez le contacter via WhatsApp au +243 0801633678 ou par email : charlestechnology46@gmail.com.";
+            }
+            if (lowerInput.includes('bonjour') || lowerInput.includes('salut')) {
+                return "Bonjour ! Comment puis-je vous aider à explorer le portfolio de Charles ?";
+            }
+
+            // Calculs basiques ou formules
+            if (lowerInput.includes('u=ri') || lowerInput.includes('u = r')) {
+                return "C'est la loi d'Ohm ! U (Tension en Volts) = R (Résistance en Ohms) × I (Intensité en Ampères).";
+            }
+
+            if (lowerInput.includes('sin(') || lowerInput.includes('cos(')) {
+                try {
+                    let match = lowerInput.match(/(sin|cos)\s*\(\s*(\d+)\s*\)/);
+                    if (match) {
+                        let type = match[1];
+                        let val = parseInt(match[2]);
+                        let rad = val * (Math.PI / 180);
+                        let res = type === 'sin' ? Math.sin(rad) : Math.cos(rad);
+                        return `Le ${type} de ${val} degrés est environ ${res.toFixed(4)}.`;
+                    }
+                } catch (e) {}
+            }
+
+            // Calcul arithmétique simple
+            if (/^[0-9\s\+\-\*\/\(\)\.]+$/.test(lowerInput)) {
+                try {
+                    let result = eval(lowerInput);
+                    if (result !== undefined) return `Le résultat est : ${result}`;
+                } catch (e) {}
+            }
+
+            return "Je ne suis qu'un petit assistant. Je peux vous parler de Charles, Blacksmith, EcoChar, ses compétences, ou faire des calculs simples !";
+        }
+
+        function handleSend() {
+            const text = aiInput.value.trim();
+            if (text === '') return;
+            
+            addMessage(text, true);
+            aiInput.value = '';
+            
+            setTimeout(() => {
+                const response = getBotResponse(text);
+                addMessage(response, false);
+            }, 500);
+        }
+
+        aiSend.addEventListener('click', handleSend);
+        aiInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') handleSend();
+        });
+    </script>
+</body>
+</html>
