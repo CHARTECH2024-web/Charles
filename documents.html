@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Documents — Bisimwa Mushimanja Charles</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="animations.css">
+<link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main>
+  <h2>Documents techniques</h2>
+  <div class="grid" id="docsContainer">
+    <p class="skeleton">Chargement des documents...</p>
+  </div>
+  <p id="docsEmpty" class="skeleton" style="display:none;">Aucun document public disponible.</p>
+</main>
+<div id="site-footer"></div>
+<div id="chatbot-root"></div>
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="main.js"></script>
+<script type="module">
+  import { loadPublicDocuments } from './documents.js';
+  window.addEventListener('DOMContentLoaded', () => loadPublicDocuments());
+</script>
+</body>
+</html>
