@@ -28,3 +28,49 @@
           <a href="admin-settings.html" class="active">Settings</a>
           <a href="#" onclick="logoutAdmin();return false;">Logout</a>
         </nav>
+        <div class="admin-user">
+          <img id="adminUserAvatar" src="" alt="" style="display:none;" onload="this.style.display='block'">
+          <span id="adminUserName">—</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-wrap">
+      <h2>Paramètres</h2>
+      <div class="admin-forms" style="max-width:640px;">
+        <div class="settings-row">
+          <span>Compte administrateur autorisé</span>
+          <strong id="adminEmailDisplay" class="text-orange">—</strong>
+        </div>
+        <div class="settings-row">
+          <span>Thème</span>
+          <button class="btn btn-outline btn-small" id="settingsThemeBtn">Basculer clair / sombre</button>
+        </div>
+        <div class="settings-row">
+          <span>Projet Firebase</span>
+          <a href="https://console.firebase.google.com/" target="_blank" rel="noopener" class="btn btn-outline btn-small">Ouvrir la console Firebase</a>
+        </div>
+        <div class="settings-row">
+          <span>Session</span>
+          <button class="btn btn-danger btn-small" onclick="logoutAdmin()">Se déconnecter</button>
+        </div>
+      </div>
+      <p class="login-note" style="margin-top:1.5rem;">Pour changer d'administrateur, modifiez la constante <code>ADMIN_EMAIL</code> dans <code>firebase-config.js</code> puis mettez à jour les règles Firestore/Storage (voir README).</p>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module">
+    import { requireAdmin, logoutAdmin } from './auth.js';
+    import { loadSettings } from './admin.js';
+    window.logoutAdmin = logoutAdmin;
+    document.getElementById('settingsThemeBtn').addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('portfolio_theme', next);
+    });
+    requireAdmin(() => loadSettings());
+  </script>
+</body>
+</html>
