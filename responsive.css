@@ -1,0 +1,30 @@
+/* =========================================================
+   PORTFOLIO V3.1 — responsive.css
+   Breakpoints vérifiés : 360 / 390 / 412 / 768 / 1024 / 1440
+   ========================================================= */
+
+/* Tablette & mobile (<=768px) : menu drawer, chatbot plein écran */
+@media (max-width: 768px) {
+    .nav-links {
+        position: fixed; top: 65px; left: 0; width: 100%; height: calc(100vh - 65px);
+        flex-direction: column; background: var(--surface); padding: 2rem 0;
+        border-bottom: 1px solid var(--border); display: none; text-align: center; gap: 1.5rem;
+        z-index: 999; overflow-y: auto;
+    }
+    .nav-links.show { display: flex; }
+    .nav-controls { display: none; }
+    .hamburger { display: block; }
+    .hero-graphic { display: none; }
+    main { padding: 5rem 5% 3rem; }
+    .chatbot-window { width: calc(100vw - 30px); right: 15px; bottom: 90px; height: 450px; }
+    .admin-dashboard { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Desktop large (>=1024px) : plus d'air, grilles plus riches */
+@media (min-width: 1024px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+    main { padding-top: 6.5rem; }
+}
+
+/* Grand écran (>=1440px) */
+@media (min-width: 1440px) {
