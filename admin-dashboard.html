@@ -28,3 +28,43 @@
           <a href="admin-settings.html">Settings</a>
           <a href="#" onclick="logoutAdmin();return false;">Logout</a>
         </nav>
+        <div class="admin-user">
+          <img id="adminUserAvatar" src="" alt="" style="display:none;" onload="this.style.display='block'">
+          <span id="adminUserName">—</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-wrap">
+      <h2>Dashboard</h2>
+
+      <div class="admin-dashboard">
+        <div class="stat-card"><div class="stat-label">Photos</div><div class="stat-num" id="statPhotos">0</div></div>
+        <div class="stat-card"><div class="stat-label">Vidéos</div><div class="stat-num" id="statVideos">0</div></div>
+        <div class="stat-card"><div class="stat-label">Documents</div><div class="stat-num" id="statDocs">0</div></div>
+        <div class="stat-card"><div class="stat-label">Total publications</div><div class="stat-num" id="statTotal">0</div></div>
+        <div class="stat-card"><div class="stat-label">État du système</div><div class="stat-num" id="systemStatus" style="font-size:1rem;padding-top:0.5rem;">Vérification...</div></div>
+      </div>
+
+      <h3 style="margin-bottom:1rem;">Dernières publications</h3>
+      <div class="pub-list" id="recentPublications">
+        <p class="skeleton">Chargement...</p>
+      </div>
+
+      <div style="margin-top:2rem;display:flex;gap:1rem;flex-wrap:wrap;">
+        <a href="admin-media.html" class="btn btn-primary">+ Publier un média</a>
+        <a href="admin-documents.html" class="btn btn-outline">+ Publier un document</a>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module">
+    import { requireAdmin, logoutAdmin } from './auth.js';
+    import { loadDashboard } from './admin.js';
+    window.logoutAdmin = logoutAdmin;
+    window.refreshDashboardStats = loadDashboard;
+    requireAdmin(() => loadDashboard());
+  </script>
+</body>
+</html>
