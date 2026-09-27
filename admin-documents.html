@@ -28,3 +28,119 @@
           <a href="admin-settings.html">Settings</a>
           <a href="#" onclick="logoutAdmin();return false;">Logout</a>
         </nav>
+        <div class="admin-user">
+          <img id="adminUserAvatar" src="" alt="" style="display:none;" onload="this.style.display='block'">
+          <span id="adminUserName">—</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-wrap">
+      <h2>Gestion des documents</h2>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr));">
+        <div class="admin-forms">
+          <h3 class="card-title">Publier un document</h3>
+          <form id="docForm">
+            <div class="form-group">
+              <label>Titre</label>
+              <input type="text" id="dTitle" class="form-control" required maxlength="120">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="dDesc" class="form-control" rows="3" maxlength="500"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Visibilité</label>
+              <select id="dVisibility" class="form-control">
+                <option value="public">Public (visible par tous)</option>
+                <option value="private">Privé (masqué du site public)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fichier (PDF, DOC, DOCX, PPT, PPTX, TXT, ODT)</label>
+              <input type="file" id="dFile" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.txt,.odt" required>
+              <div class="file-info" id="dFileInfo"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="dSubmitBtn" style="width:100%;">PUBLISH DOCUMENT</button>
+            <div class="progress-wrap" id="dProgressWrap">
+              <div class="progress-bar-track"><div class="progress-bar-fill" id="dProgressFill"></div></div>
+              <div class="progress-label"><span id="dProgressText">0%</span><span>Envoi en cours...</span></div>
+            </div>
+            <div class="upload-status" id="dStatus"></div>
+          </form>
+        </div>
+
+        <div class="admin-forms">
+          <h3 class="card-title">Publications (documents)</h3>
+          <div class="pub-list" id="pubList"><p class="skeleton">Chargement...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module">
+    import { requireAdmin, logoutAdmin } from './auth.js';
+    import { validateDocFile, uploadDocument } from './documents.js';
+    import { renderDocumentsList } from './admin.js';
+
+    window.logoutAdmin = logoutAdmin;
+
+    const fileInput = document.getElementById('dFile');
+    const fileInfo = document.getElementById('dFileInfo');
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      fileInfo.textContent = f ? `${f.name} — ${(f.size / 1024 / 1024).toFixed(2)} Mo` : '';
+    });
+
+    document.getElementById('docForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      const title = document.getElementById('dTitle').value.trim();
+      const description = document.getElementById('dDesc').value.trim();
+      const visibility = document.getElementById('dVisibility').value;
+      const statusEl = document.getElementById('dStatus');
+      const submitBtn = document.getElementById('dSubmitBtn');
+      statusEl.className = 'upload-status';
+
+      const err = validateDocFile(file);
+      if (err) { statusEl.textContent = err; statusEl.className = 'upload-status error'; return; }
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('uploading');
+      submitBtn.textContent = 'Publication en cours...';
+      document.getElementById('dProgressWrap').classList.add('active');
+
+      uploadDocument({
+        file, title, description, visibility,
+        onProgress: (pct) => {
+          document.getElementById('dProgressFill').style.width = pct + '%';
+          document.getElementById('dProgressText').textContent = pct + '%';
+        },
+        onDone: () => {
+          statusEl.textContent = 'Published successfully ✅';
+          statusEl.className = 'upload-status success';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('uploading');
+          submitBtn.textContent = 'PUBLISH DOCUMENT';
+          document.getElementById('docForm').reset();
+          document.getElementById('dProgressWrap').classList.remove('active');
+          fileInfo.textContent = '';
+          renderDocumentsList();
+          if (typeof window.refreshDashboardStats === 'function') window.refreshDashboardStats();
+        },
+        onError: (e) => {
+          statusEl.textContent = "Erreur d'envoi : " + e.message;
+          statusEl.className = 'upload-status error';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('uploading');
+          submitBtn.textContent = 'PUBLISH DOCUMENT';
+        }
+      });
+    });
+
+    requireAdmin(() => renderDocumentsList());
+  </script>
+</body>
+</html>
