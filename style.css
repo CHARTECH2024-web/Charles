@@ -1,0 +1,30 @@
+/* =========================================================
+   PORTFOLIO V3.1 — style.css
+   Styles généraux (identité visuelle conservée du V3)
+   ========================================================= */
+
+:root {
+    --orange: #ff6b00;
+    --orange-hover: #e65c00;
+    --orange-glow: rgba(255, 107, 0, 0.15);
+    --font-main: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="dark"] {
+    --bg: #090a0f;
+    --surface: #13161c;
+    --surface-hover: #1b1f28;
+    --text-main: #f0f2f5;
+    --text-muted: #949aab;
+    --border: #262c38;
+    --metallic: #6e7687;
+    --card-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="light"] {
+    --bg: #f4f5f7;
+    --surface: #ffffff;
+    --surface-hover: #eaeef5;
+    --text-main: #13161c;
+    --text-muted: #575e71;
