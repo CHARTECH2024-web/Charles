@@ -28,3 +28,9 @@
 <script type="module" src="firebase-config.js"></script>
 <script type="module" src="main.js"></script>
 <script type="module">
+  import { loadPublicMedia } from './media.js';
+  window.loadPublicMedia = loadPublicMedia;
+  window.addEventListener('DOMContentLoaded', () => loadPublicMedia('all'));
+</script>
+</body>
+</html>
