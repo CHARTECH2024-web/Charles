@@ -28,3 +28,8 @@
   <script type="module" src="firebase-config.js"></script>
   <script type="module">
     import { loginWithGoogle, redirectIfAlreadyAdmin } from './auth.js';
+    window.loginWithGoogle = loginWithGoogle;
+    redirectIfAlreadyAdmin();
+  </script>
+</body>
+</html>
