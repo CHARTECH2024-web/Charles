@@ -28,3 +28,132 @@
           <a href="admin-settings.html">Settings</a>
           <a href="#" onclick="logoutAdmin();return false;">Logout</a>
         </nav>
+        <div class="admin-user">
+          <img id="adminUserAvatar" src="" alt="" style="display:none;" onload="this.style.display='block'">
+          <span id="adminUserName">—</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="admin-wrap">
+      <h2>Gestion des médias</h2>
+
+      <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr));">
+        <div class="admin-forms">
+          <h3 class="card-title">Publier un média</h3>
+          <form id="mediaForm">
+            <div class="form-group">
+              <label>Type</label>
+              <select id="mType" class="form-control">
+                <option value="photo">Photo (JPG, PNG, WEBP)</option>
+                <option value="video">Vidéo (MP4, WEBM)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Titre</label>
+              <input type="text" id="mTitle" class="form-control" required maxlength="120">
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <textarea id="mDesc" class="form-control" rows="3" maxlength="500"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Visibilité</label>
+              <select id="mVisibility" class="form-control">
+                <option value="public">Public (visible par tous)</option>
+                <option value="private">Privé (masqué du site public)</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Fichier</label>
+              <input type="file" id="mFile" class="form-control" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" required>
+              <div class="file-info" id="mFileInfo"></div>
+            </div>
+            <button type="submit" class="btn btn-primary" id="mSubmitBtn" style="width:100%;">PUBLISH VIDEO / PHOTO</button>
+            <div class="progress-wrap" id="mProgressWrap">
+              <div class="progress-bar-track"><div class="progress-bar-fill" id="mProgressFill"></div></div>
+              <div class="progress-label"><span id="mProgressText">0%</span><span id="mProgressState">Envoi en cours...</span></div>
+            </div>
+            <div class="upload-status" id="mStatus"></div>
+          </form>
+        </div>
+
+        <div class="admin-forms">
+          <h3 class="card-title">Publications (photos &amp; vidéos)</h3>
+          <div class="pub-list" id="pubList"><p class="skeleton">Chargement...</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module">
+    import { requireAdmin, logoutAdmin } from './auth.js';
+    import { validateFile, uploadMedia } from './media.js';
+    import { renderMediaList } from './admin.js';
+
+    window.logoutAdmin = logoutAdmin;
+
+    const typeSel = document.getElementById('mType');
+    const fileInput = document.getElementById('mFile');
+    const fileInfo = document.getElementById('mFileInfo');
+
+    typeSel.addEventListener('change', () => {
+      fileInput.accept = typeSel.value === 'photo' ? 'image/jpeg,image/png,image/webp' : 'video/mp4,video/webm';
+    });
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      fileInfo.textContent = f ? `${f.name} — ${(f.size / 1024 / 1024).toFixed(2)} Mo` : '';
+    });
+
+    document.getElementById('mediaForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      const type = typeSel.value;
+      const title = document.getElementById('mTitle').value.trim();
+      const description = document.getElementById('mDesc').value.trim();
+      const visibility = document.getElementById('mVisibility').value;
+      const statusEl = document.getElementById('mStatus');
+      const submitBtn = document.getElementById('mSubmitBtn');
+      statusEl.className = 'upload-status';
+
+      const err = validateFile(file, type);
+      if (err) { statusEl.textContent = err; statusEl.className = 'upload-status error'; return; }
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add('uploading');
+      submitBtn.textContent = 'Publication en cours...';
+      document.getElementById('mProgressWrap').classList.add('active');
+
+      uploadMedia({
+        file, type, title, description, visibility,
+        onProgress: (pct) => {
+          document.getElementById('mProgressFill').style.width = pct + '%';
+          document.getElementById('mProgressText').textContent = pct + '%';
+        },
+        onDone: () => {
+          statusEl.textContent = 'Published successfully ✅';
+          statusEl.className = 'upload-status success';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('uploading');
+          submitBtn.textContent = 'PUBLISH VIDEO / PHOTO';
+          document.getElementById('mediaForm').reset();
+          document.getElementById('mProgressWrap').classList.remove('active');
+          fileInfo.textContent = '';
+          renderMediaList();
+          if (typeof window.refreshDashboardStats === 'function') window.refreshDashboardStats();
+        },
+        onError: (e) => {
+          statusEl.textContent = "Erreur d'envoi : " + e.message;
+          statusEl.className = 'upload-status error';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('uploading');
+          submitBtn.textContent = 'PUBLISH VIDEO / PHOTO';
+        }
+      });
+    });
+
+    requireAdmin(() => renderMediaList());
+  </script>
+</body>
+</html>
