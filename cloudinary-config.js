@@ -1,7 +1,7 @@
 /* Cloudinary public configuration for media uploads.
-   Create a free Cloudinary account, then create an UNSIGNED upload preset.
-   Put the values below in this file. These values are identifiers, not API secrets.
+   The cloud name and unsigned upload preset are public identifiers.
+   Never put an API secret in this browser-side file.
 */
-export const CLOUDINARY_CLOUD_NAME = "YOUR_CLOUD_NAME";
-export const CLOUDINARY_UPLOAD_PRESET = "YOUR_UNSIGNED_UPLOAD_PRESET";
+export const CLOUDINARY_CLOUD_NAME = "e4eozlh7";
+export const CLOUDINARY_UPLOAD_PRESET = "engineer_charles_upload";
 export const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/auto/upload`;
