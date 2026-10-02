@@ -1,5 +1,5 @@
 /* =========================================================
-   PORTFOLIO V3.1 — main.js
+   PORTFOLIO V3.2 — main.js
    Fonctionnalités générales du site public :
    header/footer injectés, thème, navigation, lightbox, chatbot
    (Aucune référence à l'espace admin n'apparaît ici — règle §4)
@@ -84,37 +84,31 @@ function injectChatbot() {
   </div>`;
 }
 
-/* ---------- THEME ---------- */
+/* ---------- THEMES ---------- */
+const THEMES = ["orange","green","white","night"];
 function applyTheme(theme) {
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('portfolio_theme', theme);
-  const icon = theme === 'dark' ? '☀️' : '🌙';
-  const b1 = document.getElementById('btnTheme');
-  const b2 = document.getElementById('btnThemeMob');
-  if (b1) b1.textContent = icon;
-  if (b2) b2.textContent = icon;
-}
-function toggleTheme() {
-  const current = localStorage.getItem('portfolio_theme') || 'dark';
-  applyTheme(current === 'dark' ? 'light' : 'dark');
-}
-
-/* ---------- NAVIGATION (mobile drawer) ---------- */
-function setupNavigation() {
-  const hamburger = document.getElementById('hamburger');
-  const navMenu = document.getElementById('navMenu');
-  if (hamburger && navMenu) hamburger.onclick = () => navMenu.classList.toggle('show');
-
-  const btnTheme = document.getElementById('btnTheme');
-  const btnThemeMob = document.getElementById('btnThemeMob');
-  if (btnTheme) btnTheme.onclick = toggleTheme;
-  if (btnThemeMob) btnThemeMob.onclick = toggleTheme;
-
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', () => navMenu && navMenu.classList.remove('show'));
+  const safe = THEMES.includes(theme) ? theme : "night";
+  document.documentElement.setAttribute("data-theme", safe);
+  localStorage.setItem("portfolio_theme", safe);
+  document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+    btn.classList.toggle("selected", btn.dataset.themeChoice === safe);
   });
 }
-
+function setupThemePicker() {
+  const menu = document.getElementById("themeMenu");
+  const trigger = document.getElementById("themeMenuBtn");
+  trigger?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    menu?.classList.toggle("open");
+  });
+  document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      applyTheme(btn.dataset.themeChoice);
+      menu?.classList.remove("open");
+    });
+  });
+  document.addEventListener("click", () => menu?.classList.remove("open"));
+}
 /* ---------- LIGHTBOX (photos) ---------- */
 function setupLightbox() {
   const modal = document.getElementById('lightboxModal');

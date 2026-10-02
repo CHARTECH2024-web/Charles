@@ -168,3 +168,30 @@ marqués "public".
 - Le chatbot Charles AI reste 100% local (aucune donnée envoyée à un serveur).
 - Pour ajuster les limites de taille de fichier, modifiez `MAX_SIZE_BYTES` dans
   `media.js` / `documents.js` **et** la valeur correspondante dans les règles Storage.
+
+
+## V3.2 — architecture sans carte bancaire
+
+Firebase **Cloud Storage n'est pas utilisé** dans cette version. Depuis le 3 février 2026, Cloud Storage for Firebase nécessite le forfait Blaze associé à un compte Cloud Billing. Le site conserve donc Firebase Authentication + Cloud Firestore sur le projet actuel et utilise **Cloudinary Free** pour les photos, vidéos et documents.
+
+### Médias et documents
+1. Créer un compte Cloudinary Free.
+2. Créer un **unsigned upload preset** limité aux formats nécessaires.
+3. Copier le Cloud Name et le nom du preset dans `cloudinary-config.js`.
+4. Les fichiers sont envoyés directement à Cloudinary depuis l'espace admin.
+5. Firestore conserve uniquement les métadonnées et l'URL de livraison.
+6. La suppression depuis le site retire la publication de Firestore; la suppression physique de l'asset Cloudinary se fait depuis Cloudinary, car la clé API secrète ne doit jamais être placée dans le navigateur.
+
+Le plan Free Cloudinary ne nécessite pas de carte bancaire et inclut un quota mensuel gratuit. Les limites actuelles du plan Free sont notamment 10 MB par image, 100 MB par vidéo et 10 MB par fichier raw/document.
+
+### Communauté
+La page Community est un chat général temps réel basé sur Cloud Firestore :
+- connexion Google obligatoire pour participer ;
+- messages synchronisés entre appareils ;
+- avatar et nom Google ;
+- suppression de ses propres messages ;
+- modération administrateur ;
+- limite de 1000 caractères par message.
+
+### Thèmes
+Le site propose quatre thèmes : **Orange**, **Vert**, **Blanc** et **Bleu de nuit**.

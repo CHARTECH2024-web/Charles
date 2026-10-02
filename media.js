@@ -1,146 +1,93 @@
-/* =========================================================
-   PORTFOLIO V3.1 — media.js
-   Photos & vidéos : lecture publique (media.html) +
-   upload / gestion admin (admin-media.html)
-   Stockage : Firebase Storage (fichiers) + Firestore (métadonnées)
-   ========================================================= */
-
-import { db, storage } from "./firebase-config.js";
+/* V3.2 — Media without Firebase Storage.
+   Files are uploaded to Cloudinary Free via an unsigned preset.
+   Firestore stores only metadata and the public delivery URL.
+*/
+import { db } from "./firebase-config.js";
+import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET } from "./cloudinary-config.js";
 import {
   collection, addDoc, getDocs, query, where, orderBy,
   deleteDoc, doc, updateDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
-import {
-  ref, uploadBytesResumable, getDownloadURL, deleteObject
-} from "https://www.gstatic.com/firebasejs/10.13.2/firebase-storage.js";
 
-const ALLOWED_TYPES = {
-  photo: ["image/jpeg", "image/png", "image/webp"],
-  video: ["video/mp4", "video/webm"]
+const LIMITS = { photo: 10 * 1024 * 1024, video: 100 * 1024 * 1024 };
+const ALLOWED = {
+  photo: ["image/jpeg","image/png","image/webp"],
+  video: ["video/mp4","video/webm"]
 };
-const MAX_SIZE_BYTES = 300 * 1024 * 1024; // 300 Mo, ajustable
+function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
-
-/* ---------- PARTIE PUBLIQUE : media.html ---------- */
-
-export async function loadPublicMedia(filter = 'all') {
-  const container = document.getElementById('mediaContainer');
-  const emptyMsg = document.getElementById('mediaEmpty');
-  if (!container) return;
-  container.innerHTML = '<p class="skeleton">Chargement des médias...</p>';
-
-  try {
-    const q = query(collection(db, "media"), where("visibility", "==", "public"), orderBy("createdAt", "desc"));
-    const snap = await getDocs(q);
-    container.innerHTML = '';
-
-    let items = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    if (filter !== 'all') items = items.filter(i => i.type === filter);
-
-    if (items.length === 0) {
-      if (emptyMsg) { emptyMsg.style.display = 'block'; container.appendChild(emptyMsg); }
-      return;
-    }
-    if (emptyMsg) emptyMsg.style.display = 'none';
-
-    items.forEach(item => container.insertAdjacentHTML('beforeend', renderMediaCard(item)));
-  } catch (e) {
-    console.error(e);
-    container.innerHTML = `<p class="skeleton">Impossible de charger les médias pour le moment.</p>`;
-  }
-}
-
-function renderMediaCard(item) {
-  const dateStr = item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString('fr-FR') : '';
-  if (item.type === 'video') {
-    return `<div class="card media-item" data-filter="video">
-      <div class="card-subtitle">${esc(dateStr)}</div>
-      <video src="${item.url}" controls preload="metadata" class="media-thumbnail"></video>
-      <h3 class="card-title">${esc(item.title)}</h3>
-      <p style="font-size:0.9rem;color:var(--text-muted);">${esc(item.description)}</p>
-    </div>`;
-  }
-  return `<div class="card media-item" data-filter="photo">
-    <div class="card-subtitle">${esc(dateStr)}</div>
-    <img src="${item.url}" alt="${esc(item.title)}" class="media-thumbnail" loading="lazy"
-         onclick="window.openLightbox && window.openLightbox('${item.url.replace(/'/g, "\\'")}')">
-    <h3 class="card-title">${esc(item.title)}</h3>
-    <p style="font-size:0.9rem;color:var(--text-muted);">${esc(item.description)}</p>
-  </div>`;
-}
-
-/* ---------- PARTIE ADMIN : admin-media.html ---------- */
-
-/**
- * Vérifie le fichier (type MIME réel + taille), pas seulement l'extension.
- */
-export function validateFile(file, type) {
-  if (!file) return "Aucun fichier sélectionné.";
-  const allowed = ALLOWED_TYPES[type];
-  if (allowed && !allowed.includes(file.type)) {
-    return `Type de fichier non autorisé pour "${type}" (détecté : ${file.type || 'inconnu'}).`;
-  }
-  if (file.size > MAX_SIZE_BYTES) {
-    return `Fichier trop volumineux (max ${(MAX_SIZE_BYTES / 1024 / 1024).toFixed(0)} Mo).`;
-  }
+export function validateFile(file,type){
+  if(!file)return "Aucun fichier sélectionné.";
+  if(!ALLOWED[type]?.includes(file.type))return "Format non autorisé.";
+  if(file.size>LIMITS[type])return `Fichier trop volumineux. Limite : ${type==="video"?"100":"10"} Mo.`;
+  if(CLOUDINARY_CLOUD_NAME_MISSING())return "Cloudinary n'est pas encore configuré.";
   return null;
 }
+function CLOUDINARY_CLOUD_NAME_MISSING(){return !CLOUDINARY_UPLOAD_URL || CLOUDINARY_UPLOAD_URL.includes("YOUR_CLOUD_NAME") || CLOUDINARY_UPLOAD_PRESET==="YOUR_UNSIGNED_UPLOAD_PRESET";}
 
-export function uploadMedia({ file, type, title, description, visibility, onProgress, onDone, onError }) {
-  const safeName = Date.now() + "_" + file.name.replace(/[^a-zA-Z0-9_.-]/g, "_");
-  const path = `media/${safeName}`;
-  const storageRef = ref(storage, path);
-  const task = uploadBytesResumable(storageRef, file);
-
-  task.on('state_changed',
-    (snap) => {
-      const pct = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-      onProgress && onProgress(pct);
-    },
-    (err) => {
-      console.error(err);
-      onError && onError(err);
-    },
-    async () => {
-      try {
-        const url = await getDownloadURL(task.snapshot.ref);
-        await addDoc(collection(db, "media"), {
-          title, description, type, url,
-          thumbnail: type === 'photo' ? url : '',
-          storagePath: path,
-          visibility,
-          size: file.size,
-          fileType: file.type,
-          createdAt: serverTimestamp()
-        });
-        onDone && onDone(url);
-      } catch (e) {
-        onError && onError(e);
-      }
-    }
-  );
-
-  return task;
+function uploadToCloudinary(file,onProgress){
+  return new Promise((resolve,reject)=>{
+    const xhr=new XMLHttpRequest();
+    xhr.open("POST",CLOUDINARY_UPLOAD_URL);
+    xhr.upload.onprogress=e=>{if(e.lengthComputable)onProgress?.(Math.round(e.loaded/e.total*100));};
+    xhr.onload=()=>{
+      try{
+        const data=JSON.parse(xhr.responseText||"{}");
+        if(xhr.status>=200&&xhr.status<300&&data.secure_url)resolve(data);
+        else reject(new Error(data.error?.message||"Upload Cloudinary refusé."));
+      }catch{reject(new Error("Réponse Cloudinary invalide."));}
+    };
+    xhr.onerror=()=>reject(new Error("Connexion Cloudinary impossible."));
+    const form=new FormData();
+    form.append("file",file);
+    form.append("upload_preset",CLOUDINARY_UPLOAD_PRESET);
+    xhr.send(form);
+  });
 }
 
-export async function loadAllMediaAdmin() {
-  const snap = await getDocs(query(collection(db, "media"), orderBy("createdAt", "desc")));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+export async function loadPublicMedia(filter="all"){
+  const container=document.getElementById("mediaContainer"),empty=document.getElementById("mediaEmpty");
+  if(!container)return;
+  container.innerHTML="<p class='skeleton'>Chargement des médias...</p>";
+  try{
+    const snap=await getDocs(query(collection(db,"media"),where("visibility","==","public"),orderBy("createdAt","desc")));
+    let items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(filter!=="all")items=items.filter(i=>i.type===filter);
+    container.innerHTML="";
+    if(!items.length){empty&&(empty.style.display="block",container.appendChild(empty));return;}
+    if(empty)empty.style.display="none";
+    items.forEach(i=>container.insertAdjacentHTML("beforeend",renderMediaCard(i)));
+  }catch(e){console.error(e);container.innerHTML="<p class='skeleton'>Impossible de charger les médias.</p>";}
+}
+function renderMediaCard(i){
+  const date=i.createdAt?.toDate?i.createdAt.toDate().toLocaleDateString("fr-FR"):"";
+  const safeUrl=esc(i.url||"");
+  if(i.type==="video")return `<article class="card media-item"><div class="card-subtitle">${esc(date)}</div><video src="${safeUrl}" controls preload="metadata" class="media-thumbnail"></video><h3 class="card-title">${esc(i.title)}</h3><p style="font-size:.9rem;color:var(--text-muted)">${esc(i.description)}</p></article>`;
+  return `<article class="card media-item"><div class="card-subtitle">${esc(date)}</div><img src="${safeUrl}" alt="${esc(i.title)}" class="media-thumbnail" loading="lazy"><h3 class="card-title">${esc(i.title)}</h3><p style="font-size:.9rem;color:var(--text-muted)">${esc(i.description)}</p></article>`;
 }
 
-export async function toggleMediaVisibility(id, currentVisibility) {
-  const next = currentVisibility === 'public' ? 'private' : 'public';
-  await updateDoc(doc(db, "media", id), { visibility: next });
-  return next;
+export function uploadMedia({file,type,title,description,visibility,onProgress,onDone,onError}){
+  uploadToCloudinary(file,onProgress).then(async data=>{
+    const url=data.secure_url;
+    await addDoc(collection(db,"media"),{
+      title,description,type,url,thumbnail:type==="photo"?url:(data.thumbnail_url||""),
+      publicId:data.public_id||"",storagePath:"cloudinary",visibility,size:file.size,fileType:file.type,
+      createdAt:serverTimestamp()
+    });
+    onDone?.(url);
+  }).catch(onError);
 }
-
-export async function deleteMedia(id, storagePath) {
-  await deleteDoc(doc(db, "media", id));
-  if (storagePath) {
-    try { await deleteObject(ref(storage, storagePath)); }
-    catch (e) { console.warn("Fichier déjà absent du Storage :", e.message); }
-  }
+export async function loadAllMediaAdmin(){
+  const snap=await getDocs(query(collection(db,"media"),orderBy("createdAt","desc")));
+  return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
-
-window.loadPublicMedia = loadPublicMedia;
+export async function toggleMediaVisibility(id,currentVisibility){
+  const next=currentVisibility==="public"?"private":"public";
+  await updateDoc(doc(db,"media",id),{visibility:next});return next;
+}
+export async function deleteMedia(id){
+  // Cloudinary deletion requires a server-side API secret. We remove the publication
+  // from Firestore; the asset can be cleaned from the Cloudinary console later.
+  await deleteDoc(doc(db,"media",id));
+}
+window.loadPublicMedia=loadPublicMedia;
