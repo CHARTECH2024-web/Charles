@@ -36,7 +36,7 @@ function injectHeader() {
           <button id="btnThemeMob" class="btn btn-outline btn-small">🌙</button>
         </div>
       </nav>
-      <div class="nav-controls"><a href="community.html" class="nav-user-link" title="Communauté">💬</a>
+      <div class="nav-controls"><a href="community.html" class="nav-user-link" title="Communauté">💬</a><a href="profile.html" class="nav-user-link" title="Mon profil">👤</a>
         <button id="btnTheme" title="Thème">☀️</button>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
