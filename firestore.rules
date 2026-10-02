@@ -16,7 +16,7 @@ service cloud.firestore {
 
     // Personal profile documents.
     match /profiles/{uid} {
-      allow read: if signedIn();
+      allow read: if signedIn() && (request.auth.uid == uid || admin());
       allow create, update: if signedIn() && (request.auth.uid == uid || admin());
     }
 
@@ -40,6 +40,8 @@ service cloud.firestore {
         allow create: if participant(conversationId)
           && request.resource.data.senderId == request.auth.uid
           && request.resource.data.receiverId is string
+          && request.resource.data.receiverId in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants
+          && request.resource.data.receiverId != request.auth.uid
           && request.resource.data.text is string
           && request.resource.data.text.size() > 0
           && request.resource.data.text.size() <= 2000;
