@@ -104,7 +104,8 @@ function setupThemePicker() {
       menu?.classList.remove("open");
     });
   });
-  document.querySelectorAll(".theme-palette [data-theme-choice]").forEach(btn => btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice)));\n  document.addEventListener("click", () => menu?.classList.remove("open"));
+  document.querySelectorAll(".theme-palette [data-theme-choice]").forEach(btn => btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice)));
+  document.addEventListener("click", () => menu?.classList.remove("open"));
 }
 /* ---------- LIGHTBOX (photos) ---------- */
 function setupLightbox() {
@@ -249,7 +250,9 @@ window.addEventListener('DOMContentLoaded', () => {
   applyTheme(localStorage.getItem("charles_theme") || "dark");
   setupNavigation();
   setupThemePicker();
-  setupLanguagePicker();\n  const langBtn=document.getElementById("languageMenuBtn"), langMenu=document.getElementById("languageMenu");\n  langBtn?.addEventListener("click",e=>{e.stopPropagation();langMenu?.classList.toggle("open");});
+  setupLanguagePicker();
+  const langBtn=document.getElementById("languageMenuBtn"), langMenu=document.getElementById("languageMenu");
+  langBtn?.addEventListener("click",e=>{e.stopPropagation();langMenu?.classList.toggle("open");});
   applyLanguage(getLanguage());
   setupLightbox();
   setupChatbot();
