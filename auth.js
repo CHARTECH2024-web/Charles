@@ -1,5 +1,5 @@
 /* =========================================================
-   PORTFOLIO V3.1 — auth.js
+   PORTFOLIO V3.2 — auth.js
    Authentification Google (Firebase Authentication)
    ========================================================= */
 
@@ -56,6 +56,19 @@ function googleBtnLabel() {
 /**
  * Déconnexion + retour à l'écran de login
  */
+export async function loginUserWithGoogle() {
+  const result = await signInWithPopup(auth, googleProvider);
+  return result.user;
+}
+
+export function observeUser(callback) {
+  return onAuthStateChanged(auth, callback);
+}
+
+export function logoutUser() {
+  return signOut(auth);
+}
+
 export function logoutAdmin() {
   signOut(auth).then(() => {
     window.location.href = "admin-login.html";
@@ -97,3 +110,4 @@ export function redirectIfAlreadyAdmin() {
 
 window.loginWithGoogle = loginWithGoogle;
 window.logoutAdmin = logoutAdmin;
+window.loginUserWithGoogle = loginUserWithGoogle;
