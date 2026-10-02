@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow"><title>Mon profil — Ingénieur Charles</title>
+<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="animations.css"><link rel="stylesheet" href="responsive.css"></head>
+<body><div id="site-header"></div><main>
+<section class="community-hero"><span class="hero-badge">Compte utilisateur</span><h1>Mon <span class="text-orange">profil</span></h1></section>
+<section class="community-card" style="max-width:720px;margin:auto">
+<div id="profileLoading">Vérification du compte…</div>
+<div id="profileContent" style="display:none">
+<div class="profile-box"><img id="avatar" src="" alt=""><div><h2 id="displayName" style="margin:0">—</h2><p id="email" style="margin:.25rem 0;color:var(--text-muted)">—</p></div></div>
+<label class="form-label" for="bio">Présentation</label>
+<textarea id="bio" class="form-control" maxlength="500" rows="5" placeholder="Parlez brièvement de vous…"></textarea>
+<div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem"><button id="saveBtn" class="btn btn-primary">Enregistrer</button><a href="community.html" class="btn btn-outline">Communauté</a><button id="logoutBtn" class="btn btn-outline">Déconnexion</button></div>
+<p id="status" style="color:var(--text-muted);font-size:.85rem"></p>
+</div>
+<div id="loginPrompt" style="display:none"><p>Connectez-vous avec Google pour accéder à votre profil.</p><button id="loginBtn" class="btn btn-primary">Connexion Google</button></div>
+</section></main><div id="site-footer"></div><div id="chatbot-root"></div>
+<script type="module" src="firebase-config.js"></script><script type="module" src="main.js"></script><script type="module" src="profile.js"></script></body></html>
