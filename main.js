@@ -12,7 +12,8 @@ const PAGES = [
   { href: 'projects.html', label: 'Projets' },
   { href: 'media.html', label: 'Médias' },
   { href: 'documents.html', label: 'Documents' },
-  { href: 'contact.html', label: 'Contact' }
+  { href: 'contact.html', label: 'Contact' },
+  { href: 'community.html', label: 'Communauté' }
 ];
 
 function currentPage() {
@@ -28,14 +29,14 @@ function injectHeader() {
   mount.outerHTML = `
   <header class="site-header">
     <div class="nav-container">
-      <a href="index.html" class="logo">B. CHARLES <span>V3.1</span></a>
+      <a href="index.html" class="logo">INGÉNIEUR CHARLES <span>V3.2</span></a>
       <nav class="nav-links" id="navMenu">
         ${links}
         <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;" class="mobile-controls">
           <button id="btnThemeMob" class="btn btn-outline btn-small">🌙</button>
         </div>
       </nav>
-      <div class="nav-controls">
+      <div class="nav-controls"><a href="community.html" class="nav-user-link" title="Communauté">💬</a><a href="profile.html" class="nav-user-link" title="Mon profil">👤</a>
         <button id="btnTheme" title="Thème">☀️</button>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
@@ -49,7 +50,7 @@ function injectFooter() {
   mount.outerHTML = `
   <footer class="site-footer">
     <p><strong>Bisimwa Mushimanja Charles</strong></p>
-    <p style="color:var(--metallic);font-size:0.85rem;margin-top:0.3rem;">Portfolio V3.1 — Tech • Engineering • Forge</p>
+    <p style="color:var(--metallic);font-size:0.85rem;margin-top:0.3rem;">Ingénieur Charles V3.2 — Engineering • Technology • Innovation</p>
   </footer>`;
 }
 
@@ -259,6 +260,10 @@ window.addEventListener('DOMContentLoaded', () => {
   setupLightbox();
   setupChatbot();
 
+  // V3.2 — suivi léger des visiteurs + état du compte utilisateur
+  initVisitorTracking();
+  initUserNav();
+
   // Recherche projets (projects.html uniquement)
   const searchInput = document.getElementById('searchProjects');
   if (searchInput) {
@@ -281,3 +286,47 @@ window.addEventListener('DOMContentLoaded', () => {
     };
   });
 });
+
+
+/* ---------- V3.2 AUTH / VISITOR FOUNDATION ---------- */
+async function initUserNav() {
+  try {
+    const { auth } = await import("./firebase-config.js");
+    const { onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js");
+    onAuthStateChanged(auth, (user) => {
+      const existing = document.getElementById("userAccountLink");
+      if (existing) existing.remove();
+      const controls = document.querySelector(".nav-controls");
+      if (!controls) return;
+      const a = document.createElement("a");
+      a.id = "userAccountLink";
+      a.className = "nav-user-link";
+      a.href = "community.html";
+      a.title = user ? "Mon compte / Communauté" : "Se connecter";
+      a.textContent = user ? "👤" : "🔐";
+      controls.prepend(a);
+    });
+  } catch (e) {
+    console.warn("État du compte indisponible :", e);
+  }
+}
+
+async function initVisitorTracking() {
+  try {
+    const { db } = await import("./firebase-config.js");
+    const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
+    let sid = sessionStorage.getItem("charles_v32_sid");
+    if (!sid) {
+      sid = (crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2));
+      sessionStorage.setItem("charles_v32_sid", sid);
+    }
+    const path = window.location.pathname.split("/").pop() || "index.html";
+    await setDoc(doc(db, "visits", sid), {
+      lastPage: path,
+      updatedAt: serverTimestamp(),
+      userAgentClass: /Mobi|Android/i.test(navigator.userAgent) ? "mobile" : "desktop"
+    }, { merge: true });
+  } catch (e) {
+    console.warn("Statistiques visiteurs indisponibles :", e);
+  }
+}

@@ -1,10 +1,11 @@
 /* =========================================================
-   PORTFOLIO V3.1 — admin.js
+   PORTFOLIO V3.2 — admin.js
    Logique commune à l'espace d'administration :
    dashboard, listes de publications, actions partagées
    ========================================================= */
 
-import { ADMIN_EMAIL } from "./firebase-config.js";
+import { ADMIN_EMAIL, db } from "./firebase-config.js";
+import { collection, getCountFromServer } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { loadAllMediaAdmin, toggleMediaVisibility, deleteMedia } from "./media.js";
 import { loadAllDocumentsAdmin, toggleDocumentVisibility, deleteDocument } from "./documents.js";
 
@@ -19,7 +20,11 @@ function formatBytes(bytes) {
 /* ---------- DASHBOARD (admin-dashboard.html) ---------- */
 
 export async function loadDashboard() {
-  const [media, docs] = await Promise.all([loadAllMediaAdmin(), loadAllDocumentsAdmin()]);
+  const [media, docs, visitCount, messageCount] = await Promise.all([
+    loadAllMediaAdmin(), loadAllDocumentsAdmin(),
+    getCountFromServer(collection(db, "visits")).catch(() => ({ data: () => ({ count: 0 }) })),
+    getCountFromServer(collection(db, "messages")).catch(() => ({ data: () => ({ count: 0 }) }))
+  ]);
   const photos = media.filter(m => m.type === 'photo').length;
   const videos = media.filter(m => m.type === 'video').length;
 
@@ -27,6 +32,8 @@ export async function loadDashboard() {
   setText('statVideos', videos);
   setText('statDocs', docs.length);
   setText('statTotal', media.length + docs.length);
+  setText('statVisits', visitCount.data().count);
+  setText('statMessages', messageCount.data().count);
 
   const recent = [...media, ...docs]
     .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))

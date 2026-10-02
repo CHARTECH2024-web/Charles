@@ -1,0 +1,16 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    function admin() {
+      return request.auth != null && request.auth.token.email == "chartech031@gmail.com";
+    }
+    match /media/{allPaths=**} {
+      allow read: if true;
+      allow write: if admin() && request.resource.size < 300 * 1024 * 1024;
+    }
+    match /documents/{allPaths=**} {
+      allow read: if true;
+      allow write: if admin() && request.resource.size < 50 * 1024 * 1024;
+    }
+  }
+}
