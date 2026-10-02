@@ -1,5 +1,5 @@
 /* =========================================================
-   PORTFOLIO V3.1 — style.css
+   PORTFOLIO V3.2 — style.css
    Styles généraux (identité visuelle conservée du V3)
    ========================================================= */
 
@@ -255,3 +255,22 @@ footer.site-footer {
 
 /* Loading skeleton */
 .skeleton { color: var(--text-muted); grid-column: 1/-1; text-align: center; padding: 2rem; }
+
+
+/* V3.2 user/account controls */
+.nav-user-link { width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);background:var(--bg);transition:var(--transition);font-size:1rem; }
+.nav-user-link:hover { border-color:var(--orange); box-shadow:0 0 12px var(--orange-glow); transform:translateY(-1px); }
+.community-hero { padding:1.5rem 0 2rem; }
+.community-shell { display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:1.5rem;align-items:start; }
+.community-card { background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--card-shadow);padding:1rem; }
+.message-list { min-height:420px;max-height:62vh;overflow-y:auto;display:flex;flex-direction:column;gap:.75rem;padding:.5rem; }
+.message { padding:.75rem .9rem;border:1px solid var(--border);border-radius:10px;background:var(--bg); }
+.message.me { border-color:rgba(255,107,0,.45); }
+.message-head { display:flex;justify-content:space-between;gap:1rem;font-size:.78rem;color:var(--text-muted);margin-bottom:.3rem; }
+.message-body { white-space:pre-wrap;word-break:break-word; }
+.community-compose { display:flex;gap:.7rem;margin-top:1rem; }
+.community-compose textarea { flex:1;min-height:78px;resize:vertical; }
+.auth-banner { padding:1rem;border:1px solid var(--border);border-radius:10px;background:var(--bg);margin-bottom:1rem; }
+.profile-box { display:flex;align-items:center;gap:.8rem;margin-bottom:1rem; }
+.profile-box img { width:48px;height:48px;border-radius:50%;border:2px solid var(--orange); }
+@media (max-width:800px){.community-shell{grid-template-columns:1fr}.community-compose{flex-direction:column}.message-list{max-height:55vh}}
