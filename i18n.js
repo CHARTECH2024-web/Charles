@@ -26,9 +26,9 @@ export function applyLanguage(lang=getLanguage()){
   return safe;
 }
 
-const pageText={
+const pageText={\n  "index.html":{"Portfolio Officiel V3.2":"homeBadge","Explorer mes projets":"projects","Voir mes médias":"media","Me contacter":"contact","💬 Rejoindre la communauté":"community"},
   "about.html":{
-    "À propos":"about","Parcours Académique":"navAbout","Section :":"section","Objectif :":"objective",
+    "À propos":"about","Parcours Académique":"academic","Section :":"section","Objectif :":"objective",
     "Domaines d'intérêt et d'apprentissage :":"interests"
   },
   "skills.html":{"Compétences & Apprentissages":"skills"},
@@ -39,7 +39,7 @@ const pageText={
   "profile.html":{"Mon profil":"profile","Présentation":"bio","Enregistrer":"save","Déconnexion":"logout"},
 };
 
-const extras={
+const extras={academic:{fr:"Parcours Académique",en:"Academic Path",sw:"Safari ya Masomo"},
   section:{fr:"Section :",en:"Section:",sw:"Sehemu:"},objective:{fr:"Objectif :",en:"Goal:",sw:"Lengo:"},
   interests:{fr:"Domaines d'intérêt et d'apprentissage :",en:"Areas of interest and learning:",sw:"Maeneo ya maslahi na kujifunza:"},
   collab:{fr:"Échange & Collaboration",en:"Exchange & Collaboration",sw:"Mawasiliano na Ushirikiano"},
