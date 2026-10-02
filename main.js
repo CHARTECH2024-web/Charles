@@ -1,19 +1,15 @@
 /* =========================================================
-   PORTFOLIO V3.2 — main.js
-   Fonctionnalités générales du site public :
-   header/footer injectés, thème, navigation, lightbox, chatbot
-   (Aucune référence à l'espace admin n'apparaît ici — règle §4)
+   INGÉNIEUR CHARLES V3.3 — main.js
+   Public shell, themes, languages, chatbot and lightweight analytics.
    ========================================================= */
+import { applyLanguage, setupLanguagePicker, getLanguage, t } from "./i18n.js";
+
 
 const PAGES = [
-  { href: 'index.html', label: 'Accueil' },
-  { href: 'about.html', label: 'À propos' },
-  { href: 'skills.html', label: 'Compétences' },
-  { href: 'projects.html', label: 'Projets' },
-  { href: 'media.html', label: 'Médias' },
-  { href: 'documents.html', label: 'Documents' },
-  { href: 'contact.html', label: 'Contact' },
-  { href: 'community.html', label: 'Communauté' }
+  { href:"index.html", key:"navHome" }, { href:"about.html", key:"navAbout" },
+  { href:"skills.html", key:"navSkills" }, { href:"projects.html", key:"navProjects" },
+  { href:"media.html", key:"navMedia" }, { href:"documents.html", key:"navDocs" },
+  { href:"contact.html", key:"navContact" }, { href:"community.html", key:"navCommunity" }
 ];
 
 function currentPage() {
@@ -22,22 +18,44 @@ function currentPage() {
 }
 
 function injectHeader() {
-  const mount = document.getElementById('site-header');
-  if (!mount) return;
-  const current = currentPage();
-  const links = PAGES.map(p => `<a href="${p.href}" class="nav-link${p.href === current ? ' active' : ''}">${p.label}</a>`).join('');
-  mount.outerHTML = `
+  const mount=document.getElementById("site-header"); if(!mount)return;
+  const current=currentPage();
+  const links=PAGES.map(p=>`<a href="${p.href}" class="nav-link${p.href===current?" active":""}" data-i18n="${p.key}">${t(p.key)}</a>`).join("");
+  mount.outerHTML=`
   <header class="site-header">
     <div class="nav-container">
-      <a href="index.html" class="logo">INGÉNIEUR CHARLES <span>V3.2</span></a>
-      <nav class="nav-links" id="navMenu">
-        ${links}
-        <div style="display:flex;gap:1rem;justify-content:center;margin-top:1.5rem;" class="mobile-controls">
-          <button id="btnThemeMob" class="btn btn-outline btn-small">🌙</button>
+      <a href="index.html" class="logo">CHARLES</a>
+      <nav class="nav-links" id="navMenu">${links}
+        <div class="mobile-menu-tools">
+          <div class="menu-group"><span data-i18n="theme">Thème</span><div class="theme-palette">
+            <button data-theme-choice="blue" class="theme-dot">🔵</button><button data-theme-choice="orange" class="theme-dot">🟠</button><button data-theme-choice="green" class="theme-dot">🟢</button><button data-theme-choice="dark" class="theme-dot">⚫</button><button data-theme-choice="light" class="theme-dot">⚪</button>
+          </div></div>
+          <div class="menu-group"><span data-i18n="language">Langue</span><div class="language-palette">
+            <button data-language-choice="fr">🇫🇷 FR</button><button data-language-choice="en">🇬🇧 EN</button><button data-language-choice="sw">🇨🇩 SW</button>
+          </div></div>
         </div>
       </nav>
-      <div class="nav-controls"><a href="community.html" class="nav-user-link" title="Communauté">💬</a><a href="profile.html" class="nav-user-link" title="Mon profil">👤</a>
-        <button id="btnTheme" title="Thème">☀️</button>
+      <div class="nav-controls">
+        <a href="community.html" class="nav-user-link" title="Messages">💬</a>
+        <a href="profile.html" class="nav-user-link" title="Profil">👤</a>
+        <div class="theme-wrap">
+          <button id="themeMenuBtn" class="theme-menu-btn" title="Thème">🎨</button>
+          <div id="themeMenu" class="theme-menu">
+            <button data-theme-choice="blue">🔵 <span data-i18n="blue">Bleu</span></button>
+            <button data-theme-choice="orange">🟠 <span data-i18n="orange">Orange</span></button>
+            <button data-theme-choice="green">🟢 <span data-i18n="green">Vert</span></button>
+            <button data-theme-choice="dark">⚫ <span data-i18n="dark">Sombre</span></button>
+            <button data-theme-choice="light">⚪ <span data-i18n="light">Clair</span></button>
+          </div>
+        </div>
+        <div class="language-wrap">
+          <button id="languageMenuBtn" class="language-menu-btn" title="Langue">🌐</button>
+          <div id="languageMenu" class="language-menu">
+            <button data-language-choice="fr">🇫🇷 Français</button>
+            <button data-language-choice="en">🇬🇧 English</button>
+            <button data-language-choice="sw">🇨🇩 Kiswahili</button>
+          </div>
+        </div>
       </div>
       <button class="hamburger" id="hamburger" aria-label="Menu">☰</button>
     </div>
@@ -45,52 +63,31 @@ function injectHeader() {
 }
 
 function injectFooter() {
-  const mount = document.getElementById('site-footer');
-  if (!mount) return;
-  mount.outerHTML = `
-  <footer class="site-footer">
-    <p><strong>Bisimwa Mushimanja Charles</strong></p>
-    <p style="color:var(--metallic);font-size:0.85rem;margin-top:0.3rem;">Ingénieur Charles V3.2 — Engineering • Technology • Innovation</p>
-  </footer>`;
+  const mount=document.getElementById("site-footer"); if(!mount)return;
+  mount.outerHTML=`<footer class="site-footer"><p><strong>Charles</strong></p><p style="color:var(--metallic);font-size:.85rem;margin-top:.3rem;" data-i18n="footer">${t("footer")}</p></footer>`;
 }
 
 function injectChatbot() {
-  const mount = document.getElementById('chatbot-root');
-  if (!mount) return;
-  mount.outerHTML = `
-  <div class="chatbot-btn" id="chatBtn" title="Charles AI">🤔</div>
+  const mount=document.getElementById("chatbot-root"); if(!mount)return;
+  mount.outerHTML=`
+  <div class="chatbot-btn" id="chatBtn" title="Charles">🤖</div>
   <div class="chatbot-window" id="chatWindow">
-    <div class="chat-header">
-      <div class="chat-header-info">
-        <span>🤔</span>
-        <div><strong>Charles AI</strong><span>Assistant local</span></div>
-      </div>
-      <div class="chat-actions">
-        <button id="chatNewBtn" title="Nouvelle conversation">Nouveau</button>
-        <button id="chatCloseBtn" style="font-size:1.1rem;margin-left:0.3rem;">✖</button>
-      </div>
+    <div class="chat-header"><div class="chat-header-info"><span>🤖</span><div><strong data-i18n="chat">Charles</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
+      <div class="chat-actions"><button id="chatNewBtn" data-i18n="chatNew">Nouveau</button><button id="chatCloseBtn">✖</button></div>
     </div>
     <div class="chat-messages" id="chatMsgs"></div>
-    <div class="chat-input">
-      <input type="text" id="chatInput" placeholder="Posez une question à Charles AI...">
-      <button id="chatSendBtn">➤</button>
-    </div>
+    <div class="chat-input"><input type="text" id="chatInput" data-i18n-placeholder="chatPlaceholder" placeholder="${t("chatPlaceholder")}"><button id="chatSendBtn" data-i18n="chatSend">➤</button></div>
   </div>
-  <div class="modal" id="lightboxModal">
-    <button class="close-modal" id="lightboxClose">✖</button>
-    <div class="modal-content lightbox-content">
-      <img src="" id="lightboxImg" class="lightbox-img">
-    </div>
-  </div>`;
+  <div class="modal" id="lightboxModal"><button class="close-modal" id="lightboxClose">✖</button><div class="modal-content lightbox-content"><img src="" id="lightboxImg" class="lightbox-img"></div></div>`;
 }
 
 /* ---------- THEMES ---------- */
-const THEMES = ["orange","green","white","night"];
+const THEMES = ["blue","orange","green","dark","light"];
 function applyTheme(theme) {
-  const safe = THEMES.includes(theme) ? theme : "night";
+  const safe = THEMES.includes(theme) ? theme : "dark";
   document.documentElement.setAttribute("data-theme", safe);
-  localStorage.setItem("portfolio_theme", safe);
-  document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+  localStorage.setItem("charles_theme", safe);
+  document.querySelectorAll("#themeMenu [data-theme-choice]").forEach(btn => {
     btn.classList.toggle("selected", btn.dataset.themeChoice === safe);
   });
 }
@@ -107,7 +104,7 @@ function setupThemePicker() {
       menu?.classList.remove("open");
     });
   });
-  document.addEventListener("click", () => menu?.classList.remove("open"));
+  document.querySelectorAll(".theme-palette [data-theme-choice]").forEach(btn => btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice)));\n  document.addEventListener("click", () => menu?.classList.remove("open"));
 }
 /* ---------- LIGHTBOX (photos) ---------- */
 function setupLightbox() {
@@ -124,7 +121,7 @@ function setupLightbox() {
 }
 
 /* ---------- CHATBOT (assistant local, aucune donnée envoyée) ---------- */
-const CHAT_STORAGE_KEY = 'charles_ai_history';
+const CHAT_STORAGE_KEY = "charles_ai_history_v33";
 let chatHistory = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || '[]');
 
 function setupChatbot() {
@@ -140,7 +137,7 @@ function setupChatbot() {
     win.style.display = win.style.display === 'flex' ? 'none' : 'flex';
     if (win.style.display === 'flex') {
       if (chatHistory.length === 0) {
-        appendChatMsg("Bonjour ! Je suis Charles AI. Posez-moi des questions sur mon parcours, mes projets (Blacksmith, Ecochar, Cahier de Compte), mes compétences, ou faites un calcul.", 'bot');
+        appendChatMsg("Bonjour ! Je suis Charles. Posez-moi des questions sur Charles, ses projets, ses compétences ou faites un calcul.", 'bot');
       } else {
         renderChatHistory();
       }
@@ -241,7 +238,7 @@ function processBotQuery(q) {
   if (q.includes('cahier de compte')) return "Cahier de Compte est un logiciel de gestion pour petites boutiques et pharmacies (ventes, stocks, crédits) créé avec Django.";
   if (q.includes('contact') || q.includes('email') || q.includes('whatsapp')) return "Vous pouvez contacter Charles par email à charlestechnology46@gmail.com ou via WhatsApp au +243 0801633678.";
 
-  return "Je suis Charles AI. Je peux vous renseigner sur le parcours de Charles, ses compétences, ses projets (Blacksmith, Ecochar, Cahier de Compte), ou effectuer des calculs mathématiques.";
+  return "Je suis Charles. Je peux vous renseigner sur le parcours de Charles, ses compétences, ses projets (Blacksmith, Ecochar, Cahier de Compte), ou effectuer des calculs mathématiques.";
 }
 
 /* ---------- INIT COMMUN À TOUTES LES PAGES PUBLIQUES ---------- */
@@ -249,8 +246,11 @@ window.addEventListener('DOMContentLoaded', () => {
   injectHeader();
   injectFooter();
   injectChatbot();
-  applyTheme(localStorage.getItem('portfolio_theme') || 'dark');
+  applyTheme(localStorage.getItem("charles_theme") || "dark");
   setupNavigation();
+  setupThemePicker();
+  setupLanguagePicker();\n  const langBtn=document.getElementById("languageMenuBtn"), langMenu=document.getElementById("languageMenu");\n  langBtn?.addEventListener("click",e=>{e.stopPropagation();langMenu?.classList.toggle("open");});
+  applyLanguage(getLanguage());
   setupLightbox();
   setupChatbot();
 
