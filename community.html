@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" data-theme="dark">
+<html lang="fr" data-theme="night">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,9 +14,9 @@
 <div id="site-header"></div>
 <main>
   <section class="community-hero">
-    <span class="hero-badge">Ingénieur Charles • Community</span>
-    <h1>La <span class="text-orange">communauté</span></h1>
-    <p class="hero-desc">Un espace pour échanger autour de l'ingénierie, de l'électronique, du logiciel, des projets et de l'innovation.</p>
+    <span class="hero-badge">Ingénieur Charles • LIVE COMMUNITY</span>
+    <h1>Le <span class="text-orange">chat</span> communautaire</h1>
+    <p class="hero-desc">Un espace de discussion en temps réel : présentez-vous, posez vos questions, partagez vos idées et échangez avec les autres membres.</p>
   </section>
 
   <div class="community-shell">
@@ -32,12 +32,12 @@
         <button id="logoutBtn" class="btn btn-outline btn-small" style="margin-left:auto;">Déconnexion</button>
       </div>
 
-      <div id="messageList" class="message-list">
+      <div class="chat-presence"><span class="chat-dot"></span><span>Salon général • messages synchronisés en temps réel</span></div><div id="messageList" class="message-list">
         <p class="skeleton">Connexion au canal...</p>
       </div>
 
       <form id="messageForm" class="community-compose" style="display:none;">
-        <textarea id="messageInput" class="form-control" maxlength="1000" placeholder="Écrivez votre message…"></textarea>
+        <textarea id="messageInput" class="form-control" maxlength="1000" rows="2" placeholder="Écrivez votre message…"></textarea><div id="charCount" style="font-size:.75rem;color:var(--text-muted);align-self:flex-end">0/1000</div>
         <button id="sendBtn" class="btn btn-primary" type="submit">Envoyer</button>
       </form>
       <p id="communityStatus" style="font-size:.8rem;color:var(--text-muted);margin-top:.6rem;"></p>
@@ -45,9 +45,9 @@
 
     <aside class="community-card">
       <h3>À propos</h3>
-      <p style="color:var(--text-muted);font-size:.9rem;">Cette communauté fait partie de la plateforme Ingénieur Charles. Les messages sont stockés dans Firebase et synchronisés entre les appareils.</p>
+      <p style="color:var(--text-muted);font-size:.9rem;">Le chat utilise Google Authentication pour l'identité et Cloud Firestore pour synchroniser les messages entre les appareils. Aucun Firebase Storage n'est nécessaire pour discuter.</p>
       <hr style="border:0;border-top:1px solid var(--border);margin:1rem 0;">
-      <p style="font-size:.8rem;color:var(--text-muted);">Respectez les autres membres. L'administrateur peut modérer les messages qui enfreignent les règles du site.</p>
+      <p style="font-size:.8rem;color:var(--text-muted);">Respectez les autres membres. Vous pouvez supprimer vos propres messages et l’administrateur peut modérer le salon.</p>
     </aside>
   </div>
 </main>
