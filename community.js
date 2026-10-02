@@ -73,6 +73,6 @@ observeUser(user=>{
   const avatar=document.getElementById("profileAvatar");
   if(user.photoURL){avatar.src=user.photoURL;avatar.style.display="block";}
   setStatus("Connecté. Le salon est synchronisé en temps réel.");
- }else setStatus("Connectez-vous avec Google pour voir et rejoindre le chat.");
- subscribeMessages();
+ }else { setStatus("Connectez-vous avec Google pour voir et rejoindre le chat."); if(stopMessages) stopMessages(); if(list) list.innerHTML="<p class=\"skeleton\">Connectez-vous pour accéder au salon.</p>"; }
+ if(logged) subscribeMessages();
 });
