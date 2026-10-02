@@ -20,9 +20,10 @@ function formatBytes(bytes) {
 /* ---------- DASHBOARD (admin-dashboard.html) ---------- */
 
 export async function loadDashboard() {
-  const [media, docs, visitCount] = await Promise.all([
+  const [media, docs, visitCount, messageCount] = await Promise.all([
     loadAllMediaAdmin(), loadAllDocumentsAdmin(),
-    getCountFromServer(collection(db, "visits")).catch(() => ({ data: () => ({ count: 0 }) }))
+    getCountFromServer(collection(db, "visits")).catch(() => ({ data: () => ({ count: 0 }) })),
+    getCountFromServer(collection(db, "messages")).catch(() => ({ data: () => ({ count: 0 }) }))
   ]);
   const photos = media.filter(m => m.type === 'photo').length;
   const videos = media.filter(m => m.type === 'video').length;
@@ -32,6 +33,7 @@ export async function loadDashboard() {
   setText('statDocs', docs.length);
   setText('statTotal', media.length + docs.length);
   setText('statVisits', visitCount.data().count);
+  setText('statMessages', messageCount.data().count);
 
   const recent = [...media, ...docs]
     .sort((a, b) => (b.createdAt?.toMillis?.() || 0) - (a.createdAt?.toMillis?.() || 0))
