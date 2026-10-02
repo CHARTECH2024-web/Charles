@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="description" content="Communauté Ingénieur Charles — espace d'échange et de discussion.">
-<title>Communauté — Ingénieur Charles</title>
+<title>Charles</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%E2%9A%A1%3C/text%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="animations.css">
@@ -13,44 +13,14 @@
 <body>
 <div id="site-header"></div>
 <main>
-  <section class="community-hero">
-    <span class="hero-badge">Ingénieur Charles • LIVE COMMUNITY</span>
-    <h1>Le <span class="text-orange">chat</span> communautaire</h1>
-    <p class="hero-desc">Un espace de discussion en temps réel : présentez-vous, posez vos questions, partagez vos idées et échangez avec les autres membres.</p>
-  </section>
+  <section class="community-hero"><span class="hero-badge">CHARLES • PRIVATE MESSAGES</span><h1 data-i18n="privateChat">Messages privés</h1><p class="hero-desc" data-i18n="privateNote">Chaque conversation est privée entre les deux utilisateurs concernés.</p></section>
 
-  <div class="community-shell">
-    <section class="community-card">
-      <div id="authBanner" class="auth-banner">
-        <strong>Connexion requise.</strong>
-        <span> Connectez-vous avec Google pour participer aux discussions.</span>
-        <button id="loginBtn" class="btn btn-primary btn-small" style="margin-left:.7rem;">Continuer avec Google</button>
-      </div>
-      <div id="profileBox" class="profile-box" style="display:none;">
-        <img id="profileAvatar" src="" alt="">
-        <div><strong id="profileName">Utilisateur</strong><div style="font-size:.8rem;color:var(--text-muted);">Connecté</div></div>
-        <button id="logoutBtn" class="btn btn-outline btn-small" style="margin-left:auto;">Déconnexion</button>
-      </div>
-
-      <div class="chat-presence"><span class="chat-dot"></span><span>Salon général • messages synchronisés en temps réel</span></div><div id="messageList" class="message-list">
-        <p class="skeleton">Connexion au canal...</p>
-      </div>
-
-      <form id="messageForm" class="community-compose" style="display:none;">
-        <textarea id="messageInput" class="form-control" maxlength="1000" rows="2" placeholder="Écrivez votre message…"></textarea><div id="charCount" style="font-size:.75rem;color:var(--text-muted);align-self:flex-end">0/1000</div>
-        <button id="sendBtn" class="btn btn-primary" type="submit">Envoyer</button>
-      </form>
-      <p id="communityStatus" style="font-size:.8rem;color:var(--text-muted);margin-top:.6rem;"></p>
-    </section>
-
-    <aside class="community-card">
-      <h3>À propos</h3>
-      <p style="color:var(--text-muted);font-size:.9rem;">Le chat utilise Google Authentication pour l'identité et Cloud Firestore pour synchroniser les messages entre les appareils. Aucun Firebase Storage n'est nécessaire pour discuter.</p>
-      <hr style="border:0;border-top:1px solid var(--border);margin:1rem 0;">
-      <p style="font-size:.8rem;color:var(--text-muted);">Respectez les autres membres. Vous pouvez supprimer vos propres messages et l’administrateur peut modérer le salon.</p>
-    </aside>
-  </div>
-</main>
+  <div id="loginGate" class="community-card"><p data-i18n="loginRequired">Connectez-vous avec Google pour accéder aux messages privés.</p><button id="loginBtn" class="btn btn-primary" data-i18n="login">Se connecter avec Google</button></div>
+<section id="privateApp" class="private-chat-shell" style="display:none">
+<aside class="user-list"><div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.7rem"><strong>Charles</strong><button id="logoutBtn" class="btn btn-outline btn-small" data-i18n="logout">Déconnexion</button></div><input id="userSearch" class="search-bar" placeholder="Rechercher un utilisateur…"><div id="userList"><p class="skeleton" data-i18n="noUsers">Aucun autre utilisateur disponible pour le moment.</p></div></aside>
+<section class="private-chat-panel"><header class="private-chat-head"><img id="chatAvatar" class="user-avatar" src="" alt="" style="display:none"><div><strong id="chatName">—</strong><div id="chatState" style="font-size:.78rem;color:var(--text-muted)" data-i18n="chooseUser">Choisissez un utilisateur pour démarrer une conversation.</div></div></header>
+<div id="privateMessages" class="private-chat-messages"><p class="skeleton" data-i18n="chooseUser">Choisissez un utilisateur pour démarrer une conversation.</p></div>
+<form id="privateForm" class="private-compose" style="display:none"><textarea id="privateInput" class="form-control" maxlength="2000" rows="2" data-i18n-placeholder="messagePlaceholder" placeholder="Écrivez votre message…"></textarea><button class="btn btn-primary" type="submit" data-i18n="send">Envoyer</button></form><p id="privateStatus" style="padding:0 .9rem .7rem;font-size:.78rem;color:var(--text-muted)"></p></section></section></main>
 <div id="site-footer"></div>
 <div id="chatbot-root"></div>
 <script type="module" src="firebase-config.js"></script>
