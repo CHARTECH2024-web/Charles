@@ -50,8 +50,13 @@ export async function loadPublicMedia(filter="all"){
   if(!container)return;
   container.innerHTML="<p class='skeleton'>Chargement des médias...</p>";
   try{
-    const snap=await getDocs(query(collection(db,"media"),where("visibility","==","public"),orderBy("createdAt","desc")));
+    const snap=await getDocs(query(collection(db,"media"),where("visibility","==","public")));
     let items=snap.docs.map(d=>({id:d.id,...d.data()}));
+    items.sort((a,b)=>{
+      const ta=a.createdAt?.toMillis?.() ?? 0;
+      const tb=b.createdAt?.toMillis?.() ?? 0;
+      return tb-ta;
+    });
     if(filter!=="all")items=items.filter(i=>i.type===filter);
     container.innerHTML="";
     if(!items.length){empty&&(empty.style.display="block",container.appendChild(empty));return;}
