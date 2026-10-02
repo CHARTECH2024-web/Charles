@@ -1,6 +1,6 @@
 import { db } from "./firebase-config.js";
 import { loginUserWithGoogle, logoutUser, observeUser } from "./auth.js";
-import { collection, doc, setDoc, getDocs, query, orderBy, limit, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { collection, doc, setDoc, getDoc, getDocs, query, orderBy, limit, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { t } from "./i18n.js";
 
 const loginGate=document.getElementById("loginGate"), app=document.getElementById("privateApp");
@@ -49,13 +49,18 @@ async function openChat(user){
   list.innerHTML="<p class='skeleton'>Chargement…</p>";
   const id=pair(me.uid,user.uid);
   try{
-    await setDoc(doc(db,"conversations",id),{
-      participants:[me.uid,user.uid].sort(),
-      participantInfo:{
-        [me.uid]:{displayName:me.displayName||"Membre",photoURL:me.photoURL||""},
-        [user.uid]:{displayName:user.displayName||"Membre",photoURL:user.photoURL||""}
-      },createdAt:serverTimestamp()
-    },{merge:true});
+    const conversationRef=doc(db,"conversations",id);
+    const existing=await getDoc(conversationRef);
+    if(!existing.exists()){
+      await setDoc(conversationRef,{
+        participants:[me.uid,user.uid].sort(),
+        participantInfo:{
+          [me.uid]:{displayName:me.displayName||"Membre",photoURL:me.photoURL||""},
+          [user.uid]:{displayName:user.displayName||"Membre",photoURL:user.photoURL||""}
+        },
+        createdAt:serverTimestamp()
+      });
+    }
     stop=onSnapshot(query(collection(db,"conversations",id,"messages"),orderBy("createdAt","asc"),limit(200)),snap=>{
       list.innerHTML="";
       if(snap.empty){list.innerHTML="<p class='skeleton'>"+esc(t("noMessages"))+"</p>";return;}
