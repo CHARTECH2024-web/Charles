@@ -82,12 +82,12 @@ function injectChatbot() {
 }
 
 /* ---------- THEMES ---------- */
-const THEMES = ["orange","green","white","night"];
+const THEMES = ["blue","orange","green","dark","light"];
 function applyTheme(theme) {
-  const safe = THEMES.includes(theme) ? theme : "night";
+  const safe = THEMES.includes(theme) ? theme : "dark";
   document.documentElement.setAttribute("data-theme", safe);
   localStorage.setItem("charles_theme", safe);
-  document.querySelectorAll("[data-theme-choice]").forEach(btn => {
+  document.querySelectorAll("#themeMenu [data-theme-choice]").forEach(btn => {
     btn.classList.toggle("selected", btn.dataset.themeChoice === safe);
   });
 }
@@ -104,7 +104,7 @@ function setupThemePicker() {
       menu?.classList.remove("open");
     });
   });
-  document.addEventListener("click", () => menu?.classList.remove("open"));
+  document.querySelectorAll(".theme-palette [data-theme-choice]").forEach(btn => btn.addEventListener("click", () => applyTheme(btn.dataset.themeChoice)));\n  document.addEventListener("click", () => menu?.classList.remove("open"));
 }
 /* ---------- LIGHTBOX (photos) ---------- */
 function setupLightbox() {
