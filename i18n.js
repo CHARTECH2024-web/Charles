@@ -26,7 +26,8 @@ export function applyLanguage(lang=getLanguage()){
   return safe;
 }
 
-const pageText={\n  "index.html":{"Portfolio Officiel V3.2":"homeBadge","Explorer mes projets":"projects","Voir mes médias":"media","Me contacter":"contact","💬 Rejoindre la communauté":"community"},
+const pageText={
+  "index.html":{"Portfolio Officiel V3.2":"homeBadge","Explorer mes projets":"projects","Voir mes médias":"media","Me contacter":"contact","💬 Rejoindre la communauté":"community"},
   "about.html":{
     "À propos":"about","Parcours Académique":"academic","Section :":"section","Objectif :":"objective",
     "Domaines d'intérêt et d'apprentissage :":"interests"
