@@ -12,19 +12,23 @@
 <body>
 <div id="site-header"></div>
 <main>
-  <h2>Compétences &amp; Apprentissages</h2>
-  <p style="color:var(--text-muted);margin-bottom:2rem;">En tant qu'étudiant, ces domaines représentent mes apprentissages, recherches et expérimentations en cours.</p>
-  <div class="grid">
-    <div class="card">
-      <div class="card-subtitle">Matériel &amp; Puissance</div>
-      <div class="card-header"><h3 class="card-title">⚡ Électricité</h3></div>
-      <div class="card-body"><ul><li>Électricité générale &amp; domestique</li><li>Notions d'électricité industrielle</li><li>Circuits électriques &amp; câblage</li></ul></div>
-    </div>
-    <div class="card">
-      <div class="card-subtitle">Logiciel &amp; Code</div>
-      <div class="card-header"><h3 class="card-title">💻 Programmation</h3></div>
-      <div class="card-body"><ul><li>Python, C, C++</li><li>JavaScript, HTML, CSS</li><li>PHP, Julia</li></ul></div>
-    </div>
-    <div class="card">
-      <div class="card-subtitle">Microcontrôleurs</div>
-      <div class="card-header"><h3 class="card-title">🔌 Systèmes embarqués</h3></div>
+  <section class="page-hero">
+    <span class="hero-badge" data-i18n="skills">Compétences &amp; Apprentissages</span>
+    <h1>Compétences <span class="text-orange">&amp; Apprentissages</span></h1>
+    <p class="hero-desc">Domaines d'apprentissage, de recherche et d'expérimentation de Charles.</p>
+  </section>
+  <section class="grid">
+    <article class="card"><div class="card-subtitle">Matériel &amp; Puissance</div><div class="card-header"><h3 class="card-title">⚡ Électricité</h3></div><div class="card-body"><ul><li>Électricité générale et domestique</li><li>Notions d'électricité industrielle</li><li>Circuits électriques et câblage</li></ul></div></article>
+    <article class="card"><div class="card-subtitle">Logiciel &amp; Code</div><div class="card-header"><h3 class="card-title">💻 Programmation</h3></div><div class="card-body"><ul><li>Python, C et C++</li><li>JavaScript, HTML et CSS</li><li>PHP et Julia</li></ul></div></article>
+    <article class="card"><div class="card-subtitle">Microcontrôleurs</div><div class="card-header"><h3 class="card-title">🔌 Systèmes embarqués</h3></div><div class="card-body"><ul><li>Arduino et ESP32</li><li>Capteurs et automatisation</li><li>Prototypage électronique</li></ul></div></article>
+    <article class="card"><div class="card-subtitle">Innovation</div><div class="card-header"><h3 class="card-title">🤖 Robotique &amp; Drones</h3></div><div class="card-body"><ul><li>Conception de prototypes</li><li>Commande et systèmes embarqués</li><li>Exploration de solutions autonomes</li></ul></div></article>
+    <article class="card"><div class="card-subtitle">Web</div><div class="card-header"><h3 class="card-title">🌐 Développement</h3></div><div class="card-body"><ul><li>Interfaces web responsives</li><li>Firebase et bases de données</li><li>Intégration d'API et services cloud</li></ul></div></article>
+    <article class="card"><div class="card-subtitle">Conception</div><div class="card-header"><h3 class="card-title">🛠️ Ingénierie</h3></div><div class="card-body"><ul><li>Lecture et conception de schémas</li><li>Résolution de problèmes techniques</li><li>Expérimentation et prototypage</li></ul></div></article>
+  </section>
+</main>
+<div id="site-footer"></div>
+<div id="chatbot-root"></div>
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="main.js"></script>
+</body>
+</html>
