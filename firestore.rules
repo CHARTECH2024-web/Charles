@@ -55,6 +55,101 @@ service cloud.firestore {
       allow read, create, update, delete: if false;
     }
 
+    // V3.4 — Cahier de Compte.
+    // Each business workspace is owned by exactly one authenticated user.
+    match /businesses/{businessId} {
+      allow read: if signedIn() && request.auth.uid == businessId;
+      allow create: if signedIn()
+        && request.auth.uid == businessId
+        && request.resource.data.ownerId == request.auth.uid;
+      allow update: if signedIn()
+        && request.auth.uid == businessId
+        && resource.data.ownerId == request.auth.uid
+        && request.resource.data.ownerId == resource.data.ownerId;
+      allow delete: if false;
+
+      match /products/{productId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create, update: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.name is string
+          && request.resource.data.name.size() > 0
+          && request.resource.data.name.size() <= 100
+          && request.resource.data.price is number
+          && request.resource.data.price >= 0
+          && request.resource.data.stock is number
+          && request.resource.data.stock >= 0;
+        allow delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /sales/{saleId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.productId is string
+          && request.resource.data.productName is string
+          && request.resource.data.quantity is number
+          && request.resource.data.quantity > 0
+          && request.resource.data.amount is number
+          && request.resource.data.amount >= 0;
+        allow update, delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /customers/{customerId} {
+        allow read, create, update, delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /debts/{debtId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.customerId is string
+          && request.resource.data.customerName is string
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.paidAmount == 0
+          && request.resource.data.status == "open";
+        allow update: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.customerId == resource.data.customerId
+          && request.resource.data.customerName == resource.data.customerName
+          && request.resource.data.amount == resource.data.amount
+          && request.resource.data.paidAmount is number
+          && request.resource.data.paidAmount >= resource.data.paidAmount
+          && request.resource.data.paidAmount <= resource.data.amount
+          && request.resource.data.status in ["open","partial","paid"];
+        allow delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /debtPayments/{paymentId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.debtId is string
+          && request.resource.data.customerId is string
+          && request.resource.data.customerName is string
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0;
+        allow update, delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /expenses/{expenseId} {
+        allow read, create, update, delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /stockMoves/{moveId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.productId is string
+          && request.resource.data.productName is string
+          && request.resource.data.type in ["purchase", "sale"]
+          && request.resource.data.quantity is number
+          && request.resource.data.quantity != 0;
+        allow update, delete: if signedIn() && request.auth.uid == businessId;
+      }
+    }
+
     match /visits/{visitId} {
       allow create, update: if request.resource.data.lastPage is string
         && request.resource.data.lastPage.size() <= 120;

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Charles</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="animations.css">
+<link rel="stylesheet" href="responsive.css">
+</head>
+<body>
+<div id="site-header"></div>
+<main class="page-shell cahier-page">
+  <section class="page-header">
+    <span class="hero-badge">CHARLES V3.4 • CAHIER DE COMPTE</span>
+    <h1>📒 Cahier de Compte</h1>
+    <p>Un espace simple pour gérer les ventes, les produits et l'activité de votre petite entreprise.</p>
+  </section>
+
+  <section id="cahier-login" class="cahier-card">
+    <div class="cahier-icon">📒</div>
+    <h2>Commencer</h2>
+    <p>Connectez-vous avec Google pour créer ou retrouver votre espace de gestion. Vos données restent liées à votre compte.</p>
+    <button id="cahier-login-btn" class="btn btn-primary">Continuer avec Google</button>
+    <p id="cahier-login-error" class="form-error" hidden></p>
+  </section>
+
+  <section id="cahier-app" hidden>
+    <div class="cahier-topbar">
+      <div>
+        <span class="card-subtitle">Mon entreprise</span>
+        <h2 id="business-name">Mon entreprise</h2>
+      </div>
+      <button id="cahier-logout" class="btn btn-outline btn-small">Déconnexion</button>
+    </div>
+
+    <div class="cahier-grid">
+      <article class="cahier-stat"><span>💰 Ventes</span><strong id="stat-sales">0 FC</strong></article>
+      <article class="cahier-stat"><span>📦 Produits</span><strong id="stat-products">0</strong></article>
+      <article class="cahier-stat"><span>👥 Clients</span><strong id="stat-customers">0</strong></article>
+      <article class="cahier-stat"><span>💳 À recevoir</span><strong id="stat-debts">0 FC</strong></article>
+      <article class="cahier-stat"><span>✅ Encaissé sur crédits</span><strong id="stat-debt-paid">0 FC</strong></article>
+      <article class="cahier-stat"><span>⚠️ Stock faible</span><strong id="stat-low-stock">0</strong></article>
+      <article class="cahier-stat"><span>💰 Dépenses</span><strong id="stat-expenses">0 FC</strong></article>
+      <article class="cahier-stat"><span>📈 Résultat estimé</span><strong id="stat-profit">0 FC</strong></article>
+    </div>
+
+    <div class="cahier-columns">
+      <section class="cahier-card">
+        <div class="section-heading-row"><h3>Profil de l'entreprise</h3><span id="cahier-user"></span></div>
+        <form id="business-form" class="cahier-form">
+          <label>Nom de l'entreprise<input id="business-input" maxlength="100" required></label>
+          <label>Téléphone<input id="business-phone" maxlength="30" placeholder="+243 ..."></label>
+          <button class="btn btn-primary" type="submit">Enregistrer</button>
+        </form>
+      </section>
+
+      <section class="cahier-card">
+        <div class="section-heading-row"><h3>Ajouter un produit</h3></div>
+        <form id="product-form" class="cahier-form">
+          <label>Nom<input id="product-name" maxlength="100" required></label>
+          <label>Prix de vente (FC)<input id="product-price" type="number" min="0" step="1" required></label>
+          <label>Stock initial<input id="product-stock" type="number" min="0" step="1" value="0" required></label>
+          <button class="btn btn-primary" type="submit">Ajouter</button>
+        </form>
+      </section>
+    </div>
+
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>Approvisionnement / Entrée de stock</h3><span>Augmenter le stock</span></div>
+      <form id="stock-form" class="cahier-form sale-form">
+        <label>Produit<select id="stock-product" required><option value="">Sélectionner</option></select></label>
+        <label>Quantité<input id="stock-qty" type="number" min="1" step="1" value="1" required></label>
+        <label>Note<input id="stock-note" maxlength="160" placeholder="Ex. Nouveau fournisseur"></label>
+        <button class="btn btn-primary" type="submit">Ajouter au stock</button>
+      </form>
+    </section>
+
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>Enregistrer une vente</h3></div>
+      <form id="sale-form" class="cahier-form sale-form">
+        <label>Produit<select id="sale-product" required><option value="">Sélectionner</option></select></label>
+        <label>Quantité<input id="sale-qty" type="number" min="1" step="1" value="1" required></label>
+        <label>Montant total (FC)<input id="sale-amount" type="number" min="0" step="1" required></label>
+        <button class="btn btn-primary" type="submit">Enregistrer la vente</button>
+      </form>
+    </section>
+
+    <div class="cahier-columns">
+      <section class="cahier-card">
+        <div class="section-heading-row"><h3>Clients</h3><span id="customer-count"></span></div>
+        <form id="customer-form" class="cahier-form">
+          <label>Nom<input id="customer-name" maxlength="100" required></label>
+          <label>Téléphone<input id="customer-phone" maxlength="30" placeholder="+243 ..."></label>
+          <button class="btn btn-primary" type="submit">Ajouter le client</button>
+        </form>
+        <div id="customer-list" class="cahier-list"></div>
+      </section>
+      <section class="cahier-card">
+        <div class="section-heading-row"><h3>Produits</h3><span id="product-count"></span></div>
+        <div id="low-stock-list" class="cahier-list"></div>
+        <div id="product-list" class="cahier-list"></div>
+      </section>
+    </div>
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>Crédit / Dette client</h3><span>Suivi des montants dus</span></div>
+      <form id="debt-form" class="cahier-form sale-form">
+        <label>Client<select id="debt-customer" required><option value="">Sélectionner</option></select></label>
+        <label>Montant (FC)<input id="debt-amount" type="number" min="1" step="1" required></label>
+        <label>Note<input id="debt-note" maxlength="160" placeholder="Ex. Achat à crédit"></label>
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+      </form>
+      <div id="debt-list" class="cahier-list"></div>
+    </section>
+
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>Remboursement d'un crédit</h3><span>Paiement partiel ou complet</span></div>
+      <form id="debt-payment-form" class="cahier-form sale-form">
+        <label>Crédit<select id="payment-debt" required><option value="">Sélectionner</option></select></label>
+        <label>Montant payé (FC)<input id="payment-amount" type="number" min="1" step="1" required></label>
+        <label>Note<input id="payment-note" maxlength="160" placeholder="Ex. Paiement partiel"></label>
+        <button class="btn btn-primary" type="submit">Enregistrer le paiement</button>
+      </form>
+      <div id="debt-payment-list" class="cahier-list"></div>
+    </section>
+
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>📊 Rapports financiers</h3><span>Vue de l'activité</span></div>
+      <div class="cahier-form sale-form">
+        <label>Période
+          <select id="report-period">
+            <option value="all">Tout l'historique</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="7">7 derniers jours</option>
+            <option value="30">30 derniers jours</option>
+          </select>
+        </label>
+        <button id="report-refresh" class="btn btn-outline" type="button">Actualiser</button>
+      </div>
+      <div class="cahier-grid report-grid">
+        <article class="cahier-stat"><span>Ventes</span><strong id="report-sales">0 FC</strong></article>
+        <article class="cahier-stat"><span>Dépenses</span><strong id="report-expenses">0 FC</strong></article>
+        <article class="cahier-stat"><span>Crédits créés</span><strong id="report-debts">0 FC</strong></article>
+        <article class="cahier-stat"><span>Paiements reçus</span><strong id="report-payments">0 FC</strong></article>
+        <article class="cahier-stat"><span>Résultat estimé</span><strong id="report-profit">0 FC</strong></article>
+      </div>
+      <div id="report-history" class="cahier-list"></div>
+    </section>
+
+    <p id="cahier-status" class="cahier-status" aria-live="polite"></p>
+  </section>
+</main>
+<div id="site-footer"></div>
+<div id="chatbot-root"></div>
+<script type="module" src="firebase-config.js"></script>
+<script type="module" src="main.js"></script>
+<script type="module" src="cahier-compte.js"></script>
+</body>
+</html>

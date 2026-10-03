@@ -411,3 +411,30 @@ footer.site-footer {
 .private-note{padding:.7rem 1rem;border:1px dashed var(--border);border-radius:10px;color:var(--text-muted);font-size:.82rem}
 @media(max-width:900px){.private-chat-shell{grid-template-columns:1fr}.user-list{max-height:220px}.private-chat-messages{max-height:52vh}}
 @media(max-width:768px){.mobile-menu-tools{display:block}.nav-links .nav-link{flex:none}.theme-wrap,.language-wrap{display:none}.nav-container{gap:.5rem}}
+
+
+/* =========================================================
+   V3.4 — CAHIER DE COMPTE
+   ========================================================= */
+.cahier-page{padding-bottom:4rem}
+.cahier-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.25rem;box-shadow:var(--card-shadow);margin-bottom:1rem}
+.cahier-icon{font-size:3rem;margin-bottom:.5rem}
+.cahier-topbar,.section-heading-row{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.cahier-topbar{margin-bottom:1rem}
+.cahier-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1rem}
+.cahier-stat{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;box-shadow:var(--card-shadow)}
+.cahier-stat span{display:block;color:var(--text-muted);font-size:.85rem;margin-bottom:.4rem}
+.cahier-stat strong{font-size:1.25rem;color:var(--orange)}
+.cahier-columns{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.cahier-form{display:grid;gap:.8rem}
+.cahier-form label{display:grid;gap:.35rem;color:var(--text-muted);font-size:.88rem}
+.cahier-form input,.cahier-form select{width:100%;padding:.75rem;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text-main);outline:none}
+.cahier-form input:focus,.cahier-form select:focus{border-color:var(--orange);box-shadow:0 0 0 3px var(--orange-glow)}
+.sale-form{grid-template-columns:1.4fr .7fr 1fr auto;align-items:end}
+.cahier-list{display:grid;gap:.5rem}
+.cahier-list-row{display:flex;justify-content:space-between;gap:1rem;padding:.8rem;border:1px solid var(--border);border-radius:9px;background:var(--surface-hover)}
+.cahier-status{margin:1rem 0;padding:.8rem;border-radius:8px;background:var(--surface-hover);color:var(--text-muted)}
+.cahier-status.error,.form-error{color:#ef4444}
+.text-muted{color:var(--text-muted)}
+@media(max-width:900px){.cahier-grid{grid-template-columns:repeat(2,1fr)}.cahier-columns{grid-template-columns:1fr}.sale-form{grid-template-columns:1fr}}
+@media(max-width:520px){.cahier-grid{grid-template-columns:1fr}.cahier-topbar,.section-heading-row{align-items:flex-start;flex-direction:column}.cahier-list-row{flex-direction:column}}

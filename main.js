@@ -9,7 +9,7 @@ const PAGES = [
   { href:"index.html", key:"navHome" }, { href:"about.html", key:"navAbout" },
   { href:"skills.html", key:"navSkills" }, { href:"projects.html", key:"navProjects" },
   { href:"media.html", key:"navMedia" }, { href:"documents.html", key:"navDocs" },
-  { href:"contact.html", key:"navContact" }, { href:"community.html", key:"navCommunity" }
+  { href:"contact.html", key:"navContact" }, { href:"community.html", key:"navCommunity" }, { href:"cahier-compte.html", key:"navCahier" }
 ];
 
 function currentPage() {
