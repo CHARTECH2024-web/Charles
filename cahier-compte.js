@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase-config.js";
-import { loginUserWithGoogle, logoutUser, observeUser } from "./auth.js";
+import { loginUserWithGoogle, logoutUser, observeUser, finishGoogleRedirect } from "./auth.js";
 import {
   doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, runTransaction,
   serverTimestamp
@@ -179,9 +179,26 @@ function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 
+function authErrorMessage(error) {
+  const code=error?.code || "";
+  if(code==="auth/unauthorized-domain") return "Ce domaine n'est pas encore autorisé dans Firebase Authentication. Ajoutez le domaine actuel dans Sécurité > Authentication > Settings > Authorized domains.";
+  if(code==="auth/popup-blocked") return "Le navigateur a bloqué la fenêtre Google. La connexion mobile utilise maintenant une redirection.";
+  if(code==="auth/popup-closed-by-user") return "La fenêtre Google a été fermée avant la fin de la connexion.";
+  if(code==="auth/network-request-failed") return "Connexion réseau impossible. Vérifiez votre connexion Internet puis réessayez.";
+  return "Connexion Google impossible. Réessayez.";
+}
+
 $("cahier-login-btn").onclick=async()=>{
+  const btn=$("cahier-login-btn");
+  btn.disabled=true;
+  $("cahier-login-error").hidden=true;
   try { await loginUserWithGoogle(); }
-  catch(e) { $("cahier-login-error").hidden=false; $("cahier-login-error").textContent="Connexion impossible. Réessayez."; }
+  catch(e) {
+    console.error("Cahier de Compte Google login:",e);
+    $("cahier-login-error").hidden=false;
+    $("cahier-login-error").textContent=authErrorMessage(e);
+    btn.disabled=false;
+  }
 };
 
 $("cahier-logout").onclick=()=>logoutUser();
@@ -367,6 +384,12 @@ $("debt-form").onsubmit=async(e)=>{
 
 $("report-period").onchange=updateReport;
 $("report-refresh").onclick=updateReport;
+
+
+finishGoogleRedirect().catch((error)=>{
+  const el=$("cahier-login-error");
+  if(el){ el.hidden=false; el.textContent=authErrorMessage(error); }
+});
 
 observeUser(async(user)=>{
   state.user=user;
