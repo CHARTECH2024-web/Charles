@@ -72,9 +72,30 @@
       </form>
     </section>
 
+    <div class="cahier-columns">
+      <section class="cahier-card">
+        <div class="section-heading-row"><h3>Clients</h3><span id="customer-count"></span></div>
+        <form id="customer-form" class="cahier-form">
+          <label>Nom<input id="customer-name" maxlength="100" required></label>
+          <label>Téléphone<input id="customer-phone" maxlength="30" placeholder="+243 ..."></label>
+          <button class="btn btn-primary" type="submit">Ajouter le client</button>
+        </form>
+        <div id="customer-list" class="cahier-list"></div>
+      </section>
+      <section class="cahier-card">
+        <div class="section-heading-row"><h3>Produits</h3><span id="product-count"></span></div>
+        <div id="product-list" class="cahier-list"></div>
+      </section>
+    </div>
     <section class="cahier-card">
-      <div class="section-heading-row"><h3>Produits</h3><span id="product-count"></span></div>
-      <div id="product-list" class="cahier-list"></div>
+      <div class="section-heading-row"><h3>Crédit / Dette client</h3><span>Suivi des montants dus</span></div>
+      <form id="debt-form" class="cahier-form sale-form">
+        <label>Client<select id="debt-customer" required><option value="">Sélectionner</option></select></label>
+        <label>Montant (FC)<input id="debt-amount" type="number" min="1" step="1" required></label>
+        <label>Note<input id="debt-note" maxlength="160" placeholder="Ex. Achat à crédit"></label>
+        <button class="btn btn-primary" type="submit">Enregistrer</button>
+      </form>
+      <div id="debt-list" class="cahier-list"></div>
     </section>
 
     <p id="cahier-status" class="cahier-status" aria-live="polite"></p>
