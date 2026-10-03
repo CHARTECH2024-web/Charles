@@ -38,7 +38,8 @@
       <article class="cahier-stat"><span>💰 Ventes</span><strong id="stat-sales">0 FC</strong></article>
       <article class="cahier-stat"><span>📦 Produits</span><strong id="stat-products">0</strong></article>
       <article class="cahier-stat"><span>👥 Clients</span><strong id="stat-customers">0</strong></article>
-      <article class="cahier-stat"><span>💳 Crédits</span><strong id="stat-debts">0 FC</strong></article>
+      <article class="cahier-stat"><span>💳 À recevoir</span><strong id="stat-debts">0 FC</strong></article>
+      <article class="cahier-stat"><span>✅ Encaissé sur crédits</span><strong id="stat-debt-paid">0 FC</strong></article>
       <article class="cahier-stat"><span>⚠️ Stock faible</span><strong id="stat-low-stock">0</strong></article>
       <article class="cahier-stat"><span>💰 Dépenses</span><strong id="stat-expenses">0 FC</strong></article>
       <article class="cahier-stat"><span>📈 Résultat estimé</span><strong id="stat-profit">0 FC</strong></article>
@@ -110,6 +111,17 @@
         <button class="btn btn-primary" type="submit">Enregistrer</button>
       </form>
       <div id="debt-list" class="cahier-list"></div>
+    </section>
+
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>Remboursement d'un crédit</h3><span>Paiement partiel ou complet</span></div>
+      <form id="debt-payment-form" class="cahier-form sale-form">
+        <label>Crédit<select id="payment-debt" required><option value="">Sélectionner</option></select></label>
+        <label>Montant payé (FC)<input id="payment-amount" type="number" min="1" step="1" required></label>
+        <label>Note<input id="payment-note" maxlength="160" placeholder="Ex. Paiement partiel"></label>
+        <button class="btn btn-primary" type="submit">Enregistrer le paiement</button>
+      </form>
+      <div id="debt-payment-list" class="cahier-list"></div>
     </section>
 
     <p id="cahier-status" class="cahier-status" aria-live="polite"></p>
