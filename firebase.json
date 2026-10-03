@@ -1,5 +1,13 @@
 {
   "firestore": {
     "rules": "firestore.rules"
+  },
+  "auth": {
+    "providers": {
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Charles platform",
+        "supportEmail": "chartech031@gmail.com"
+      }
+    }
   }
 }
