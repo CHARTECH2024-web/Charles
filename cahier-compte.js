@@ -5,7 +5,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[] };
+const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[] };
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => `${Number(value || 0).toLocaleString("fr-FR")} FC`;
@@ -71,6 +71,7 @@ async function loadSales() {
   state.sales=snap.docs.map(d=>({id:d.id,...d.data()}));
   const total=state.sales.reduce((sum,s)=>sum+Number(s.amount||0),0);
   $("stat-sales").textContent=money(total);
+  updateFinancialSummary();
 }
 
 
@@ -91,9 +92,29 @@ async function loadDebts() {
   state.debts=snap.docs.map(d=>({id:d.id,...d.data()}));
   const total=state.debts.reduce((sum,d)=>sum+Number(d.amount||0),0);
   $("stat-debts").textContent=money(total);
+  updateFinancialSummary();
   $("debt-list").innerHTML=state.debts.length
     ? state.debts.map(d=>`<div class="cahier-list-row"><strong>${escapeHtml(d.customerName)}</strong><span>${money(d.amount)} • ${escapeHtml(d.note || "Crédit")}</span></div>`).join("")
     : "<p class='text-muted'>Aucun crédit enregistré.</p>";
+}
+
+
+async function loadExpenses() {
+  const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"expenses"),orderBy("createdAt","desc")));
+  state.expenses=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const total=state.expenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
+  $("stat-expenses").textContent=money(total);
+  $("expense-count").textContent=`${state.expenses.length} dépense(s)`;
+  $("expense-list").innerHTML=state.expenses.length
+    ? state.expenses.map(e=>`<div class="cahier-list-row"><strong>${escapeHtml(e.label)}</strong><span>${money(e.amount)} • ${escapeHtml(e.note || "Dépense")}</span></div>`).join("")
+    : "<p class='text-muted'>Aucune dépense enregistrée.</p>";
+  updateFinancialSummary();
+}
+
+function updateFinancialSummary() {
+  const revenue=state.sales.reduce((sum,s)=>sum+Number(s.amount||0),0);
+  const expenses=state.expenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
+  $("stat-profit").textContent=money(revenue-expenses);
 }
 
 function escapeHtml(value) {
@@ -170,6 +191,23 @@ $("sale-form").onsubmit=async(e)=>{
 
 
 
+
+$("expense-form").onsubmit=async(e)=>{
+  e.preventDefault();
+  if(!state.user)return;
+  const label=$("expense-label").value.trim();
+  const amount=Number($("expense-amount").value);
+  if(!label || amount<0)return;
+  try {
+    await addDoc(collection(db,"businesses",state.user.uid,"expenses"),{
+      label, amount, note:$("expense-note").value.trim(), createdAt:serverTimestamp()
+    });
+    e.target.reset();
+    await loadExpenses();
+    setStatus("Dépense enregistrée.");
+  } catch(e) { setStatus("Impossible d'enregistrer la dépense.",true); }
+};
+
 $("stock-form").onsubmit=async(e)=>{
   e.preventDefault();
   if(!state.user)return;
@@ -236,7 +274,7 @@ observeUser(async(user)=>{
   try {
     showApp(user);
     await ensureBusiness(user);
-    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts()]);
+    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts(),loadExpenses()]);
   } catch(e) {
     setStatus("Impossible de charger votre espace Cahier de Compte.",true);
   }
