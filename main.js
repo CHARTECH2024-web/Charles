@@ -62,6 +62,37 @@ function injectHeader() {
   </header>`;
 }
 
+function setupNavigation() {
+  const hamburger = document.getElementById("hamburger");
+  const navMenu = document.getElementById("navMenu");
+  if (!hamburger || !navMenu) return;
+
+  const closeMenu = () => {
+    navMenu.classList.remove("show");
+    hamburger.setAttribute("aria-expanded", "false");
+  };
+
+  hamburger.setAttribute("aria-expanded", "false");
+  hamburger.addEventListener("click", (event) => {
+    event.stopPropagation();
+    const open = navMenu.classList.toggle("show");
+    hamburger.setAttribute("aria-expanded", String(open));
+  });
+
+  navMenu.querySelectorAll(".nav-link").forEach(link => {
+    link.addEventListener("click", closeMenu);
+  });
+
+  // Keep the drawer open while using its mobile theme/language controls.
+  navMenu.querySelectorAll(".mobile-menu-tools button").forEach(button => {
+    button.addEventListener("click", event => event.stopPropagation());
+  });
+
+  document.addEventListener("click", event => {
+    if (!navMenu.contains(event.target) && event.target !== hamburger) closeMenu();
+  });
+}
+
 function injectFooter() {
   const mount=document.getElementById("site-footer"); if(!mount)return;
   mount.outerHTML=`<footer class="site-footer"><p><strong>Charles</strong></p><p style="color:var(--metallic);font-size:.85rem;margin-top:.3rem;" data-i18n="footer">${t("footer")}</p></footer>`;
