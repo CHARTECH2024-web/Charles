@@ -106,6 +106,18 @@ service cloud.firestore {
       match /expenses/{expenseId} {
         allow read, create, update, delete: if signedIn() && request.auth.uid == businessId;
       }
+
+      match /stockMoves/{moveId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.productId is string
+          && request.resource.data.productName is string
+          && request.resource.data.type in ["purchase", "sale"]
+          && request.resource.data.quantity is number
+          && request.resource.data.quantity != 0;
+        allow update, delete: if signedIn() && request.auth.uid == businessId;
+      }
     }
 
     match /visits/{visitId} {
