@@ -124,6 +124,29 @@
       <div id="debt-payment-list" class="cahier-list"></div>
     </section>
 
+    <section class="cahier-card">
+      <div class="section-heading-row"><h3>📊 Rapports financiers</h3><span>Vue de l'activité</span></div>
+      <div class="cahier-form sale-form">
+        <label>Période
+          <select id="report-period">
+            <option value="all">Tout l'historique</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="7">7 derniers jours</option>
+            <option value="30">30 derniers jours</option>
+          </select>
+        </label>
+        <button id="report-refresh" class="btn btn-outline" type="button">Actualiser</button>
+      </div>
+      <div class="cahier-grid report-grid">
+        <article class="cahier-stat"><span>Ventes</span><strong id="report-sales">0 FC</strong></article>
+        <article class="cahier-stat"><span>Dépenses</span><strong id="report-expenses">0 FC</strong></article>
+        <article class="cahier-stat"><span>Crédits créés</span><strong id="report-debts">0 FC</strong></article>
+        <article class="cahier-stat"><span>Paiements reçus</span><strong id="report-payments">0 FC</strong></article>
+        <article class="cahier-stat"><span>Résultat estimé</span><strong id="report-profit">0 FC</strong></article>
+      </div>
+      <div id="report-history" class="cahier-list"></div>
+    </section>
+
     <p id="cahier-status" class="cahier-status" aria-live="polite"></p>
   </section>
 </main>
