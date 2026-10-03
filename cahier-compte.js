@@ -72,6 +72,7 @@ async function loadSales() {
   const total=state.sales.reduce((sum,s)=>sum+Number(s.amount||0),0);
   $("stat-sales").textContent=money(total);
   updateFinancialSummary();
+  updateReport();
 }
 
 
@@ -125,6 +126,47 @@ async function loadExpenses() {
     ? state.expenses.map(e=>`<div class="cahier-list-row"><strong>${escapeHtml(e.label)}</strong><span>${money(e.amount)} • ${escapeHtml(e.note || "Dépense")}</span></div>`).join("")
     : "<p class='text-muted'>Aucune dépense enregistrée.</p>";
   updateFinancialSummary();
+}
+
+function timestampMs(item) {
+  return item.createdAt?.toMillis?.() || 0;
+}
+
+function inReportPeriod(item, period) {
+  if(period==="all") return true;
+  const t=timestampMs(item);
+  if(!t) return true;
+  const now=Date.now();
+  if(period==="today") {
+    const d=new Date(t), n=new Date(now);
+    return d.getFullYear()===n.getFullYear() && d.getMonth()===n.getMonth() && d.getDate()===n.getDate();
+  }
+  return t >= now - Number(period)*24*60*60*1000;
+}
+
+function updateReport() {
+  const period=$("report-period")?.value || "all";
+  const sales=state.sales.filter(x=>inReportPeriod(x,period));
+  const expenses=state.expenses.filter(x=>inReportPeriod(x,period));
+  const debts=state.debts.filter(x=>inReportPeriod(x,period));
+  const payments=state.debtPayments.filter(x=>inReportPeriod(x,period));
+  const revenue=sales.reduce((s,x)=>s+Number(x.amount||0),0);
+  const expenseTotal=expenses.reduce((s,x)=>s+Number(x.amount||0),0);
+  const debtTotal=debts.reduce((s,x)=>s+Number(x.amount||0),0);
+  const paymentTotal=payments.reduce((s,x)=>s+Number(x.amount||0),0);
+  $("report-sales").textContent=money(revenue);
+  $("report-expenses").textContent=money(expenseTotal);
+  $("report-debts").textContent=money(debtTotal);
+  $("report-payments").textContent=money(paymentTotal);
+  $("report-profit").textContent=money(revenue-expenseTotal);
+  const rows=[
+    ...sales.map(x=>({t:timestampMs(x),label:"Vente",value:x.amount,detail:x.productName})),
+    ...expenses.map(x=>({t:timestampMs(x),label:"Dépense",value:-x.amount,detail:x.label})),
+    ...payments.map(x=>({t:timestampMs(x),label:"Paiement crédit",value:x.amount,detail:x.customerName}))
+  ].sort((a,b)=>b.t-a.t).slice(0,50);
+  $("report-history").innerHTML=rows.length
+    ? rows.map(x=>`<div class="cahier-list-row"><strong>${escapeHtml(x.label)}</strong><span>${x.value>=0?"+":""}${money(x.value)} • ${escapeHtml(x.detail||"")}</span></div>`).join("")
+    : "<p class='text-muted'>Aucune opération sur cette période.</p>";
 }
 
 function updateFinancialSummary() {
@@ -310,6 +352,9 @@ $("debt-form").onsubmit=async(e)=>{
     setStatus("Crédit client enregistré.");
   } catch(e) { setStatus("Impossible d'enregistrer le crédit.",true); }
 };
+
+$("report-period").onchange=updateReport;
+$("report-refresh").onclick=updateReport;
 
 observeUser(async(user)=>{
   state.user=user;
