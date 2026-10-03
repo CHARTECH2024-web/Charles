@@ -1,11 +1,11 @@
 import { auth, db } from "./firebase-config.js";
 import { loginUserWithGoogle, logoutUser, observeUser } from "./auth.js";
 import {
-  doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs,
+  doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, runTransaction,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[] };
+const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[], debtPayments:[] };
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => `${Number(value || 0).toLocaleString("fr-FR")} FC`;
@@ -88,14 +88,30 @@ async function loadCustomers() {
 }
 
 async function loadDebts() {
-  const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"debts"),orderBy("createdAt","desc")));
-  state.debts=snap.docs.map(d=>({id:d.id,...d.data()}));
-  const total=state.debts.reduce((sum,d)=>sum+Number(d.amount||0),0);
-  $("stat-debts").textContent=money(total);
-  updateFinancialSummary();
+  const [debtSnap,paySnap]=await Promise.all([
+    getDocs(query(collection(db,"businesses",state.user.uid,"debts"),orderBy("createdAt","desc"))),
+    getDocs(query(collection(db,"businesses",state.user.uid,"debtPayments"),orderBy("createdAt","desc")))
+  ]);
+  state.debts=debtSnap.docs.map(d=>({id:d.id,...d.data()}));
+  state.debtPayments=paySnap.docs.map(d=>({id:d.id,...d.data()}));
+  const paidByDebt={};
+  state.debtPayments.forEach(p=>{paidByDebt[p.debtId]=(paidByDebt[p.debtId]||0)+Number(p.amount||0);});
+  state.debts=state.debts.map(d=>{
+    const paid=Math.min(Number(d.amount||0),paidByDebt[d.id]||0);
+    return {...d,paid,remaining:Math.max(0,Number(d.amount||0)-paid)};
+  });
+  const outstanding=state.debts.reduce((sum,d)=>sum+d.remaining,0);
+  const paidTotal=state.debtPayments.reduce((sum,p)=>sum+Number(p.amount||0),0);
+  $("stat-debts").textContent=money(outstanding);
+  $("stat-debt-paid").textContent=money(paidTotal);
   $("debt-list").innerHTML=state.debts.length
-    ? state.debts.map(d=>`<div class="cahier-list-row"><strong>${escapeHtml(d.customerName)}</strong><span>${money(d.amount)} • ${escapeHtml(d.note || "Crédit")}</span></div>`).join("")
+    ? state.debts.map(d=>`<div class="cahier-list-row"><strong>${escapeHtml(d.customerName)}</strong><span>Dette: ${money(d.amount)} • Payé: ${money(d.paid)} • Reste: ${money(d.remaining)} • ${d.remaining===0?"Réglé":"Ouvert"}</span></div>`).join("")
     : "<p class='text-muted'>Aucun crédit enregistré.</p>";
+  $("payment-debt").innerHTML='<option value="">Sélectionner</option>' +
+    state.debts.filter(d=>d.remaining>0).map(d=>`<option value="${d.id}">${escapeHtml(d.customerName)} — reste ${money(d.remaining)}</option>`).join("");
+  $("debt-payment-list").innerHTML=state.debtPayments.length
+    ? state.debtPayments.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.customerName)}</strong><span>+${money(p.amount)} • ${escapeHtml(p.note||"Paiement")}</span></div>`).join("")
+    : "<p class='text-muted'>Aucun paiement de crédit.</p>";
 }
 
 
@@ -231,6 +247,32 @@ $("stock-form").onsubmit=async(e)=>{
   } catch(e) { setStatus("Impossible de mettre à jour le stock.",true); }
 };
 
+$("debt-payment-form").onsubmit=async(e)=>{
+  e.preventDefault();
+  if(!state.user)return;
+  const debt=state.debts.find(d=>d.id===$("payment-debt").value);
+  const amount=Number($("payment-amount").value);
+  if(!debt || amount<=0)return;
+  if(amount>debt.remaining){setStatus("Le paiement dépasse le reste à payer.",true);return;}
+  try {
+    const debtRef=doc(db,"businesses",state.user.uid,"debts",debt.id);
+    const paymentRef=doc(collection(db,"businesses",state.user.uid,"debtPayments"));
+    await runTransaction(db,async(tx)=>{
+      const fresh=await tx.get(debtRef);
+      if(!fresh.exists()) throw new Error("Dette introuvable");
+      const current=fresh.data();
+      const remaining=Number(current.amount||0)-Number(current.paidAmount||0);
+      if(amount>remaining) throw new Error("Paiement supérieur au solde");
+      const newPaid=Number(current.paidAmount||0)+amount;
+      tx.update(debtRef,{paidAmount:newPaid,status:newPaid>=Number(current.amount||0)?"paid":"partial",updatedAt:serverTimestamp()});
+      tx.set(paymentRef,{debtId:debt.id,customerId:debt.customerId,customerName:debt.customerName,amount,note:$("payment-note").value.trim(),createdAt:serverTimestamp()});
+    });
+    e.target.reset();
+    await loadDebts();
+    setStatus("Paiement enregistré.");
+  } catch(e){setStatus(e.message==="Paiement supérieur au solde"?"Le paiement dépasse le reste à payer.":"Impossible d'enregistrer le paiement.",true);}
+};
+
 $("customer-form").onsubmit=async(e)=>{
   e.preventDefault();
   if(!state.user)return;
@@ -258,6 +300,7 @@ $("debt-form").onsubmit=async(e)=>{
       customerId:customer.id,
       customerName:customer.name,
       amount,
+      paidAmount:0,
       note:$("debt-note").value.trim(),
       status:"open",
       createdAt:serverTimestamp()
