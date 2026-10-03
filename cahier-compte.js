@@ -5,7 +5,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const state = { user:null, products:[], sales:[], customers:[], debts:[] };
+const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[] };
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => `${Number(value || 0).toLocaleString("fr-FR")} FC`;
@@ -51,11 +51,18 @@ async function loadProducts() {
   const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"products"),orderBy("name")));
   state.products=snap.docs.map(d=>({id:d.id,...d.data()}));
   $("stat-products").textContent=state.products.length;
+  const low=state.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockThreshold ?? 5));
+  $("stat-low-stock").textContent=low.length;
+  $("low-stock-list").innerHTML=low.length
+    ? low.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>Stock: ${Number(p.stock||0)} • Seuil: ${Number(p.lowStockThreshold ?? 5)}</span></div>`).join("")
+    : "<p class='text-muted'>Aucun stock faible.</p>";
   $("product-count").textContent=`${state.products.length} produit(s)`;
   $("product-list").innerHTML=state.products.length
     ? state.products.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>${money(p.price)} • Stock: ${Number(p.stock||0)}</span></div>`).join("")
     : "<p class='text-muted'>Aucun produit pour le moment.</p>";
   $("sale-product").innerHTML='<option value="">Sélectionner</option>' +
+    state.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
+  $("stock-product").innerHTML='<option value="">Sélectionner</option>' +
     state.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
 }
 
@@ -120,6 +127,7 @@ $("product-form").onsubmit=async(e)=>{
       name:$("product-name").value.trim(),
       price:Number($("product-price").value),
       stock:Number($("product-stock").value),
+      lowStockThreshold:5,
       createdAt:serverTimestamp(),
       updatedAt:serverTimestamp()
     });
@@ -140,9 +148,18 @@ $("sale-form").onsubmit=async(e)=>{
   const amount=Number($("sale-amount").value);
   if(qty<1 || amount<0)return;
   try {
+    if(qty > Number(product.stock || 0)){ setStatus("Stock insuffisant pour cette vente.",true); return; }
     await addDoc(collection(db,"businesses",state.user.uid,"sales"),{
       productId, productName:product.name, quantity:qty, amount,
       createdAt:serverTimestamp()
+    });
+    await setDoc(doc(db,"businesses",state.user.uid,"products",productId),{
+      stock:Math.max(0,Number(product.stock||0)-qty),
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    await addDoc(collection(db,"businesses",state.user.uid,"stockMoves"),{
+      productId, productName:product.name, type:"sale", quantity:-qty,
+      note:"Sortie liée à une vente", createdAt:serverTimestamp()
     });
     e.target.reset();
     $("sale-qty").value=1;
@@ -151,6 +168,30 @@ $("sale-form").onsubmit=async(e)=>{
   } catch(e) { setStatus("Impossible d'enregistrer la vente.",true); }
 };
 
+
+
+$("stock-form").onsubmit=async(e)=>{
+  e.preventDefault();
+  if(!state.user)return;
+  const productId=$("stock-product").value;
+  const product=state.products.find(p=>p.id===productId);
+  const qty=Number($("stock-qty").value);
+  if(!product || qty<1)return;
+  try {
+    await setDoc(doc(db,"businesses",state.user.uid,"products",productId),{
+      stock:Number(product.stock||0)+qty,
+      updatedAt:serverTimestamp()
+    },{merge:true});
+    await addDoc(collection(db,"businesses",state.user.uid,"stockMoves"),{
+      productId, productName:product.name, type:"purchase", quantity:qty,
+      note:$("stock-note").value.trim(), createdAt:serverTimestamp()
+    });
+    e.target.reset();
+    $("stock-qty").value=1;
+    await loadProducts();
+    setStatus("Stock approvisionné.");
+  } catch(e) { setStatus("Impossible de mettre à jour le stock.",true); }
+};
 
 $("customer-form").onsubmit=async(e)=>{
   e.preventDefault();
