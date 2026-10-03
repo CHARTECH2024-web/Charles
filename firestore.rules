@@ -100,7 +100,37 @@ service cloud.firestore {
       }
 
       match /debts/{debtId} {
-        allow read, create, update, delete: if signedIn() && request.auth.uid == businessId;
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.customerId is string
+          && request.resource.data.customerName is string
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0
+          && request.resource.data.paidAmount == 0
+          && request.resource.data.status == "open";
+        allow update: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.customerId == resource.data.customerId
+          && request.resource.data.customerName == resource.data.customerName
+          && request.resource.data.amount == resource.data.amount
+          && request.resource.data.paidAmount is number
+          && request.resource.data.paidAmount >= resource.data.paidAmount
+          && request.resource.data.paidAmount <= resource.data.amount
+          && request.resource.data.status in ["open","partial","paid"];
+        allow delete: if signedIn() && request.auth.uid == businessId;
+      }
+
+      match /debtPayments/{paymentId} {
+        allow read: if signedIn() && request.auth.uid == businessId;
+        allow create: if signedIn()
+          && request.auth.uid == businessId
+          && request.resource.data.debtId is string
+          && request.resource.data.customerId is string
+          && request.resource.data.customerName is string
+          && request.resource.data.amount is number
+          && request.resource.data.amount > 0;
+        allow update, delete: if signedIn() && request.auth.uid == businessId;
       }
 
       match /expenses/{expenseId} {
