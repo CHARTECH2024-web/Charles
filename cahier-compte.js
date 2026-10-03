@@ -227,24 +227,36 @@ $("sale-form").onsubmit=async(e)=>{
   const amount=Number($("sale-amount").value);
   if(qty<1 || amount<0)return;
   try {
-    if(qty > Number(product.stock || 0)){ setStatus("Stock insuffisant pour cette vente.",true); return; }
-    await addDoc(collection(db,"businesses",state.user.uid,"sales"),{
-      productId, productName:product.name, quantity:qty, amount,
-      createdAt:serverTimestamp()
-    });
-    await setDoc(doc(db,"businesses",state.user.uid,"products",productId),{
-      stock:Math.max(0,Number(product.stock||0)-qty),
-      updatedAt:serverTimestamp()
-    },{merge:true});
-    await addDoc(collection(db,"businesses",state.user.uid,"stockMoves"),{
-      productId, productName:product.name, type:"sale", quantity:-qty,
-      note:"Sortie liée à une vente", createdAt:serverTimestamp()
+    const productRef=doc(db,"businesses",state.user.uid,"products",productId);
+    const saleRef=doc(collection(db,"businesses",state.user.uid,"sales"));
+    const stockMoveRef=doc(collection(db,"businesses",state.user.uid,"stockMoves"));
+    await runTransaction(db,async(tx)=>{
+      const freshProduct=await tx.get(productRef);
+      if(!freshProduct.exists()) throw new Error("Produit introuvable");
+      const fresh=freshProduct.data();
+      const currentStock=Number(fresh.stock || 0);
+      if(qty > currentStock) throw new Error("Stock insuffisant");
+      tx.update(productRef,{
+        stock:currentStock-qty,
+        updatedAt:serverTimestamp()
+      });
+      tx.set(saleRef,{
+        productId, productName:fresh.name || product.name, quantity:qty, amount,
+        createdAt:serverTimestamp()
+      });
+      tx.set(stockMoveRef,{
+        productId, productName:fresh.name || product.name, type:"sale", quantity:-qty,
+        note:"Sortie liée à une vente", createdAt:serverTimestamp()
+      });
     });
     e.target.reset();
     $("sale-qty").value=1;
     await loadSales();
     setStatus("Vente enregistrée.");
-  } catch(e) { setStatus("Impossible d'enregistrer la vente.",true); }
+  } catch(e) {
+    const message=e.message==="Stock insuffisant" ? "Stock insuffisant pour cette vente." : "Impossible d'enregistrer la vente.";
+    setStatus(message,true);
+  }
 };
 
 
