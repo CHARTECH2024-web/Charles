@@ -5,7 +5,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const state = { user:null, products:[], sales:[] };
+const state = { user:null, products:[], sales:[], customers:[], debts:[] };
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => `${Number(value || 0).toLocaleString("fr-FR")} FC`;
@@ -64,6 +64,29 @@ async function loadSales() {
   state.sales=snap.docs.map(d=>({id:d.id,...d.data()}));
   const total=state.sales.reduce((sum,s)=>sum+Number(s.amount||0),0);
   $("stat-sales").textContent=money(total);
+}
+
+
+async function loadCustomers() {
+  const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"customers"),orderBy("name")));
+  state.customers=snap.docs.map(d=>({id:d.id,...d.data()}));
+  $("stat-customers").textContent=state.customers.length;
+  $("customer-count").textContent=`${state.customers.length} client(s)`;
+  $("customer-list").innerHTML=state.customers.length
+    ? state.customers.map(c=>`<div class="cahier-list-row"><strong>${escapeHtml(c.name)}</strong><span>${escapeHtml(c.phone || "Sans téléphone")}</span></div>`).join("")
+    : "<p class='text-muted'>Aucun client pour le moment.</p>";
+  $("debt-customer").innerHTML='<option value="">Sélectionner</option>' +
+    state.customers.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
+}
+
+async function loadDebts() {
+  const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"debts"),orderBy("createdAt","desc")));
+  state.debts=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const total=state.debts.reduce((sum,d)=>sum+Number(d.amount||0),0);
+  $("stat-debts").textContent=money(total);
+  $("debt-list").innerHTML=state.debts.length
+    ? state.debts.map(d=>`<div class="cahier-list-row"><strong>${escapeHtml(d.customerName)}</strong><span>${money(d.amount)} • ${escapeHtml(d.note || "Crédit")}</span></div>`).join("")
+    : "<p class='text-muted'>Aucun crédit enregistré.</p>";
 }
 
 function escapeHtml(value) {
@@ -128,13 +151,51 @@ $("sale-form").onsubmit=async(e)=>{
   } catch(e) { setStatus("Impossible d'enregistrer la vente.",true); }
 };
 
+
+$("customer-form").onsubmit=async(e)=>{
+  e.preventDefault();
+  if(!state.user)return;
+  try {
+    await addDoc(collection(db,"businesses",state.user.uid,"customers"),{
+      name:$("customer-name").value.trim(),
+      phone:$("customer-phone").value.trim(),
+      createdAt:serverTimestamp(),
+      updatedAt:serverTimestamp()
+    });
+    e.target.reset();
+    await loadCustomers();
+    setStatus("Client ajouté.");
+  } catch(e) { setStatus("Impossible d'ajouter le client.",true); }
+};
+
+$("debt-form").onsubmit=async(e)=>{
+  e.preventDefault();
+  if(!state.user)return;
+  const customer=state.customers.find(c=>c.id===$("debt-customer").value);
+  const amount=Number($("debt-amount").value);
+  if(!customer || amount<=0)return;
+  try {
+    await addDoc(collection(db,"businesses",state.user.uid,"debts"),{
+      customerId:customer.id,
+      customerName:customer.name,
+      amount,
+      note:$("debt-note").value.trim(),
+      status:"open",
+      createdAt:serverTimestamp()
+    });
+    e.target.reset();
+    await loadDebts();
+    setStatus("Crédit client enregistré.");
+  } catch(e) { setStatus("Impossible d'enregistrer le crédit.",true); }
+};
+
 observeUser(async(user)=>{
   state.user=user;
   if(!user){showLogin();return;}
   try {
     showApp(user);
     await ensureBusiness(user);
-    await Promise.all([loadProducts(),loadSales()]);
+    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts()]);
   } catch(e) {
     setStatus("Impossible de charger votre espace Cahier de Compte.",true);
   }
