@@ -59,15 +59,20 @@ function googleBtnLabel() {
  * Déconnexion + retour à l'écran de login
  */
 export async function loginUserWithGoogle() {
-  // Sur mobile/in-app browsers, redirect is more reliable than popups.
-  // Firebase recommande le redirect sur mobile lorsque les popups sont bloqués.
-  const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent || "");
-  if (isMobile) {
-    await signInWithRedirect(auth, googleProvider);
-    return null;
+  // Try popup first on browsers where a popup is usable. This avoids the
+  // redirect helper when the site is served outside Firebase Hosting.
+  // If the browser blocks the popup, fall back to the mobile-safe redirect.
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    return result.user;
+  } catch (error) {
+    if (error?.code === "auth/popup-blocked" ||
+        error?.code === "auth/operation-not-supported-in-this-environment") {
+      await signInWithRedirect(auth, googleProvider);
+      return null;
+    }
+    throw error;
   }
-  const result = await signInWithPopup(auth, googleProvider);
-  return result.user;
 }
 
 export async function finishGoogleRedirect() {
