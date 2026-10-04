@@ -6,6 +6,8 @@
 import { auth, googleProvider, ADMIN_EMAIL } from "./firebase-config.js";
 import {
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   onAuthStateChanged,
   signOut
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
