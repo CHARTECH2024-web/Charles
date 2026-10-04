@@ -1,4 +1,4 @@
-# Portfolio V3.1 — Bisimwa Mushimanja Charles
+# Charles V3.5 — Bisimwa Mushimanja Charles
 
 Évolution du **Portfolio Privé V3** existant (`C.html`). L'architecture reste
 **un seul dossier racine, sans sous-dossier**, avec plusieurs fichiers HTML/CSS/JS,
@@ -195,3 +195,26 @@ La page Community est un chat général temps réel basé sur Cloud Firestore :
 
 ### Thèmes
 Le site propose quatre thèmes : **Orange**, **Vert**, **Blanc** et **Bleu de nuit**.
+
+
+## V3.5 — identité unique et assistant Charles
+
+V3.5 introduit une **session Google unique pour tout le site**. Firebase Authentication utilise explicitement une persistance locale : après une authentification réussie, la même session est réutilisée par les Messages privés, Cahier de Compte, Profil et les autres services protégés. L'utilisateur ne doit pas se reconnecter à chaque service.
+
+### Assistant Charles
+- assistant local, sans clé API ni secret dans le navigateur ;
+- connaît l'état de connexion du compte sans accéder aux données privées de Cahier de Compte ou des conversations ;
+- aide à naviguer vers Cahier de Compte, Messages privés, Profil et Projets ;
+- explique la connexion unique, les thèmes et les trois langues ;
+- calculatrice avec analyse arithmétique sûre, sans `eval()` ni `Function()` sur l'entrée utilisateur ;
+- historique du chatbot conservé uniquement en mémoire de la page, pas dans `localStorage`.
+
+### Sécurité
+- authentification Google centralisée avec persistance Firebase ;
+- règles Firestore séparant strictement les espaces privés par UID ;
+- profils publics limités à des champs d'identité non sensibles ;
+- messages privés accessibles uniquement aux deux participants ;
+- données Cahier de Compte accessibles uniquement au propriétaire ;
+- aucune clé API secrète, mot de passe ou service account dans le code client.
+
+> Important : aucune application web ne peut promettre une sécurité « absolue ». V3.5 vise une sécurité forte côté client + Firebase Rules ; des protections supplémentaires comme Firebase App Check et une surveillance des abus peuvent encore être ajoutées pour une mise en production plus exigeante.
