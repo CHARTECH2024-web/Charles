@@ -6,7 +6,13 @@
     "providers": {
       "googleSignIn": {
         "oAuthBrandDisplayName": "Charles platform",
-        "supportEmail": "chartech031@gmail.com"
+        "supportEmail": "chartech031@gmail.com",
+        "authorizedRedirectUris": [
+          "https://portfolio-charles-v31-98fc9.firebaseapp.com/__/auth/handler",
+          "https://portfolio-charles-v31-98fc9.web.app/__/auth/handler",
+          "https://charles.charlestechnology46.workers.dev/__/auth/handler",
+          "https://chartech2024-web.github.io/Charles/__/auth/handler"
+        ]
       }
     }
   }
