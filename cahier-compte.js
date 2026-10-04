@@ -1,5 +1,5 @@
 import { auth, db } from "./firebase-config.js";
-import { loginUserWithGoogle, logoutUser, observeUser, finishGoogleRedirect } from "./auth.js";
+import { loginUserWithGoogle, logoutUser, observeUser } from "./auth.js";
 import {
   doc, getDoc, setDoc, addDoc, collection, query, orderBy, getDocs, runTransaction,
   serverTimestamp
@@ -392,11 +392,6 @@ $("debt-form").onsubmit=async(e)=>{
 $("report-period").onchange=updateReport;
 $("report-refresh").onclick=updateReport;
 
-
-finishGoogleRedirect().catch((error)=>{
-  const el=$("cahier-login-error");
-  if(el){ el.hidden=false; el.textContent=authErrorMessage(error); }
-});
 
 observeUser(async(user)=>{
   state.user=user;
