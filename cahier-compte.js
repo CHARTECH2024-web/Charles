@@ -181,11 +181,18 @@ function escapeHtml(value) {
 
 function authErrorMessage(error) {
   const code=error?.code || "";
-  if(code==="auth/unauthorized-domain") return "Ce domaine n'est pas encore autorisé dans Firebase Authentication. Ajoutez le domaine actuel dans Sécurité > Authentication > Settings > Authorized domains.";
-  if(code==="auth/popup-blocked") return "Le navigateur a bloqué la fenêtre Google. La connexion mobile utilise maintenant une redirection.";
+  if(code==="auth/unauthorized-domain" || code==="auth/unauthorized-continue-uri") {
+    const host = window.location.hostname;
+    return "Firebase refuse ce domaine (" + host + "). Il est déjà prévu pour Charles ; vérifiez maintenant la clé API Web/Browser key du projet et ses restrictions de domaine, puis rechargez la page.";
+  }
+  if(code==="auth/invalid-api-key" || code==="auth/api-key-not-valid") {
+    return "La clé API Firebase utilisée par Charles n'est pas valide pour cette application. Vérifiez la clé Web du projet Firebase.";
+  }
+  if(code==="auth/popup-blocked") return "Le navigateur bloque la fenêtre Google. Charles va utiliser la connexion par redirection.";
   if(code==="auth/popup-closed-by-user") return "La fenêtre Google a été fermée avant la fin de la connexion.";
   if(code==="auth/network-request-failed") return "Connexion réseau impossible. Vérifiez votre connexion Internet puis réessayez.";
-  return "Connexion Google impossible. Réessayez.";
+  if(code==="auth/operation-not-allowed") return "La connexion Google n'est pas activée dans Firebase Authentication.";
+  return "Connexion Google impossible (" + (code || "erreur inconnue") + "). Réessayez.";
 }
 
 $("cahier-login-btn").onclick=async()=>{
