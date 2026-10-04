@@ -231,16 +231,16 @@ function initUnifiedAuth() {
     window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code: error?.code || "unknown" } }));
   });
 
-  document.addEventListener("click", event => {
-    const button = event.target.closest("#siteAuthBtn, #mobileAuthBtn");
-    if (!button) return;
-
+  const handleAuthClick = () => {
     if (siteUser) {
       window.location.href = "profile.html";
     } else {
       startSiteLogin();
     }
-  });
+  };
+
+  document.getElementById("siteAuthBtn")?.addEventListener("click", handleAuthClick);
+  document.getElementById("mobileAuthBtn")?.addEventListener("click", handleAuthClick);
 }
 
 /* ---------- CHARLES ASSISTANT V3.5 ---------- */
