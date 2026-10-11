@@ -34,7 +34,7 @@ function injectHeader() {
   mount.outerHTML = `
   <header class="site-header">
     <div class="nav-container">
-      <a href="index.html" class="logo"><span class="nuru-nav-mark">N</span>NURU</a>
+      <a href="index.html" class="logo"><span class="nuru-nav-mark">H/span>HORIZON</a>
       <nav class="nav-links" id="navMenu">
         ${links}
         <div class="mobile-menu-tools">
@@ -121,17 +121,17 @@ function setupNavigation() {
 function injectFooter() {
   const mount = document.getElementById("site-footer");
   if (!mount) return;
-  mount.outerHTML = `<footer class="site-footer"><p><strong>NURU</strong></p><p style="color:var(--metallic);font-size:.85rem;margin-top:.3rem;" data-i18n="footer">${t("footer")}</p></footer>`;
+  mount.outerHTML = `<footer class="site-footer"><p><strong>HORIZON</strong></p><p style="color:var(--metallic);font-size:.85rem;margin-top:.3rem;" data-i18n="footer">${t("footer")}</p></footer>`;
 }
 
 function injectChatbot() {
   const mount = document.getElementById("chatbot-root");
   if (!mount) return;
   mount.outerHTML = `
-  <div class="chatbot-btn" id="chatBtn" title="NURU AI">🤖</div>
-  <div class="chatbot-window" id="chatWindow" role="dialog" aria-label="NURU AI">
+  <div class="chatbot-btn" id="chatBtn" title="HORIZON AI">🤖</div>
+  <div class="chatbot-window" id="chatWindow" role="dialog" aria-label="HORIZON AI">
     <div class="chat-header">
-      <div class="chat-header-info"><span>🤖</span><div><strong data-i18n="chat">NURU AI</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
+      <div class="chat-header-info"><span>🤖</span><div><strong data-i18n="chat">HORIZON AI</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
       <div class="chat-actions"><button id="chatNewBtn" data-i18n="chatNew">Nouveau</button><button id="chatCloseBtn" aria-label="Fermer">✖</button></div>
     </div>
     <div class="chat-messages" id="chatMsgs"></div>
@@ -474,7 +474,7 @@ async function initVisitorTracking() {
 
 /* ---------- INIT ---------- */
 window.addEventListener("DOMContentLoaded", () => {
-  document.title = document.title.replace(/Charles/gi, "NURU");
+  document.title = document.title.replace(/Charles/gi, "HORIZON");
   injectHeader();
   injectFooter();
   injectChatbot();
