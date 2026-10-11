@@ -101,7 +101,7 @@ form?.addEventListener("submit",async e=>{
     input.value="";
     msg("Message envoyé.");
   }catch(e){
-    console.error("NURU message send failed:",e);
+    console.error("HORIZON message send failed:",e);
     msg(e?.code ? "Envoi impossible ("+e.code+")." : "Le message n'a pas pu être envoyé.");
   }finally{button.disabled=false;}
 });
