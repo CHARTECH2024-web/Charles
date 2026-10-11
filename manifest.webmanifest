@@ -1,0 +1,26 @@
+{
+  "id": "/",
+  "name": "NURU — Technology. Innovation. Solutions.",
+  "short_name": "NURU",
+  "description": "La plateforme NURU : projets, communauté et outils numériques.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#09090f",
+  "theme_color": "#f4c400",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "/nuru-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": [
+    "business",
+    "productivity",
+    "education"
+  ]
+}
