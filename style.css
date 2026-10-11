@@ -478,4 +478,4 @@ footer.site-footer {
 @media(max-width:700px){.nuru-home{padding-bottom:0}.nuru-hero{min-height:auto;padding:7rem 6% 3.5rem}.nuru-orbit{width:240px;height:240px;right:-90px;top:22%;transform:none;opacity:.18}.nuru-hero-content{max-width:100%}.nuru-wordmark{font-size:3.8rem}.nuru-trust-line{margin-top:2.5rem;gap:.55rem}.nuru-intro,.nuru-platform{grid-template-columns:1fr;gap:1.4rem}.section-wrap{padding:3.5rem 6%}.nuru-service-grid{grid-template-columns:1fr}.nuru-service-card{min-height:245px}.nuru-cta{display:block;margin:2rem 6% 3rem;padding:2rem}.nuru-cta-actions{margin-top:1.7rem}.nuru-cta-mark{font-size:13rem;right:-1rem;bottom:-2rem}.nuru-home h2{font-size:2.2rem}}
 @media(prefers-reduced-motion:reduce){.orbit-ring{animation:none}.nuru-service-card{transition:none}}
 
-.nuru-nav-mark{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:4px;background:var(--orange);color:#090a0f;font-size:.95rem;font-weight:900;letter-spacing:0}
+.logo .nuru-nav-mark{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:4px;background:var(--orange);color:#090a0f;font-size:.95rem;font-weight:900;letter-spacing:0}
