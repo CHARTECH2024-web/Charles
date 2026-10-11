@@ -1,13 +1,13 @@
 # NURU V4.0 — Platform Foundation
 
-This branch starts the transition from the Charles personal portfolio to **NURU**, a technology platform concept.
+The `main` branch now contains the initial **NURU V4** platform foundation, with existing services being hardened incrementally.
 
 ## What changed in this foundation
 - Rebuilt the homepage around NURU's proposed technology domains: Digital, AI, Electronics, EcoTech and Lab.
 - Introduced a responsive yellow/black/white visual identity inspired by the NURU mark.
 - Rebranded the shared navigation, footer and assistant label to NURU.
 - Preserved the existing HTML/CSS/JavaScript structure and kept existing service links to projects, community, media, contact and Cahier de Compte.
-- Kept this work on the separate `nuru-v4-foundation` branch. The production `main` branch has not been changed.
+- Applied the visual foundation to `main`; existing authentication, messaging, media and business features remain under staged verification.
 
 ## Existing services to preserve and audit
 - Firebase Google Authentication
@@ -18,10 +18,10 @@ This branch starts the transition from the Charles personal portfolio to **NURU*
 - Theme/language controls and visitor tracking
 
 ## Important implementation note
-The homepage introduces the proposed NURU service architecture and does not claim every proposed division is already operational. Existing service pages must be reviewed and rebranded incrementally. Firebase rules, storage rules, authentication, multi-user business data isolation and admin permissions must be tested before deployment.
+The homepage introduces the proposed NURU service architecture and does not claim every proposed division is already operational. Existing service pages and admin workflows still require end-to-end regression testing. Firestore rules have been tightened for business ownership, immutable financial history, linked stock movements and linked debt payments; these rules must be tested in the Firebase Emulator before being treated as production-validated.
 
 ## Next phase
-1. Audit all existing service and admin pages for legacy branding and regressions.
-2. Validate the new homepage and navigation on small mobile screens and desktop.
-3. Review Firestore and Storage rules without replacing working production rules blindly.
-4. Build a release checklist and open a pull request only after the existing features are verified.
+1. Run Firebase Emulator tests for Firestore rules and business transactions.
+2. Validate Google sign-in and the shared session on Android and desktop.
+3. Regression-test private messaging, media/document publishing, admin controls and business records.
+4. Review Storage/Cloudinary access and complete the release checklist.
