@@ -48,7 +48,14 @@ service cloud.firestore {
     }
 
     match /conversations/{conversationId} {
-      allow read: if signedIn() && request.auth.uid in resource.data.participants;
+      // Autoriser la lecture d'un identifiant de conversation encore inexistant
+      // afin que le client puisse vérifier son absence avant de le créer.
+      // Si le document existe déjà, seuls ses participants peuvent le lire.
+      allow read: if signedIn()
+        && (
+          !exists(/databases/$(database)/documents/conversations/$(conversationId))
+          || request.auth.uid in resource.data.participants
+        );
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(["participants","participantInfo","createdAt","lastMessage","lastMessageAt","lastSenderId"])
         && request.resource.data.participants is list
