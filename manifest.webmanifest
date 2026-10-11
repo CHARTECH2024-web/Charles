@@ -1,8 +1,8 @@
 {
   "id": "./",
-  "name": "NURU — Technology. Innovation. Solutions.",
-  "short_name": "NURU",
-  "description": "La plateforme NURU : projets, communauté et outils numériques.",
+  "name": "HORIZON — Technology. Innovation. Solutions.",
+  "short_name": "HORIZON",
+  "description": "La plateforme HORIZON : projets, communauté et outils numériques.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
@@ -12,9 +12,9 @@
   "lang": "fr",
   "icons": [
     {
-      "src": "./Screenshot_20261011-072544%20(1).png",
+      "src": "./horizon-icon.svg?v=2",
       "sizes": "any",
-      "type": "image/png",
+      "type": "image/svg+xml",
       "purpose": "any"
     },
     {
