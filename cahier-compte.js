@@ -262,14 +262,17 @@ $("sale-form").onsubmit=async(e)=>{
       if(qty > currentStock) throw new Error("Stock insuffisant");
       tx.update(productRef,{
         stock:currentStock-qty,
+        lastStockMoveId:stockMoveRef.id,
         updatedAt:serverTimestamp()
       });
       tx.set(saleRef,{
         productId, productName:fresh.name || product.name, quantity:qty, amount,
+        stockMoveId:stockMoveRef.id,
         createdAt:serverTimestamp()
       });
       tx.set(stockMoveRef,{
         productId, productName:fresh.name || product.name, type:"sale", quantity:-qty,
+        saleId:saleRef.id,
         note:"Sortie liée à une vente", createdAt:serverTimestamp()
       });
     });
@@ -310,13 +313,21 @@ $("stock-form").onsubmit=async(e)=>{
   const qty=Number($("stock-qty").value);
   if(!product || qty<1)return;
   try {
-    await setDoc(doc(db,"businesses",state.user.uid,"products",productId),{
-      stock:Number(product.stock||0)+qty,
-      updatedAt:serverTimestamp()
-    },{merge:true});
-    await addDoc(collection(db,"businesses",state.user.uid,"stockMoves"),{
-      productId, productName:product.name, type:"purchase", quantity:qty,
-      note:$("stock-note").value.trim(), createdAt:serverTimestamp()
+    const productRef=doc(db,"businesses",state.user.uid,"products",productId);
+    const stockMoveRef=doc(collection(db,"businesses",state.user.uid,"stockMoves"));
+    await runTransaction(db,async(tx)=>{
+      const freshSnap=await tx.get(productRef);
+      if(!freshSnap.exists()) throw new Error("Produit introuvable");
+      const fresh=freshSnap.data();
+      tx.update(productRef,{
+        stock:Number(fresh.stock||0)+qty,
+        lastStockMoveId:stockMoveRef.id,
+        updatedAt:serverTimestamp()
+      });
+      tx.set(stockMoveRef,{
+        productId, productName:fresh.name||product.name, type:"purchase", quantity:qty,
+        note:$("stock-note").value.trim(), createdAt:serverTimestamp()
+      });
     });
     e.target.reset();
     $("stock-qty").value=1;
@@ -342,7 +353,7 @@ $("debt-payment-form").onsubmit=async(e)=>{
       const remaining=Number(current.amount||0)-Number(current.paidAmount||0);
       if(amount>remaining) throw new Error("Paiement supérieur au solde");
       const newPaid=Number(current.paidAmount||0)+amount;
-      tx.update(debtRef,{paidAmount:newPaid,status:newPaid>=Number(current.amount||0)?"paid":"partial",updatedAt:serverTimestamp()});
+      tx.update(debtRef,{paidAmount:newPaid,status:newPaid>=Number(current.amount||0)?"paid":"partial",lastPaymentId:paymentRef.id,updatedAt:serverTimestamp()});
       tx.set(paymentRef,{debtId:debt.id,customerId:debt.customerId,customerName:debt.customerName,amount,note:$("payment-note").value.trim(),createdAt:serverTimestamp()});
     });
     e.target.reset();
