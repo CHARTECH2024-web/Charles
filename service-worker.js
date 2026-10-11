@@ -45,17 +45,18 @@ self.addEventListener("fetch", event => {
   // Les requêtes Firebase, les données et les réponses personnalisées sont exclues.
   if (!STATIC_EXTENSIONS.test(url.pathname) || url.pathname.startsWith("/__/")) return;
 
-  event.respondWith(
-    fetch(request).then(response => {
+  event.respondWith((async () => {
+    try {
+      const response = await fetch(request);
       if (response && response.ok && response.type === "basic") {
-        const copy = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(request, copy));
+        const cache = await caches.open(CACHE_NAME);
+        await cache.put(request, response.clone());
       }
       return response;
-    }).catch(async () => {
+    } catch {
       const cached = await caches.match(request);
       if (cached) return cached;
       return new Response("", { status: 503, statusText: "Offline" });
-    })
-  );
+    }
+  })());
 });
