@@ -34,7 +34,7 @@ function injectHeader() {
   mount.outerHTML = `
   <header class="site-header">
     <div class="nav-container">
-      <a href="index.html" class="logo"><span class="nuru-nav-mark">N</span>NURU</a>
+      <a href="index.html" class="logo"><span class="nuru-nav-mark">H</span>HORIZON</a>
       <nav class="nav-links" id="navMenu">
         ${links}
         <div class="mobile-menu-tools">
@@ -121,17 +121,17 @@ function setupNavigation() {
 function injectFooter() {
   const mount = document.getElementById("site-footer");
   if (!mount) return;
-  mount.outerHTML = `<footer class="site-footer"><p><strong>NURU</strong></p><p style="color:var(--metallic);font-size:.85rem;margin-top:.3rem;" data-i18n="footer">${t("footer")}</p></footer>`;
+  mount.outerHTML = `<footer class="site-footer"><p><strong>HORIZON</strong></p><p style="color:var(--metallic);font-size:.85rem;margin-top:.3rem;" data-i18n="footer">${t("footer")}</p></footer>`;
 }
 
 function injectChatbot() {
   const mount = document.getElementById("chatbot-root");
   if (!mount) return;
   mount.outerHTML = `
-  <div class="chatbot-btn" id="chatBtn" title="NURU AI">🤖</div>
-  <div class="chatbot-window" id="chatWindow" role="dialog" aria-label="NURU AI">
+  <div class="chatbot-btn" id="chatBtn" title="HORIZON AI">🤖</div>
+  <div class="chatbot-window" id="chatWindow" role="dialog" aria-label="HORIZON AI">
     <div class="chat-header">
-      <div class="chat-header-info"><span>🤖</span><div><strong data-i18n="chat">NURU AI</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
+      <div class="chat-header-info"><span>🤖</span><div><strong data-i18n="chat">HORIZON AI</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
       <div class="chat-actions"><button id="chatNewBtn" data-i18n="chatNew">Nouveau</button><button id="chatCloseBtn" aria-label="Fermer">✖</button></div>
     </div>
     <div class="chat-messages" id="chatMsgs"></div>
@@ -474,7 +474,12 @@ async function initVisitorTracking() {
 
 /* ---------- INIT ---------- */
 window.addEventListener("DOMContentLoaded", () => {
-  document.title = document.title.replace(/Charles/gi, "NURU");
+  const horizonIcon = document.querySelector('link[rel~="icon"]') || document.createElement("link");
+  horizonIcon.rel = "icon";
+  horizonIcon.type = "image/svg+xml";
+  horizonIcon.href = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23f4c400'/%3E%3Cpath d='M22 20h16v23h24V20h16v60H62V56H38v24H22z' fill='%2309090f'/%3E%3C/svg%3E";
+  if (!horizonIcon.isConnected) document.head.appendChild(horizonIcon);
+  document.title = document.title.replace(/Charles/gi, "HORIZON");
   injectHeader();
   injectFooter();
   injectChatbot();
