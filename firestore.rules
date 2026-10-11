@@ -42,7 +42,8 @@ service cloud.firestore {
       allow create, update: if signedIn()
         && request.auth.uid == uid
         && request.resource.data.keys().hasOnly(["uid","displayName","email","photoURL","bio","updatedAt","createdAt"])
-        && (!("uid" in request.resource.data) || request.resource.data.uid == uid);
+        && (!("uid" in request.resource.data) || request.resource.data.uid == uid)
+        && (!("email" in request.resource.data) || request.resource.data.email is string);
       allow delete: if signedIn() && request.auth.uid == uid;
     }
 
@@ -127,6 +128,7 @@ service cloud.firestore {
             (
               request.resource.data.stock != resource.data.stock
               && request.resource.data.lastStockMoveId is string
+              && !exists(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.lastStockMoveId))
               && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.lastStockMoveId))
               && getAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.lastStockMoveId)).data.productId == productId
               && getAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.lastStockMoveId)).data.quantity == request.resource.data.stock - resource.data.stock
