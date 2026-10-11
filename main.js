@@ -474,6 +474,7 @@ async function initVisitorTracking() {
 
 /* ---------- INIT ---------- */
 window.addEventListener("DOMContentLoaded", () => {
+  document.title = document.title.replace(/Charles/gi, "NURU");
   injectHeader();
   injectFooter();
   injectChatbot();
