@@ -1,6 +1,6 @@
 import { db } from "./firebase-config.js";
 import { loginUserWithGoogle, logoutUser, observeUser } from "./auth.js";
-import { collection, doc, setDoc, getDoc, getDocs, query, orderBy, limit, onSnapshot, addDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+import { collection, doc, setDoc, getDoc, getDocs, query, orderBy, limit, onSnapshot, deleteDoc, serverTimestamp, writeBatch } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 import { t } from "./i18n.js";
 
 const loginGate=document.getElementById("loginGate"), app=document.getElementById("privateApp");
@@ -81,10 +81,29 @@ form?.addEventListener("submit",async e=>{
   const text=input.value.trim();if(!text)return;
   const id=pair(me.uid,selected.uid), button=form.querySelector("button[type=submit]");button.disabled=true;
   try{
-    await addDoc(collection(db,"conversations",id,"messages"),{senderId:me.uid,receiverId:selected.uid,text,createdAt:serverTimestamp()});
-    await setDoc(doc(db,"conversations",id),{lastMessage:text.slice(0,120),lastMessageAt:serverTimestamp(),lastSenderId:me.uid},{merge:true});
-    input.value="";msg("Message envoyé.");
-  }catch(e){console.error(e);msg("Le message n'a pas pu être envoyé.");}finally{button.disabled=false;}
+    // Écrire le message et mettre à jour le résumé dans une seule opération atomique.
+    // Ainsi, l'interface ne signale pas un échec après un message déjà enregistré.
+    const conversationRef=doc(db,"conversations",id);
+    const messageRef=doc(collection(db,"conversations",id,"messages"));
+    const batch=writeBatch(db);
+    batch.set(messageRef,{
+      senderId:me.uid,
+      receiverId:selected.uid,
+      text,
+      createdAt:serverTimestamp()
+    });
+    batch.update(conversationRef,{
+      lastMessage:text.slice(0,120),
+      lastMessageAt:serverTimestamp(),
+      lastSenderId:me.uid
+    });
+    await batch.commit();
+    input.value="";
+    msg("Message envoyé.");
+  }catch(e){
+    console.error("NURU message send failed:",e);
+    msg(e?.code ? "Envoi impossible ("+e.code+")." : "Le message n'a pas pu être envoyé.");
+  }finally{button.disabled=false;}
 });
 search?.addEventListener("input",renderUsers);
 document.addEventListener("charles:language",()=>{renderUsers();if(selected)stateEl.textContent=t("online");});
