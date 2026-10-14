@@ -2,7 +2,7 @@
  * Scope-aware for GitHub Pages (/Charles/) and Cloudflare Workers (/).
  * Cache only public static assets; never cache HTML, accounts, messages or business data.
  */
-const CACHE_NAME = "horizon-static-v3";
+const CACHE_NAME = "horizon-static-v4";
 const SCOPE_URL = new URL(self.registration.scope);
 const OFFLINE_URL = new URL("offline.html", SCOPE_URL).href;
 const STATIC_EXTENSIONS = /\.(?:css|js|svg|png|jpg|jpeg|webp|ico|woff2?)$/i;
@@ -23,7 +23,7 @@ self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(key => key.startsWith("nuru-static-") && key !== CACHE_NAME)
+        keys.filter(key => (key.startsWith("nuru-static-") || key.startsWith("horizon-static-")) && key !== CACHE_NAME)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
