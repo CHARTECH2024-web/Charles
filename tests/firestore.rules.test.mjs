@@ -169,7 +169,6 @@ test("private profiles cannot be read by another user", async () => {
   });
   const db = testEnv.authenticatedContext("mallory").firestore();
   await assertFails(getDoc(doc(db, "profiles", "alice")));
-  await assertSucceeds(getDoc(doc(db, "profiles", "mallory")).catch(() => ({ exists: () => false })));
 });
 
 test("KNOWN GAP: direct conversation creation does not yet require an accepted request", {
