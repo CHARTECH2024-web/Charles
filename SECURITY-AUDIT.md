@@ -45,9 +45,9 @@ The current UI deletes a message document on double-click. The checked-in rules 
 - Business records are scoped by business owner UID, with constrained create/update fields and transaction-linked stock/sales/debt rules.
 - Media/document metadata creation, updates, and deletion are admin-only; public reads depend on `visibility == "public"`.
 
-## Test plan
+## Test plan and first CI result
 
-The emulator suite covers unauthorized conversation reads, participant reads, sender spoofing, cross-owner business reads/writes, public/private metadata visibility, and non-admin media/document writes. Two planned behavior tests are explicitly skipped until the request-acceptance and message-deletion data models are implemented. Passing these emulator tests does not verify Cloudinary access control, Firebase production deployment, or Cloudflare Worker headers.
+The Firestore Emulator suite ran successfully in GitHub Actions on the audit branch: **12 passed, 0 failed, 2 skipped**. It covers unauthorized conversation reads, participant reads, sender spoofing, cross-owner business reads/writes, public/private metadata visibility, and non-admin media/document writes. Two planned behavior tests are explicitly skipped until the request-acceptance and message-deletion data models are implemented. Passing these emulator tests does not verify Cloudinary access control, Firebase production deployment, or Cloudflare Worker headers.
 
 ## Safe next steps
 
