@@ -34,7 +34,7 @@ function injectHeader() {
   mount.outerHTML = `
   <header class="site-header">
     <div class="nav-container">
-      <a href="index.html" class="logo"><span class="nuru-nav-mark">H</span>HORIZON</a>
+      <a href="index.html" class="logo"><span class="horizon-nav-mark">H</span>HORIZON</a>
       <nav class="nav-links" id="navMenu">
         ${links}
         <div class="mobile-menu-tools">
