@@ -95,7 +95,7 @@ body.authed .admin-guard { display: none !important; }
 .pub-info .pub-meta { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.15rem; }
 .pub-badge { font-size: 0.72rem; padding: 0.25rem 0.6rem; border-radius: 20px; font-weight: 600; text-transform: uppercase; }
 .pub-badge.public { background: rgba(40,167,69,0.15); color: #28a745; }
-.pub-badge.private { background: rgba(255,107,0,0.15); color: var(--orange); }
+.pub-badge.private { background: rgba(255,208,0,0.15); color: var(--orange); }
 .pub-actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
 
 .settings-row { display: flex; justify-content: space-between; align-items: center; padding: 1rem 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 0.6rem; }
