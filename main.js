@@ -424,7 +424,7 @@ function processBotQuery(raw) {
       : "Cahier de Compte utilise la même connexion Google que le reste de Charles. Connectez-vous une fois depuis le menu.";
   }
 
-  if (q.includes("theme") || q.includes("couleur")) return "Vous pouvez choisir Bleu, Orange, Vert, Sombre ou Clair depuis le menu 🎨.";
+  if (q.includes("theme") || q.includes("couleur")) return "HORIZON propose uniquement deux thèmes : fond noir avec boutons jaunes, ou fond blanc avec boutons jaunes. Choisissez-les depuis le menu 🎨.";
   if (q.includes("langue") || q.includes("swahili") || q.includes("anglais") || q.includes("francais")) return "Charles est disponible en français, English et Kiswahili depuis le menu 🌐.";
 
   if (q.includes("charles")) return "Bisimwa Mushimanja Charles est étudiant en électricité à l'EDAP/ISP Bukavu, passionné par l'électronique, la programmation et les systèmes embarqués.";
