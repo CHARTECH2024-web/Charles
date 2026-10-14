@@ -41,11 +41,8 @@ function injectHeader() {
           <div class="menu-group">
             <span data-i18n="theme">Thème</span>
             <div class="theme-palette">
-              <button data-theme-choice="blue" class="theme-dot" aria-label="Bleu">🔵</button>
-              <button data-theme-choice="orange" class="theme-dot" aria-label="Orange">🟠</button>
-              <button data-theme-choice="green" class="theme-dot" aria-label="Vert">🟢</button>
-              <button data-theme-choice="dark" class="theme-dot" aria-label="Sombre">⚫</button>
-              <button data-theme-choice="light" class="theme-dot" aria-label="Clair">⚪</button>
+              <button data-theme-choice="dark" class="theme-dot theme-dot-dark" aria-label="Noir et jaune" title="Noir et jaune">⚫</button>
+              <button data-theme-choice="light" class="theme-dot theme-dot-light" aria-label="Blanc et jaune" title="Blanc et jaune">⚪</button>
             </div>
           </div>
           <div class="menu-group">
@@ -71,11 +68,8 @@ function injectHeader() {
         <div class="theme-wrap">
           <button id="themeMenuBtn" class="theme-menu-btn" title="Thème">🎨</button>
           <div id="themeMenu" class="theme-menu">
-            <button data-theme-choice="blue">🔵 <span data-i18n="blue">Bleu</span></button>
-            <button data-theme-choice="orange">🟠 <span data-i18n="orange">Orange</span></button>
-            <button data-theme-choice="green">🟢 <span data-i18n="green">Vert</span></button>
-            <button data-theme-choice="dark">⚫ <span data-i18n="dark">Sombre</span></button>
-            <button data-theme-choice="light">⚪ <span data-i18n="light">Clair</span></button>
+            <button data-theme-choice="dark">⚫ <span>Noir & jaune</span></button>
+            <button data-theme-choice="light">⚪ <span>Blanc & jaune</span></button>
           </div>
         </div>
         <div class="language-wrap">
@@ -141,7 +135,7 @@ function injectChatbot() {
 }
 
 /* ---------- THEMES ---------- */
-const THEMES = ["blue","orange","green","dark","light"];
+const THEMES = ["dark","light"];
 
 function applyTheme(theme) {
   const safe = THEMES.includes(theme) ? theme : "dark";
