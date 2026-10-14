@@ -23,7 +23,7 @@ self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys()
       .then(keys => Promise.all(
-        keys.filter(key => (key.startsWith("nuru-static-") || key.startsWith("horizon-static-")) && key !== CACHE_NAME)
+        keys.filter(key => /-static-v\d+$/.test(key) && key !== CACHE_NAME)
           .map(key => caches.delete(key))
       ))
       .then(() => self.clients.claim())
