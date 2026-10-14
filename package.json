@@ -1,0 +1,16 @@
+{
+  "name": "horizon-workspace",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:security": "node --test tests/firestore.rules.test.mjs",
+    "test:security:emulator": "firebase emulators:exec --only firestore --project demo-horizon-security \"npm run test:security\""
+  },
+  "dependencies": {
+    "firebase": "10.13.2"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "3.0.4",
+    "firebase-tools": "^14.0.0"
+  }
+}
