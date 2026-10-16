@@ -113,6 +113,7 @@ async function loadDebts() {
   $("debt-payment-list").innerHTML=state.debtPayments.length
     ? state.debtPayments.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.customerName)}</strong><span>+${money(p.amount)} • ${escapeHtml(p.note||"Paiement")}</span></div>`).join("")
     : "<p class='text-muted'>Aucun paiement de crédit.</p>";
+  updateReport();
 }
 
 
@@ -278,7 +279,7 @@ $("sale-form").onsubmit=async(e)=>{
     });
     e.target.reset();
     $("sale-qty").value=1;
-    await loadSales();
+    await Promise.all([loadProducts(), loadSales()]);
     setStatus("Vente enregistrée.");
   } catch(e) {
     const message=e.message==="Stock insuffisant" ? "Stock insuffisant pour cette vente." : "Impossible d'enregistrer la vente.";
