@@ -126,6 +126,17 @@
     </section>
 
     <section class="cahier-card">
+      <div class="section-heading-row"><h3>💸 Enregistrer une dépense</h3><span id="expense-count">0 dépense(s)</span></div>
+      <form id="expense-form" class="cahier-form sale-form">
+        <label>Libellé<input id="expense-label" maxlength="120" required placeholder="Ex. Transport, loyer, achat de fournitures"></label>
+        <label>Montant (FC)<input id="expense-amount" type="number" min="0" step="1" required></label>
+        <label>Note<input id="expense-note" maxlength="160" placeholder="Note facultative"></label>
+        <button class="btn btn-primary" type="submit">Enregistrer la dépense</button>
+      </form>
+      <div id="expense-list" class="cahier-list"></div>
+    </section>
+
+    <section class="cahier-card">
       <div class="section-heading-row"><h3>📊 Rapports financiers</h3><span>Vue de l'activité</span></div>
       <div class="cahier-form sale-form">
         <label>Période
