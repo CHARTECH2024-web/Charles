@@ -469,3 +469,14 @@ footer.site-footer {
   opacity: .6;
   cursor: not-allowed;
 }
+
+
+/* HORIZON identity assets */
+.horizon-nav-logo { display:block; width:1.8rem; height:1.8rem; object-fit:contain; border-radius:5px; flex:0 0 auto; }
+.chatbot-btn { padding:0; overflow:hidden; }
+.chatbot-btn .horizon-ai-avatar { width:100%; height:100%; object-fit:cover; border-radius:50%; display:block; }
+.chat-header-info .horizon-ai-avatar { width:38px; height:38px; object-fit:cover; border-radius:50%; border:1px solid var(--orange); flex:0 0 auto; }
+.chat-header-info .horizon-ai-avatar-small { display:block; }
+.horizon-title-logo { display:inline-block; width:.95em; height:.95em; object-fit:contain; border-radius:.12em; vertical-align:middle; box-shadow:0 10px 45px rgba(255,208,0,.18); }
+.orbit-core .horizon-orbit-logo { width:42%; height:42%; object-fit:contain; border-radius:12%; }
+.chatbot-btn { appearance:none; }
