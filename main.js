@@ -34,7 +34,7 @@ function injectHeader() {
   mount.outerHTML = `
   <header class="site-header">
     <div class="nav-container">
-      <a href="index.html" class="logo"><span class="horizon-nav-mark">H</span>HORIZON</a>
+      <a href="index.html" class="logo"><img src="./Horizon%20logo.png" class="horizon-nav-logo" alt="">HORIZON</a>
       <nav class="nav-links" id="navMenu">
         ${links}
         <div class="mobile-menu-tools">
@@ -122,10 +122,10 @@ function injectChatbot() {
   const mount = document.getElementById("chatbot-root");
   if (!mount) return;
   mount.outerHTML = `
-  <div class="chatbot-btn" id="chatBtn" title="HORIZON AI">🤖</div>
+  <button class="chatbot-btn" id="chatBtn" type="button" title="HORIZON AI" aria-label="Ouvrir HORIZON AI"><img src="./ia.png" class="horizon-ai-avatar" alt=""></button>
   <div class="chatbot-window" id="chatWindow" role="dialog" aria-label="HORIZON AI">
     <div class="chat-header">
-      <div class="chat-header-info"><span>🤖</span><div><strong data-i18n="chat">HORIZON AI</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
+      <div class="chat-header-info"><img src="./ia.png" class="horizon-ai-avatar horizon-ai-avatar-small" alt=""><div><strong data-i18n="chat">HORIZON AI</strong><span data-i18n="chatLocal">Assistant local</span></div></div>
       <div class="chat-actions"><button id="chatNewBtn" data-i18n="chatNew">Nouveau</button><button id="chatCloseBtn" aria-label="Fermer">✖</button></div>
     </div>
     <div class="chat-messages" id="chatMsgs"></div>
