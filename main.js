@@ -466,8 +466,65 @@ async function initVisitorTracking() {
   }
 }
 
+/* ---------- PWA UPDATE MANAGEMENT ---------- */
+function registerHorizonPwaUpdates() {
+  if (!("serviceWorker" in navigator) || location.protocol !== "https:") return;
+
+  const hadControllerAtStart = Boolean(navigator.serviceWorker.controller);
+  let updateBanner = null;
+  let reloadRequested = false;
+
+  const showUpdateBanner = () => {
+    if (updateBanner || !document.body) return;
+    updateBanner = document.createElement("aside");
+    updateBanner.className = "horizon-update-banner";
+    updateBanner.setAttribute("role", "status");
+    updateBanner.setAttribute("aria-live", "polite");
+    updateBanner.innerHTML = '<span>Une nouvelle version de HORIZON est prête.</span><button type="button">Mettre à jour</button><button type="button" class="horizon-update-dismiss" aria-label="Plus tard">×</button>';
+    updateBanner.querySelector("button:not(.horizon-update-dismiss)")?.addEventListener("click", () => {
+      if (reloadRequested) return;
+      reloadRequested = true;
+      window.location.reload();
+    });
+    updateBanner.querySelector(".horizon-update-dismiss")?.addEventListener("click", () => {
+      updateBanner?.remove();
+      updateBanner = null;
+    });
+    document.body.appendChild(updateBanner);
+  };
+
+  navigator.serviceWorker.addEventListener("controllerchange", () => {
+    // Do not reload on the first-ever installation. On later updates, let the
+    // user choose when to reload so unsaved form entries are not lost.
+    if (hadControllerAtStart) showUpdateBanner();
+  });
+
+  navigator.serviceWorker.register("./service-worker.js", { updateViaCache: "none" })
+    .then(registration => {
+      registration.update().catch(() => {});
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        if (!worker) return;
+        worker.addEventListener("statechange", () => {
+          if (worker.state === "installed" && navigator.serviceWorker.controller) {
+            showUpdateBanner();
+          }
+        });
+      });
+
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+          registration.update().catch(() => {});
+        }
+      });
+      window.addEventListener("focus", () => registration.update().catch(() => {}));
+    })
+    .catch(error => console.warn("HORIZON PWA update check failed:", error));
+}
+
 /* ---------- INIT ---------- */
 window.addEventListener("DOMContentLoaded", () => {
+  registerHorizonPwaUpdates();
   document.title = document.title.replace(/Charles/gi, "HORIZON");
   injectHeader();
   injectFooter();
