@@ -480,3 +480,10 @@ footer.site-footer {
 .horizon-title-logo { display:inline-block; width:.95em; height:.95em; object-fit:contain; border-radius:.12em; vertical-align:middle; box-shadow:0 10px 45px rgba(255,208,0,.18); }
 .orbit-core .horizon-orbit-logo { width:42%; height:42%; object-fit:contain; border-radius:12%; }
 .chatbot-btn { appearance:none; }
+
+
+/* PWA update notice: ask before reloading to protect unsaved form entries */
+.horizon-update-banner { position:fixed; left:50%; bottom:1rem; transform:translateX(-50%); z-index:3000; width:min(92vw,560px); display:flex; align-items:center; justify-content:center; gap:.75rem; flex-wrap:wrap; padding:.85rem 1rem; border:1px solid var(--orange); border-radius:14px; background:var(--surface); color:var(--text-main); box-shadow:0 12px 40px rgba(0,0,0,.35); font-size:.9rem; }
+.horizon-update-banner button { border:0; border-radius:8px; padding:.55rem .85rem; background:var(--orange); color:#090a0f; font-weight:800; cursor:pointer; }
+.horizon-update-banner .horizon-update-dismiss { padding:.25rem .5rem; background:transparent; color:var(--text-muted); font-size:1.25rem; }
+@media(max-width:480px) { .horizon-update-banner { bottom:.5rem; gap:.5rem; font-size:.82rem; } }
