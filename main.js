@@ -227,7 +227,7 @@ function initUnifiedAuth() {
   });
 
   const handleAuthClick = () => {
-    window.location.href = siteUser ? "profile.html" : "auth.html";
+    window.location.href = siteUser ? "profile.html" : ("auth.html?next=" + encodeURIComponent(currentPage()));
   };
 
   document.getElementById("siteAuthBtn")?.addEventListener("click", handleAuthClick);
