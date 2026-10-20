@@ -196,18 +196,7 @@ function authErrorMessage(error) {
   return "Connexion Google impossible (" + (code || "erreur inconnue") + "). Réessayez.";
 }
 
-$("cahier-login-btn").onclick=async()=>{
-  const btn=$("cahier-login-btn");
-  btn.disabled=true;
-  $("cahier-login-error").hidden=true;
-  try { await loginUserWithGoogle(); }
-  catch(e) {
-    console.error("Cahier de Compte Google login:",e);
-    $("cahier-login-error").hidden=false;
-    $("cahier-login-error").textContent=authErrorMessage(e);
-    btn.disabled=false;
-  }
-};
+$("cahier-login-btn").onclick=()=>{window.location.href="./auth.html?next=cahier-compte.html";};
 
 $("cahier-logout").onclick=()=>logoutUser();
 
