@@ -12,7 +12,8 @@ function getSignupDetails(){const first=$("firstName").value.trim(),last=$("last
 function setMode(next){mode=next;modeButtons.forEach(b=>{const active=b.dataset.mode===mode;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));});$("signupFields").hidden=mode!=="signup";$("formTitle").textContent=mode==="signup"?"Créer votre compte":"Bienvenue";$("formSubtitle").textContent=mode==="signup"?"Rejoignez HORIZON en quelques étapes.":"Connectez-vous à votre espace HORIZON.";status("");}
 modeButtons.forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
 async function saveBasicProfile(user,displayName){const name=(displayName||user.displayName||"Membre").trim().slice(0,100);if(displayName&&displayName!==user.displayName)await updateProfile(user,{displayName:name});await setDoc(doc(db,"publicProfiles",user.uid),{uid:user.uid,displayName:name,photoURL:user.photoURL||"",updatedAt:serverTimestamp()},{merge:true});}
-function continueAfterLogin(){status("Connexion réussie. Ouverture de HORIZON…");sessionStorage.removeItem("horizon_signup_pending");sessionStorage.removeItem("horizon_auth_mode");setTimeout(()=>{window.location.href="./index.html";},650);}
+function getNextPath(){const next=new URLSearchParams(window.location.search).get("next")||"index.html";const allowed=["index.html","profile.html","community.html","cahier-compte.html","media.html","documents.html","projects.html"];return allowed.includes(next)?("./"+next):"./index.html";}
+function continueAfterLogin(){status("Connexion réussie. Ouverture de HORIZON…");sessionStorage.removeItem("horizon_signup_pending");sessionStorage.removeItem("horizon_auth_mode");const destination=getNextPath();setTimeout(()=>{window.location.href=destination;},650);}
 async function googleAuth(){
   if(mode==="signup"){signupDetails=getSignupDetails();if(!signupDetails)return;}
   busy(true);status("Connexion sécurisée avec Google…");
@@ -63,4 +64,4 @@ try{
     else{await saveBasicProfile(user,savedMode==="signup"?savedDetails.displayName:(user.displayName||user.email?.split("@")[0]||"Membre"));continueAfterLogin();}
   }
 }catch(error){console.error("HORIZON Google redirect:",error);status(authError(error),true);}
-if(auth.currentUser){status("Vous êtes déjà connecté à HORIZON. Ouverture de votre espace…");setTimeout(()=>{window.location.href="./index.html";},500);}
+if(auth.currentUser){status("Vous êtes déjà connecté à HORIZON. Ouverture de votre espace…");setTimeout(()=>{window.location.href=getNextPath();},500);}
