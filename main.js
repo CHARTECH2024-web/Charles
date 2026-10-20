@@ -213,6 +213,7 @@ function initUnifiedAuth() {
     siteUser = user || null;
     updateAccountUI(siteUser);
     window.dispatchEvent(new CustomEvent("charles:auth", { detail: { user: siteUser } }));
+    if (!siteUser && currentPage() === "index.html") window.location.replace("auth.html");
   });
 
   finishGoogleRedirect().then(result => {
@@ -226,11 +227,7 @@ function initUnifiedAuth() {
   });
 
   const handleAuthClick = () => {
-    if (siteUser) {
-      window.location.href = "profile.html";
-    } else {
-      startSiteLogin();
-    }
+    window.location.href = siteUser ? "profile.html" : "auth.html";
   };
 
   document.getElementById("siteAuthBtn")?.addEventListener("click", handleAuthClick);
