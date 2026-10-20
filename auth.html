@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FFD000">
+<meta name="description" content="Connexion et inscription sécurisées à HORIZON.">
+<link rel="icon" type="image/svg+xml" href="./horizon-icon.svg?v=2">
+<link rel="stylesheet" href="./auth-page.css">
+<title>Connexion · HORIZON</title>
+</head>
+<body>
+<main class="auth-layout">
+  <section class="brand-panel">
+    <a class="brand" href="./index.html" aria-label="HORIZON accueil"><span class="brand-mark">H</span><span>HORIZON</span></a>
+    <div class="brand-copy">
+      <span class="eyebrow">CONNECTER · PARTAGER · CONSTRUIRE</span>
+      <h1>Un compte.<br><em>De nouvelles possibilités.</em></h1>
+      <p>Retrouvez votre communauté et les outils HORIZON avec une seule session, sur téléphone comme sur ordinateur.</p>
+    </div>
+    <div class="brand-footer">HORIZON WORKSPACE <span>•</span> RDC</div>
+  </section>
+  <section class="form-panel">
+    <div class="form-wrap">
+      <div class="mobile-brand"><span class="brand-mark">H</span><strong>HORIZON</strong></div>
+      <div class="form-heading"><span class="eyebrow">VOTRE ESPACE HORIZON</span><h2 id="formTitle">Bienvenue</h2><p id="formSubtitle">Connectez-vous ou créez votre compte.</p></div>
+      <div class="mode-switch" role="tablist" aria-label="Type d'accès">
+        <button type="button" class="mode-btn active" data-mode="login" role="tab" aria-selected="true">Connexion</button>
+        <button type="button" class="mode-btn" data-mode="signup" role="tab" aria-selected="false">Créer un compte</button>
+      </div>
+      <div id="signupFields" class="signup-fields" hidden>
+        <div class="field-row">
+          <label>Prénom<input id="firstName" autocomplete="given-name" maxlength="60" placeholder="Votre prénom"></label>
+          <label>Nom<input id="lastName" autocomplete="family-name" maxlength="60" placeholder="Votre nom"></label>
+        </div>
+        <label>Date de naissance<input id="birthDate" type="date" autocomplete="bday"></label>
+        <p class="field-hint">L'inscription est réservée aux personnes âgées d'au moins 15 ans.</p>
+      </div>
+      <button id="googleBtn" class="google-btn" type="button"><span class="google-g">G</span><span>Continuer avec Google</span></button>
+      <div class="divider"><span>ou avec votre téléphone</span></div>
+      <form id="phoneForm" novalidate>
+        <label for="phoneNumber">Numéro de téléphone</label>
+        <div class="phone-row">
+          <select id="countryCode" aria-label="Indicatif du pays">
+            <option value="+243" selected>🇨🇩 +243</option><option value="+250">🇷🇼 +250</option><option value="+257">🇧🇮 +257</option><option value="+256">🇺🇬 +256</option><option value="+254">🇰🇪 +254</option><option value="+255">🇹🇿 +255</option><option value="+33">🇫🇷 +33</option><option value="+1">🇺🇸 +1</option>
+          </select>
+          <input id="phoneNumber" type="tel" inputmode="tel" autocomplete="tel-national" placeholder="Ex. 812345678" required>
+        </div>
+        <button id="sendCodeBtn" class="primary-btn" type="submit">Recevoir un code SMS <span aria-hidden="true">→</span></button>
+      </form>
+      <form id="codeForm" hidden novalidate>
+        <label for="verificationCode">Code de vérification SMS</label>
+        <input id="verificationCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Saisissez le code reçu" required>
+        <button class="primary-btn" type="submit">Vérifier et continuer <span aria-hidden="true">→</span></button>
+        <button id="changePhoneBtn" class="text-btn" type="button">Modifier le numéro</button>
+      </form>
+      <div id="recaptcha-container"></div>
+      <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+      <p class="legal-note">En continuant, vous confirmez que les informations fournies sont exactes et acceptez les conditions d'utilisation de HORIZON.</p>
+      <a class="back-link" href="./index.html">← Retour à HORIZON</a>
+    </div>
+  </section>
+</main>
+<script type="module" src="./auth-page.js"></script>
+</body>
+</html>
