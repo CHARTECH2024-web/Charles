@@ -13,7 +13,7 @@ const esc=v=>{const d=document.createElement("div");d.textContent=v??"";return d
 const pair=(a,b)=>[a,b].sort().join("__");
 const msg=v=>{if(status)status.textContent=v;};
 
-loginBtn?.addEventListener("click",async()=>{loginBtn.disabled=true;try{await loginUserWithGoogle();}catch(e){console.error(e);msg("Connexion impossible.");}finally{loginBtn.disabled=false;}});
+loginBtn?.addEventListener("click",()=>{window.location.href="./auth.html?next=community.html";});
 logoutBtn?.addEventListener("click",()=>logoutUser());
 
 async function register(user){

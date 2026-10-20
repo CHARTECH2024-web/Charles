@@ -6,7 +6,7 @@ const loading=document.getElementById("profileLoading"), content=document.getEle
 const prompt=document.getElementById("loginPrompt"), status=document.getElementById("status");
 let user=null;
 
-document.getElementById("loginBtn")?.addEventListener("click",async()=>{try{await loginUserWithGoogle()}catch(e){console.error(e)}});
+document.getElementById("loginBtn")?.addEventListener("click",()=>{window.location.href="./auth.html?next=profile.html";});
 document.getElementById("logoutBtn")?.addEventListener("click",()=>logoutUser());
 document.getElementById("saveBtn")?.addEventListener("click",async()=>{
  if(!user)return; const btn=document.getElementById("saveBtn"); btn.disabled=true;
