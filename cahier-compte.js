@@ -127,6 +127,7 @@ async function loadLosses() {
   const total=state.losses.reduce((sum,x)=>sum+Number(x.totalCost||0),0);
   if($("stat-losses")) $("stat-losses").textContent=money(total);
   if($("loss-list")) $("loss-list").innerHTML=state.losses.length ? state.losses.map(x=>"<div class=\"cahier-list-row\"><strong>"+escapeHtml(x.productName)+" — "+escapeHtml(x.reason)+"</strong><span>"+Number(x.quantity||0)+" unité(s) • "+money(x.totalCost)+" • "+escapeHtml(x.note||"")+"</span></div>").join("") : "<p class=\"text-muted\">Aucune perte enregistrée.</p>";
+  updateFinancialSummary();
   updateReport();
 }
 
@@ -195,6 +196,37 @@ function updateFinancialSummary() {
   const gross=knownSales.reduce((sum,s)=>sum+Number(s.amount||0)-Number(s.costTotal||0),0);
   const losses=(state.losses||[]).reduce((sum,l)=>sum+Number(l.totalCost||0),0);
   $("stat-profit").textContent=knownSales.length ? money(gross-expenses-losses) : "Coûts à renseigner";
+  renderBusinessInsights();
+}
+
+function renderBusinessInsights(){
+  const el=$("business-insights"); if(!el)return;
+  const low=state.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockThreshold??5));
+  const messages=[];
+  if(low.length) messages.push("⚠️ Stock faible : vérifiez "+low.slice(0,3).map(p=>escapeHtml(p.name)).join(", ")+".");
+  const now=Date.now(), week=7*24*60*60*1000;
+  const dated=state.sales.filter(s=>timestampMs(s)>0);
+  const sums=[2,1,0].map(o=>dated.filter(s=>timestampMs(s)>=now-(o+1)*week&&timestampMs(s)<now-o*week).reduce((sum,s)=>sum+Number(s.amount||0),0));
+  if(sums.every(v=>v>0)&&sums[0]>sums[1]&&sums[1]>sums[2]){
+    const byProduct={}; dated.filter(s=>timestampMs(s)>=now-3*week).forEach(s=>{const k=s.productName||"Produit";byProduct[k]=(byProduct[k]||0)+Number(s.amount||0);});
+    const top=Object.entries(byProduct).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+    messages.push("📉 Les ventes baissent depuis trois semaines. Vérifiez le stock des produits les plus vendus : "+(top.map(escapeHtml).join(", ")||"données insuffisantes")+".");
+  }
+  if(state.sales.some(s=>typeof s.costTotal!=="number")) messages.push("💡 Certaines ventes anciennes ne disposent pas de coût d’achat enregistré : leur bénéfice exact reste inconnu.");
+  if(!messages.length) messages.push("✅ Pas d’alerte évidente dans les données disponibles. Continuez à enregistrer ventes, achats et pertes.");
+  el.innerHTML=messages.map(m=>"<p class=\"cahier-insight\">"+m+"</p>").join("");
+  renderSalesChart();
+}
+function renderSalesChart(){
+  const el=$("sales-chart"); if(!el)return;
+  const now=Date.now(), week=7*24*60*60*1000;
+  const vals=[5,4,3,2,1,0].map(o=>state.sales.filter(s=>timestampMs(s)>=now-(o+1)*week&&timestampMs(s)<now-o*week).reduce((sum,s)=>sum+Number(s.amount||0),0));
+  const max=Math.max.apply(null,vals.concat([1])), w=600,h=180,p=24;
+  const points=vals.map((v,i)=>(p+i*(w-2*p)/5)+","+(h-p-(v/max)*(h-2*p))).join(" ");
+  const labels=["S-5","S-4","S-3","S-2","S-1","Cette sem."];
+  let marks="";
+  vals.forEach((v,i)=>{const x=p+i*(w-2*p)/5,y=h-p-(v/max)*(h-2*p);marks+="<circle cx=\""+x+"\" cy=\""+y+"\" r=\"5\" fill=\"var(--accent,#f4c430)\"><title>"+labels[i]+" : "+money(v)+"</title></circle><text x=\""+x+"\" y=\""+(h-4)+"\" text-anchor=\"middle\" font-size=\"12\" fill=\"currentColor\">"+labels[i]+"</text>";});
+  el.innerHTML="<svg viewBox=\"0 0 "+w+" "+h+"\" role=\"img\" aria-label=\"Évolution des ventes sur six semaines\" style=\"width:100%;height:auto\"><line x1=\""+p+"\" y1=\""+(h-p)+"\" x2=\""+(w-p)+"\" y2=\""+(h-p)+"\" stroke=\"currentColor\" opacity=\".3\"/><polyline points=\""+points+"\" fill=\"none\" stroke=\"var(--accent,#f4c430)\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"+marks+"</svg><p class=\"text-muted\">Ventes par semaine • "+vals.map(money).join(" · ")+"</p>";
 }
 
 function escapeHtml(value) {
