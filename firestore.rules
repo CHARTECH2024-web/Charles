@@ -153,13 +153,17 @@ service cloud.firestore {
       match /sales/{saleId} {
         allow read: if owner(businessId);
         allow create: if owner(businessId)
-          && request.resource.data.keys().hasOnly(["productId","productName","quantity","amount","stockMoveId","createdAt"])
+          && request.resource.data.keys().hasOnly(["productId","productName","quantity","amount","costKnown","unitCost","costTotal","grossProfit","stockMoveId","createdAt"])
           && request.resource.data.productId is string
           && request.resource.data.productName is string
           && request.resource.data.quantity is number
           && request.resource.data.quantity > 0
           && request.resource.data.amount is number
           && request.resource.data.amount >= 0
+          && (!("costKnown" in request.resource.data) || request.resource.data.costKnown is bool)
+          && (!("unitCost" in request.resource.data) || (request.resource.data.unitCost is number && request.resource.data.unitCost >= 0))
+          && (!("costTotal" in request.resource.data) || (request.resource.data.costTotal is number && request.resource.data.costTotal >= 0))
+          && (!("grossProfit" in request.resource.data) || request.resource.data.grossProfit is number)
           && request.resource.data.stockMoveId is string
           && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId))
           && getAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId)).data.saleId == saleId
@@ -240,7 +244,7 @@ service cloud.firestore {
       match /stockMoves/{moveId} {
         allow read: if owner(businessId);
         allow create: if owner(businessId)
-          && request.resource.data.keys().hasOnly(["productId","productName","type","quantity","saleId","note","createdAt"])
+          && request.resource.data.keys().hasOnly(["productId","productName","type","quantity","saleId","lossId","unitCost","totalCost","note","createdAt"])
           && request.resource.data.productId is string
           && request.resource.data.productName is string
           && request.resource.data.type in ["purchase","sale"]
