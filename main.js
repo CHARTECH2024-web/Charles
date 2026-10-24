@@ -14,6 +14,7 @@ const PAGES = [
 ];
 
 let siteUser = null;
+let authGateReady = false;
 let chatHistory = [];
 let chatBusy = false;
 
@@ -208,22 +209,39 @@ function updateAccountUI(user) {
   });
 }
 
+function enforceAuthenticationGate(user) {
+  if (user) return;
+  const next = currentPage();
+  window.location.replace("./auth.html?next=" + encodeURIComponent(next));
+}
+
 function initUnifiedAuth() {
+  let resolveInitialAuth;
+  const initialAuthState = new Promise(resolve => { resolveInitialAuth = resolve; });
+  let initialAuthResolved = false;
+
   observeUser(user => {
     siteUser = user || null;
+    if (!initialAuthResolved) {
+      initialAuthResolved = true;
+      resolveInitialAuth(siteUser);
+    }
     updateAccountUI(siteUser);
     window.dispatchEvent(new CustomEvent("charles:auth", { detail: { user: siteUser } }));
-    if (!siteUser && currentPage() === "index.html") window.location.replace("auth.html");
+    if (authGateReady) enforceAuthenticationGate(siteUser);
   });
 
-  finishGoogleRedirect().then(result => {
-    if (result?.user) {
-      siteUser = result.user;
-      updateAccountUI(siteUser);
-    }
-  }).catch(error => {
-    console.error("Charles Google redirect:", error);
+  const redirectResult = finishGoogleRedirect().catch(error => {
+    console.error("HORIZON Google redirect:", error);
     window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code: error?.code || "unknown" } }));
+    return null;
+  });
+
+  Promise.all([redirectResult, initialAuthState]).then(([result, observedUser]) => {
+    siteUser = result?.user || observedUser || null;
+    authGateReady = true;
+    updateAccountUI(siteUser);
+    enforceAuthenticationGate(siteUser);
   });
 
   const handleAuthClick = () => {
