@@ -8,6 +8,18 @@
 <link rel="stylesheet" href="style.css">
 <link rel="stylesheet" href="animations.css">
 <link rel="stylesheet" href="responsive.css">
+<style>
+/* Cahier de Compte: navigation simple, mobile-first */
+.cahier-tab-panels{display:grid;gap:1rem;padding-bottom:5.8rem}
+.cahier-tab-panel{display:grid;gap:1rem;min-width:0}.cahier-tab-panel[hidden]{display:none}
+.cahier-bottom-nav{position:fixed;z-index:1000;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.15rem;padding:.45rem max(.3rem,env(safe-area-inset-right)) calc(.45rem + env(safe-area-inset-bottom)) max(.3rem,env(safe-area-inset-left));background:var(--surface, #fff);border-top:1px solid var(--border,rgba(127,127,127,.25));box-shadow:0 -5px 22px rgba(0,0,0,.10)}
+.cahier-tab{appearance:none;border:0;background:transparent;color:var(--text-muted,#777);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;min-width:0;min-height:3.25rem;padding:.25rem .1rem;border-radius:.75rem;font:inherit;cursor:pointer;transition:color .15s ease,background .15s ease}
+.cahier-tab svg{width:1.35rem;height:1.35rem;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.cahier-tab span{font-size:.68rem;line-height:1.1;white-space:nowrap}
+.cahier-tab[aria-current="page"]{color:#f2c500;background:rgba(242,197,0,.11);font-weight:700}
+.cahier-tab:focus-visible{outline:2px solid #f2c500;outline-offset:2px}
+@media(min-width:760px){.cahier-bottom-nav{left:50%;right:auto;transform:translateX(-50%);width:min(680px,calc(100% - 2rem));border:1px solid var(--border,rgba(127,127,127,.25));border-bottom:0;border-radius:1rem 1rem 0 0}.cahier-tab span{font-size:.78rem}}
+</style>
 </head>
 <body>
 <div id="site-header"></div>
