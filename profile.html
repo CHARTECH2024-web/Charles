@@ -9,7 +9,11 @@
 <section class="community-card" style="max-width:720px;margin:auto">
 <div id="profileLoading">Vérification du compte…</div>
 <div id="profileContent" style="display:none">
-<div class="profile-box"><img id="avatar" src="" alt=""><div><h2 id="displayName" style="margin:0">—</h2><p id="email" style="margin:.25rem 0;color:var(--text-muted)">—</p></div></div>
+<div class="profile-box"><img id="avatar" src="" alt="Photo de profil"><div><h2 id="displayName" style="margin:0">—</h2><p id="email" style="margin:.25rem 0;color:var(--text-muted)">—</p></div></div>
+<label class="form-label" for="profilePhoto">Photo de profil</label>
+<input id="profilePhoto" class="form-control" type="file" accept="image/png,image/jpeg,image/webp">
+<p style="color:var(--text-muted);font-size:.85rem;margin:.35rem 0">Choisissez une photo JPG, PNG ou WebP. Elle sera réduite automatiquement pour faciliter le chargement sur téléphone.</p>
+<button id="savePhotoBtn" class="btn btn-outline" type="button">Changer la photo</button>
 <label class="form-label" for="bio">Présentation</label>
 <textarea id="bio" class="form-control" maxlength="500" rows="5" placeholder="Parlez brièvement de vous…"></textarea>
 <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem"><button id="saveBtn" class="btn btn-primary">Enregistrer</button><a href="community.html" class="btn btn-outline">Communauté</a><button id="logoutBtn" class="btn btn-outline">Déconnexion</button></div>

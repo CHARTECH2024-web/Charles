@@ -9,7 +9,15 @@ const userList=document.getElementById("userList"), search=document.getElementBy
 const list=document.getElementById("privateMessages"), form=document.getElementById("privateForm"), input=document.getElementById("privateInput");
 const status=document.getElementById("privateStatus"), nameEl=document.getElementById("chatName"), stateEl=document.getElementById("chatState"), avatar=document.getElementById("chatAvatar");
 let me=null, users=[], selected=null, stop=null;
-const esc=v=>{const d=document.createElement("div");d.textContent=v??"";return d.innerHTML;};
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function safeProfileImageUrl(value){
+  if(typeof value!=="string" || value.length>25000) return "";
+  if(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(value)) return value;
+  try {
+    const url=new URL(value);
+    return url.protocol==="https:" && url.hostname.endsWith(".googleusercontent.com") ? url.href : "";
+  } catch { return ""; }
+}
 const pair=(a,b)=>[a,b].sort().join("__");
 const msg=v=>{if(status)status.textContent=v;};
 
@@ -17,8 +25,14 @@ loginBtn?.addEventListener("click",async()=>{loginBtn.disabled=true;try{await lo
 logoutBtn?.addEventListener("click",()=>logoutUser());
 
 async function register(user){
-  await setDoc(doc(db,"publicProfiles",user.uid),{
-    uid:user.uid,displayName:user.displayName||user.email?.split("@")[0]||"Membre",photoURL:user.photoURL||"",updatedAt:serverTimestamp()
+  const ref=doc(db,"publicProfiles",user.uid);
+  const existing=await getDoc(ref);
+  const old=existing.exists()?existing.data():{};
+  // Keep a user-selected HORIZON avatar instead of overwriting it with Google's photo.
+  const photoURL=(typeof old.photoURL==="string" && old.photoURL.startsWith("data:image/jpeg;base64,") && old.photoURL.length<=25000)
+    ? old.photoURL : (safeProfileImageUrl(user.photoURL) || safeProfileImageUrl(old.photoURL) || "");
+  await setDoc(ref,{
+    uid:user.uid,displayName:user.displayName||user.email?.split("@")[0]||"Membre",photoURL,updatedAt:serverTimestamp()
   },{merge:true});
 }
 async function loadUsers(){
@@ -33,17 +47,51 @@ async function loadUsers(){
 function renderUsers(){
   const q=(search?.value||"").toLowerCase().trim();
   const shown=users.filter(u=>(u.displayName||"").toLowerCase().includes(q));
-  if(!shown.length){userList.innerHTML="<p class='skeleton'>"+esc(t("noUsers"))+"</p>";return;}
-  userList.innerHTML=shown.map(u=>{
-    const pic=u.photoURL?"<img src='"+esc(u.photoURL)+"' alt=''>":"<div class='user-avatar' style='display:grid;place-items:center;background:var(--surface-hover)'>👤</div>";
-    return "<button class='user-item "+(selected?.uid===u.uid?"active":"")+"' data-uid='"+esc(u.uid)+"'>"+pic+"<span class='user-meta'><strong>"+esc(u.displayName||"Membre")+"</strong><small>Charles</small></span></button>";
-  }).join("");
-  userList.querySelectorAll("[data-uid]").forEach(b=>b.addEventListener("click",()=>{const u=users.find(x=>x.uid===b.dataset.uid);if(u)openChat(u);}));
+  userList.replaceChildren();
+  if(!shown.length){
+    const empty=document.createElement("p");
+    empty.className="skeleton";
+    empty.textContent=t("noUsers");
+    userList.appendChild(empty);
+    return;
+  }
+  shown.forEach(u=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="user-item "+(selected?.uid===u.uid?"active":"");
+    button.dataset.uid=u.uid;
+    const photo=safeProfileImageUrl(u.photoURL);
+    if(photo){
+      const img=document.createElement("img");
+      img.src=photo;
+      img.alt="";
+      img.loading="lazy";
+      img.referrerPolicy="no-referrer";
+      button.appendChild(img);
+    }else{
+      const placeholder=document.createElement("div");
+      placeholder.className="user-avatar";
+      placeholder.style.cssText="display:grid;place-items:center;background:var(--surface-hover)";
+      placeholder.textContent="👤";
+      button.appendChild(placeholder);
+    }
+    const meta=document.createElement("span");
+    meta.className="user-meta";
+    const name=document.createElement("strong");
+    name.textContent=u.displayName||"Membre";
+    const kind=document.createElement("small");
+    kind.textContent="HORIZON";
+    meta.append(name,kind);
+    button.appendChild(meta);
+    button.addEventListener("click",()=>openChat(u));
+    userList.appendChild(button);
+  });
 }
 async function openChat(user){
   selected=user;renderUsers();
   nameEl.textContent=user.displayName||"Membre";stateEl.textContent=t("online");
-  if(user.photoURL){avatar.src=user.photoURL;avatar.style.display="block";}else avatar.style.display="none";
+  const safeAvatar=safeProfileImageUrl(user.photoURL);
+  if(safeAvatar){avatar.src=safeAvatar;avatar.referrerPolicy="no-referrer";avatar.style.display="block";}else avatar.style.display="none";
   form.style.display="flex";
   if(stop){stop();stop=null;}
   list.innerHTML="<p class='skeleton'>Chargement…</p>";

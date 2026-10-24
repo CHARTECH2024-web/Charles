@@ -1,13 +1,15 @@
 /* V3.2 — Documents without Firebase Storage.
    Files are uploaded to Cloudinary Free as raw assets; Firestore stores metadata.
 */
-import { db } from "./firebase-config.js";
+import { db, auth, ADMIN_EMAIL } from "./firebase-config.js";
 import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET } from "./cloudinary-config.js";
 import { collection,addDoc,getDocs,query,where,orderBy,deleteDoc,doc,updateDoc,serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const ALLOWED_EXT=[".pdf",".doc",".docx",".ppt",".pptx",".txt",".odt"];
 const MAX=10*1024*1024;
-function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function safeExternalUrl(value){try{const url=new URL(String(value||""));return url.protocol==="https:"?url.href:"about:blank";}catch{return "about:blank";}}
+function isAdminUploader(){const user=auth.currentUser;return Boolean(user?.emailVerified && user.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase());}
 function formatBytes(b){if(!b)return"0 Ko";const k=1024,s=["o","Ko","Mo","Go"],i=Math.floor(Math.log(b)/Math.log(k));return parseFloat((b/Math.pow(k,i)).toFixed(1))+" "+s[i];}
 function configured(){return !CLOUDINARY_UPLOAD_URL.includes("YOUR_CLOUD_NAME")&&CLOUDINARY_UPLOAD_PRESET!=="YOUR_UNSIGNED_UPLOAD_PRESET";}
 
@@ -36,10 +38,16 @@ export async function loadPublicDocuments(){
   const items=snap.docs.map(s=>({id:s.id,...s.data()})).sort((a,b)=>(b.createdAt?.toMillis?.()??0)-(a.createdAt?.toMillis?.()??0));
   c.innerHTML="";
   if(snap.empty){if(e){e.style.display="block";c.appendChild(e);}return;}if(e)e.style.display="none";
-  items.forEach(i=>{const date=i.createdAt?.toDate?i.createdAt.toDate().toLocaleDateString("fr-FR"):"";c.insertAdjacentHTML("beforeend",`<article class="card"><div class="doc-icon">📄</div><div class="card-subtitle" style="text-align:center">${esc(i.fileType||"Document")} · ${esc(formatBytes(i.size))}</div><h3 class="card-title" style="justify-content:center">${esc(i.title)}</h3><p style="text-align:center;font-size:.9rem;color:var(--text-muted)">${esc(i.description)}</p><p style="text-align:center;font-size:.78rem;color:var(--text-muted)">${esc(date)}</p><div style="display:flex;justify-content:center;gap:.5rem;margin-top:auto"><a href="${esc(i.url)}" target="_blank" rel="noopener" class="btn btn-primary btn-small">Ouvrir</a><a href="${esc(i.url)}" target="_blank" rel="noopener" class="btn btn-outline btn-small">Télécharger</a></div></article>`);});
+  items.forEach(i=>{const date=i.createdAt?.toDate?i.createdAt.toDate().toLocaleDateString("fr-FR"):"";c.insertAdjacentHTML("beforeend",`<article class="card"><div class="doc-icon">📄</div><div class="card-subtitle" style="text-align:center">${esc(i.fileType||"Document")} · ${esc(formatBytes(i.size))}</div><h3 class="card-title" style="justify-content:center">${esc(i.title)}</h3><p style="text-align:center;font-size:.9rem;color:var(--text-muted)">${esc(i.description)}</p><p style="text-align:center;font-size:.78rem;color:var(--text-muted)">${esc(date)}</p><div style="display:flex;justify-content:center;gap:.5rem;margin-top:auto"><a href="${esc(safeExternalUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-small">Ouvrir</a><a href="${esc(safeExternalUrl(i.url))}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-small">Télécharger</a></div></article>`);});
  }catch(err){console.error(err);c.innerHTML="<p class='skeleton'>Impossible de charger les documents.</p>";}
 }
 export function uploadDocument({file,title,description,visibility,onProgress,onDone,onError}){
+ if(!isAdminUploader()){onError?.(new Error("Téléversement réservé à l’administrateur connecté."));return;}
+ const validation=validateDocFile(file);
+ if(validation){onError?.(new Error(validation));return;}
+ if(!String(title||"").trim() || String(title).length>120 || String(description||"").length>500 || !["public","private"].includes(visibility)){
+   onError?.(new Error("Vérifiez le titre, la description et la visibilité du document."));return;
+ }
  uploadRaw(file,onProgress).then(async d=>{await addDoc(collection(db,"documents"),{title,description,url:d.secure_url,storagePath:"cloudinary",publicId:d.public_id||"",visibility,size:file.size,fileType:file.type||file.name.split(".").pop(),createdAt:serverTimestamp()});onDone?.(d.secure_url);}).catch(onError);
 }
 export async function loadAllDocumentsAdmin(){const s=await getDocs(query(collection(db,"documents"),orderBy("createdAt","desc")));return s.docs.map(d=>({id:d.id,...d.data()}));}

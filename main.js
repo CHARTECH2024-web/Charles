@@ -165,6 +165,35 @@ function setupThemePicker() {
   document.addEventListener("click", () => menu?.classList.remove("open"));
 }
 
+
+/* ---------- HORIZON MULTI-PAGE PRIMARY NAVIGATION ---------- */
+function injectPrimaryNavigation() {
+  if (document.querySelector(".horizon-primary-nav") ||
+      !document.querySelector(".site-header") ||
+      /^(?:admin|login|signup)/i.test(currentPage())) return;
+  const links = [
+    { href:"index.html", icon:"⌂", label:"Accueil" },
+    { href:"community.html", icon:"♙", label:"Commerçants" },
+    { href:"community.html#privateMessages", icon:"✉", label:"Messages" },
+    { href:"documents.html", icon:"▤", label:"Documents" },
+    { href:"media.html", icon:"▶", label:"Médias" },
+    { href:"cahier-compte.html", icon:"📒", label:"Cahier" },
+    { href:"profile.html", icon:"●", label:"Profil" }
+  ];
+  const current = currentPage();
+  const nav = document.createElement("nav");
+  nav.className = "horizon-primary-nav";
+  nav.setAttribute("aria-label", "Navigation principale HORIZON");
+  nav.innerHTML = links.map(item => {
+    const active = current === item.href || (item.href === "community.html#privateMessages" && current === "community.html");
+    return `<a href="./${item.href}" class="horizon-primary-link${active ? " active" : ""}"${active ? ' aria-current="page"' : ""} title="${item.label}">
+      <span class="horizon-primary-icon" aria-hidden="true">${item.icon}</span><span class="horizon-primary-label">${item.label}</span>
+    </a>`;
+  }).join("");
+  const header = document.querySelector(".site-header");
+  header?.insertAdjacentElement("afterend", nav);
+}
+ 
 /* ---------- LIGHTBOX ---------- */
 function setupLightbox() {
   const modal = document.getElementById("lightboxModal");
@@ -192,11 +221,30 @@ async function startSiteLogin() {
   } catch (error) {
     console.error("Charles account login:", error);
     const code = error?.code || "unknown";
-    window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code } }));
+    window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code, message: error?.message || "" } }));
   } finally {
     buttons.forEach(b => { b.disabled = false; b.dataset.busy = "0"; });
   }
 }
+
+window.addEventListener("charles:auth-error", event => {
+  const message = event.detail?.message || (
+    event.detail?.code === "auth/unauthorized-domain"
+      ? "Ce domaine n'est pas autorisé dans Firebase Authentication."
+      : "Connexion Google interrompue. Réessayez dans Chrome ou votre navigateur principal."
+  );
+  let notice = document.getElementById("horizon-auth-notice");
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "horizon-auth-notice";
+    notice.setAttribute("role", "alert");
+    notice.style.cssText = "position:fixed;z-index:2000;top:1rem;left:1rem;right:1rem;max-width:620px;margin:auto;padding:1rem 1.1rem;border:1px solid #f2c500;border-radius:12px;background:var(--surface,#111);color:var(--text,#fff);box-shadow:0 8px 30px #0003";
+    document.body.appendChild(notice);
+  }
+  notice.textContent = message;
+  window.clearTimeout(notice._hideTimer);
+  notice._hideTimer = window.setTimeout(() => notice.remove(), 9000);
+});
 
 function updateAccountUI(user) {
   const buttons = [document.getElementById("siteAuthBtn"), document.getElementById("mobileAuthBtn")].filter(Boolean);
@@ -213,6 +261,7 @@ function initUnifiedAuth() {
     siteUser = user || null;
     updateAccountUI(siteUser);
     window.dispatchEvent(new CustomEvent("charles:auth", { detail: { user: siteUser } }));
+    if (siteUser) initVisitorTracking();
   });
 
   finishGoogleRedirect().then(result => {
@@ -449,12 +498,10 @@ async function initVisitorTracking() {
     const { db } = await import("./firebase-config.js");
     const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
 
-    let sid = sessionStorage.getItem("charles_v35_sid");
-    if (!sid) {
-      sid = crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2);
-      sessionStorage.setItem("charles_v35_sid", sid);
-    }
-
+    // The Firestore rules allow one statistics document per signed-in user.
+    // Do not write anonymous session IDs: they can be forged to inflate billable writes.
+    if (!siteUser?.uid) return;
+    const sid = siteUser.uid;
     const path = window.location.pathname.split("/").pop() || "index.html";
     await setDoc(doc(db, "visits", sid), {
       lastPage: path,
@@ -527,6 +574,7 @@ window.addEventListener("DOMContentLoaded", () => {
   registerHorizonPwaUpdates();
   document.title = document.title.replace(/Charles/gi, "HORIZON");
   injectHeader();
+  injectPrimaryNavigation();
   injectFooter();
   injectChatbot();
 

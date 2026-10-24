@@ -2,7 +2,7 @@
    Files are uploaded to Cloudinary Free via an unsigned preset.
    Firestore stores only metadata and the public delivery URL.
 */
-import { db } from "./firebase-config.js";
+import { db, auth, ADMIN_EMAIL } from "./firebase-config.js";
 import { CLOUDINARY_UPLOAD_URL, CLOUDINARY_UPLOAD_PRESET } from "./cloudinary-config.js";
 import {
   collection, addDoc, getDocs, query, where, orderBy,
@@ -14,7 +14,9 @@ const ALLOWED = {
   photo: ["image/jpeg","image/png","image/webp"],
   video: ["video/mp4","video/webm"]
 };
-function esc(s){const d=document.createElement("div");d.textContent=s||"";return d.innerHTML;}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function safeExternalUrl(value){try{const url=new URL(String(value||""));return url.protocol==="https:"?url.href:"about:blank";}catch{return "about:blank";}}
+function isAdminUploader(){const user=auth.currentUser;return Boolean(user?.emailVerified && user.email?.toLowerCase()===ADMIN_EMAIL.toLowerCase());}
 
 export function validateFile(file,type){
   if(!file)return "Aucun fichier sélectionné.";
@@ -66,12 +68,18 @@ export async function loadPublicMedia(filter="all"){
 }
 function renderMediaCard(i){
   const date=i.createdAt?.toDate?i.createdAt.toDate().toLocaleDateString("fr-FR"):"";
-  const safeUrl=esc(i.url||"");
+  const safeUrl=esc(safeExternalUrl(i.url||""));
   if(i.type==="video")return `<article class="card media-item"><div class="card-subtitle">${esc(date)}</div><video src="${safeUrl}" controls preload="metadata" class="media-thumbnail"></video><h3 class="card-title">${esc(i.title)}</h3><p style="font-size:.9rem;color:var(--text-muted)">${esc(i.description)}</p></article>`;
   return `<article class="card media-item"><div class="card-subtitle">${esc(date)}</div><img src="${safeUrl}" alt="${esc(i.title)}" class="media-thumbnail" loading="lazy"><h3 class="card-title">${esc(i.title)}</h3><p style="font-size:.9rem;color:var(--text-muted)">${esc(i.description)}</p></article>`;
 }
 
 export function uploadMedia({file,type,title,description,visibility,onProgress,onDone,onError}){
+  if(!isAdminUploader()){onError?.(new Error("Téléversement réservé à l’administrateur connecté."));return;}
+  const validation=validateFile(file,type);
+  if(validation){onError?.(new Error(validation));return;}
+  if(!String(title||"").trim() || String(title).length>120 || String(description||"").length>500 || !["public","private"].includes(visibility)){
+    onError?.(new Error("Vérifiez le titre, la description et la visibilité du média."));return;
+  }
   uploadToCloudinary(file,onProgress).then(async data=>{
     const url=data.secure_url;
     await addDoc(collection(db,"media"),{

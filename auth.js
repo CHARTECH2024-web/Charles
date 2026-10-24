@@ -61,7 +61,24 @@ export async function loginUserWithGoogle() {
 
 export async function finishGoogleRedirect() {
   await authPersistenceReady;
-  return getRedirectResult(auth);
+  try {
+    return await getRedirectResult(auth);
+  } catch (error) {
+    // Redirect sign-in can lose its temporary state in embedded/partitioned browsers.
+    // Do not crash page initialization; let the UI invite the user to retry with a popup
+    // in a full browser, where sessionStorage is not needed for the redirect round-trip.
+    const code = error?.code || "";
+    if (code === "auth/missing-initial-state" ||
+        code === "auth/redirect-cancelled-by-user" ||
+        code === "auth/operation-not-supported-in-this-environment") {
+      console.warn("HORIZON Google redirect could not be resumed:", code);
+      window.dispatchEvent(new CustomEvent("charles:auth-error", {
+        detail: { code, message: "La connexion Google a été interrompue par le navigateur. Ouvrez HORIZON dans Chrome ou votre navigateur principal, puis réessayez." }
+      }));
+      return null;
+    }
+    throw error;
+  }
 }
 
 export async function requireUser() {

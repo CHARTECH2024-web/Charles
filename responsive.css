@@ -63,3 +63,20 @@
     input, select, textarea, .form-control { min-height: 46px; }
     .form-control[rows] { min-height: 90px; }
 }
+
+
+/* HORIZON primary icon navigation: above content, real page-to-page links */
+.horizon-primary-nav{display:flex;align-items:stretch;justify-content:center;gap:.35rem;position:sticky;top:0;z-index:850;padding:.45rem max(1rem,env(safe-area-inset-left));background:var(--surface,#fff);border-bottom:1px solid var(--border,rgba(127,127,127,.22));box-shadow:0 3px 14px rgba(0,0,0,.07);overflow-x:auto;scrollbar-width:none}
+.horizon-primary-nav::-webkit-scrollbar{display:none}
+.horizon-primary-link{display:flex;flex:1 0 4.2rem;max-width:8rem;min-width:0;min-height:3.35rem;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;border-radius:.75rem;color:var(--text-muted,#777);text-decoration:none;padding:.35rem .4rem;transition:color .15s ease,background .15s ease}
+.horizon-primary-icon{display:grid;place-items:center;font-size:1.3rem;line-height:1.1;font-weight:700}
+.horizon-primary-label{font-size:.7rem;line-height:1.1;white-space:nowrap}
+.horizon-primary-link.active{color:#f2c500;background:rgba(242,197,0,.12);font-weight:800}
+.horizon-primary-link:focus-visible{outline:2px solid #f2c500;outline-offset:2px}
+@media(max-width:768px){
+  .horizon-primary-nav{justify-content:flex-start;gap:.15rem;padding:.3rem max(.2rem,env(safe-area-inset-left));}
+  .horizon-primary-link{flex:1 0 3.8rem;min-height:3.15rem;padding:.25rem .15rem}
+  .horizon-primary-icon{font-size:1.25rem}
+  .horizon-primary-label{font-size:.63rem}
+}
+@media(max-width:360px){.horizon-primary-link{flex-basis:3.4rem}.horizon-primary-label{font-size:.58rem}}
