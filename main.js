@@ -165,6 +165,31 @@ function setupThemePicker() {
   document.addEventListener("click", () => menu?.classList.remove("open"));
 }
 
+
+/* ---------- HORIZON MOBILE APP NAVIGATION ---------- */
+function injectBottomNavigation() {
+  if (document.querySelector(".horizon-bottom-nav")) return;
+  const links = [
+    { href:"index.html", icon:"⌂", label:"Accueil", key:"index.html" },
+    { href:"community.html", icon:"✉", label:"Messages", key:"community.html" },
+    { href:"media.html", icon:"▶", label:"Médias", key:"media.html" },
+    { href:"cahier-compte.html", icon:"▤", label:"Cahier", key:"cahier-compte.html" },
+    { href:"projects.html", icon:"✳", label:"Explorer", key:"projects.html" },
+    { href:"profile.html", icon:"●", label:"Profil", key:"profile.html" }
+  ];
+  const current = currentPage();
+  const nav = document.createElement("nav");
+  nav.className = "horizon-bottom-nav";
+  nav.setAttribute("aria-label", "Navigation principale HORIZON");
+  nav.innerHTML = links.map(item => {
+    const active = current === item.key;
+    return `<a href="./${item.href}" class="horizon-bottom-link${active ? " active" : ""}"${active ? ' aria-current="page"' : ""}>
+      <span class="horizon-bottom-icon" aria-hidden="true">${item.icon}</span><span class="horizon-bottom-label">${item.label}</span>
+    </a>`;
+  }).join("");
+  document.body.appendChild(nav);
+}
+
 /* ---------- LIGHTBOX ---------- */
 function setupLightbox() {
   const modal = document.getElementById("lightboxModal");
@@ -192,7 +217,7 @@ async function startSiteLogin() {
   } catch (error) {
     console.error("Charles account login:", error);
     const code = error?.code || "unknown";
-    window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code } }));
+    window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code, message: error?.message || "" } }));
   } finally {
     buttons.forEach(b => { b.disabled = false; b.dataset.busy = "0"; });
   }
@@ -527,6 +552,7 @@ window.addEventListener("DOMContentLoaded", () => {
   registerHorizonPwaUpdates();
   document.title = document.title.replace(/Charles/gi, "HORIZON");
   injectHeader();
+  injectBottomNavigation();
   injectFooter();
   injectChatbot();
 
