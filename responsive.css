@@ -63,3 +63,20 @@
     input, select, textarea, .form-control { min-height: 46px; }
     .form-control[rows] { min-height: 90px; }
 }
+
+
+/* HORIZON app-style bottom navigation (mobile only) */
+.horizon-bottom-nav{display:none}
+@media(max-width:768px){
+  body{padding-bottom:calc(5.1rem + env(safe-area-inset-bottom))}
+  .horizon-bottom-nav{position:fixed;z-index:1200;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:.15rem;padding:.35rem max(.25rem,env(safe-area-inset-left)) calc(.35rem + env(safe-area-inset-bottom)) max(.25rem,env(safe-area-inset-right));background:var(--surface,#fff);border-top:1px solid var(--border,rgba(127,127,127,.22));box-shadow:0 -4px 18px rgba(0,0,0,.12)}
+  .horizon-bottom-link{display:flex;min-width:0;min-height:3.2rem;flex-direction:column;align-items:center;justify-content:center;gap:.18rem;border-radius:.75rem;color:var(--text-muted,#777);text-decoration:none;padding:.25rem .05rem}
+  .horizon-bottom-icon{display:grid;place-items:center;font-size:1.35rem;line-height:1.1;font-weight:700}
+  .horizon-bottom-label{font-size:.63rem;line-height:1.1;white-space:nowrap}
+  .horizon-bottom-link.active{color:#f2c500;background:rgba(242,197,0,.12);font-weight:800}
+  .horizon-bottom-link:focus-visible{outline:2px solid #f2c500;outline-offset:2px}
+}
+@media(max-width:360px){
+  .horizon-bottom-label{font-size:.57rem}
+  .horizon-bottom-icon{font-size:1.2rem}
+}
