@@ -17,8 +17,14 @@ loginBtn?.addEventListener("click",async()=>{loginBtn.disabled=true;try{await lo
 logoutBtn?.addEventListener("click",()=>logoutUser());
 
 async function register(user){
-  await setDoc(doc(db,"publicProfiles",user.uid),{
-    uid:user.uid,displayName:user.displayName||user.email?.split("@")[0]||"Membre",photoURL:user.photoURL||"",updatedAt:serverTimestamp()
+  const ref=doc(db,"publicProfiles",user.uid);
+  const existing=await getDoc(ref);
+  const old=existing.exists()?existing.data():{};
+  // Keep a user-selected HORIZON avatar instead of overwriting it with Google's photo.
+  const photoURL=(typeof old.photoURL==="string" && old.photoURL.startsWith("data:image/"))
+    ? old.photoURL : (user.photoURL||old.photoURL||"");
+  await setDoc(ref,{
+    uid:user.uid,displayName:user.displayName||user.email?.split("@")[0]||"Membre",photoURL,updatedAt:serverTimestamp()
   },{merge:true});
 }
 async function loadUsers(){
