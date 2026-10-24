@@ -1,0 +1,10 @@
+# Repository/configuration files are not public site assets
+.firebaserc
+.gitignore
+.assetsignore
+.github/
+firebase.json
+firestore.rules
+storage.rules
+wrangler.jsonc
+README.md

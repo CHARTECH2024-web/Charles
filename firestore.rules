@@ -108,22 +108,28 @@ service cloud.firestore {
       match /products/{productId} {
         allow read: if owner(businessId);
         allow create: if owner(businessId)
-          && request.resource.data.keys().hasOnly(["name","price","stock","lowStockThreshold","createdAt","updatedAt"])
+          && request.resource.data.keys().hasOnly(["name","costPrice","price","stock","manufactureDate","expiryDate","lowStockThreshold","createdAt","updatedAt"])
           && request.resource.data.name is string
           && request.resource.data.name.size() > 0
           && request.resource.data.name.size() <= 100
           && request.resource.data.price is number
           && request.resource.data.price >= 0
+          && (!("costPrice" in request.resource.data) || (request.resource.data.costPrice is number && request.resource.data.costPrice >= 0))
+          && (!("manufactureDate" in request.resource.data) || request.resource.data.manufactureDate is string)
+          && (!("expiryDate" in request.resource.data) || request.resource.data.expiryDate is string)
           && request.resource.data.stock is number
           && request.resource.data.stock >= 0
           && request.resource.data.lowStockThreshold is number;
         allow update: if owner(businessId)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name","price","stock","lowStockThreshold","updatedAt","lastStockMoveId"])
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["name","costPrice","price","stock","manufactureDate","expiryDate","lowStockThreshold","updatedAt","lastStockMoveId"])
           && request.resource.data.name is string
           && request.resource.data.name.size() > 0
           && request.resource.data.name.size() <= 100
           && request.resource.data.price is number
           && request.resource.data.price >= 0
+          && (!("costPrice" in request.resource.data) || (request.resource.data.costPrice is number && request.resource.data.costPrice >= 0))
+          && (!("manufactureDate" in request.resource.data) || request.resource.data.manufactureDate is string)
+          && (!("expiryDate" in request.resource.data) || request.resource.data.expiryDate is string)
           && request.resource.data.stock is number
           && request.resource.data.stock >= 0
           && (
@@ -147,13 +153,17 @@ service cloud.firestore {
       match /sales/{saleId} {
         allow read: if owner(businessId);
         allow create: if owner(businessId)
-          && request.resource.data.keys().hasOnly(["productId","productName","quantity","amount","stockMoveId","createdAt"])
+          && request.resource.data.keys().hasOnly(["productId","productName","quantity","amount","costKnown","unitCost","costTotal","grossProfit","stockMoveId","createdAt"])
           && request.resource.data.productId is string
           && request.resource.data.productName is string
           && request.resource.data.quantity is number
           && request.resource.data.quantity > 0
           && request.resource.data.amount is number
           && request.resource.data.amount >= 0
+          && (!("costKnown" in request.resource.data) || request.resource.data.costKnown is bool)
+          && (!("unitCost" in request.resource.data) || (request.resource.data.unitCost is number && request.resource.data.unitCost >= 0))
+          && (!("costTotal" in request.resource.data) || (request.resource.data.costTotal is number && request.resource.data.costTotal >= 0))
+          && (!("grossProfit" in request.resource.data) || request.resource.data.grossProfit is number)
           && request.resource.data.stockMoveId is string
           && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId))
           && getAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId)).data.saleId == saleId
@@ -231,17 +241,36 @@ service cloud.firestore {
         allow update, delete: if false;
       }
 
-      match /stockMoves/{moveId} {
+      match /losses/{lossId} {
+      allow read: if owner(businessId);
+      allow create: if owner(businessId)
+        && request.resource.data.keys().hasOnly(["productId","productName","quantity","unitCost","totalCost","costKnown","reason","note","stockMoveId","createdAt"])
+        && request.resource.data.productId is string
+        && request.resource.data.productName is string
+        && request.resource.data.quantity is number && request.resource.data.quantity > 0
+        && request.resource.data.unitCost is number && request.resource.data.unitCost >= 0
+        && request.resource.data.totalCost is number && request.resource.data.totalCost >= 0
+        && request.resource.data.costKnown is bool
+        && request.resource.data.reason is string
+        && request.resource.data.note is string
+        && request.resource.data.stockMoveId is string
+        && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId))
+        && getAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId)).data.lossId == lossId
+        && getAfter(/databases/$(database)/documents/businesses/$(businessId)/stockMoves/$(request.resource.data.stockMoveId)).data.productId == request.resource.data.productId;
+      allow update, delete: if false;
+    }
+
+    match /stockMoves/{moveId} {
         allow read: if owner(businessId);
         allow create: if owner(businessId)
-          && request.resource.data.keys().hasOnly(["productId","productName","type","quantity","saleId","note","createdAt"])
+          && request.resource.data.keys().hasOnly(["productId","productName","type","quantity","saleId","lossId","unitCost","totalCost","note","createdAt"])
           && request.resource.data.productId is string
           && request.resource.data.productName is string
-          && request.resource.data.type in ["purchase","sale"]
+          && request.resource.data.type in ["purchase","sale","loss"]
           && request.resource.data.quantity is number
           && (
             (request.resource.data.type == "purchase" && request.resource.data.quantity > 0)
-            || (request.resource.data.type == "sale" && request.resource.data.quantity < 0)
+            || (request.resource.data.type in ["sale","loss"] && request.resource.data.quantity < 0)
           )
           && exists(/databases/$(database)/documents/businesses/$(businessId)/products/$(request.resource.data.productId))
           && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/products/$(request.resource.data.productId))
@@ -250,7 +279,7 @@ service cloud.firestore {
               == get(/databases/$(database)/documents/businesses/$(businessId)/products/$(request.resource.data.productId)).data.stock + request.resource.data.quantity
           && (
             request.resource.data.type == "purchase"
-            || (
+            || (request.resource.data.type == "sale" &&
               request.resource.data.saleId is string
               && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/sales/$(request.resource.data.saleId))
               && getAfter(/databases/$(database)/documents/businesses/$(businessId)/sales/$(request.resource.data.saleId)).data.stockMoveId == moveId

@@ -487,3 +487,17 @@ footer.site-footer {
 .horizon-update-banner button { border:0; border-radius:8px; padding:.55rem .85rem; background:var(--orange); color:#090a0f; font-weight:800; cursor:pointer; }
 .horizon-update-banner .horizon-update-dismiss { padding:.25rem .5rem; background:transparent; color:var(--text-muted); font-size:1.25rem; }
 @media(max-width:480px) { .horizon-update-banner { bottom:.5rem; gap:.5rem; font-size:.82rem; } }
+
+/* HORIZON profile: private Google email and hexagonal avatar */
+.profile-box.profile-box-vertical{display:flex;flex-direction:column;align-items:center;gap:.8rem;margin-bottom:1.2rem;text-align:center}
+.profile-box img.profile-avatar-hex{display:block;width:112px;height:112px;object-fit:cover;border:0;border-radius:0;clip-path:polygon(25% 6.7%,75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0 50%);background:var(--yellow)}
+.profile-private-note{margin:0;color:var(--text-muted);font-size:.82rem}
+.profile-photo-editor{display:grid;gap:.6rem;margin:1rem 0 1.4rem}
+.profile-photo-editor input{width:100%;max-width:100%}
+#photoStatus{min-height:1.3rem;color:var(--text-muted);font-size:.85rem;margin:0}
+
+/* Profile photos use the same hexagon shape throughout HORIZON */
+.user-item img,.user-avatar{border-radius:0;clip-path:polygon(25% 6.7%,75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0 50%)}
+.profile-box img.profile-avatar-hex[hidden]{display:none}
+.profile-photo-editor .btn-primary{background:#ffd000;color:#080808}
+.profile-photo-editor .btn-primary:hover{background:#ffe04b}

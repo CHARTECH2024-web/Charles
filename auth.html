@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#FFD000">
+<meta name="description" content="Connexion et inscription sécurisées à HORIZON.">
+<link rel="icon" type="image/svg+xml" href="./horizon-icon.svg?v=2">
+<link rel="stylesheet" href="./auth-page.css">
+<title>Connexion · HORIZON</title>
+</head>
+<body>
+<main class="auth-layout">
+  <section class="brand-panel">
+    <a class="brand" href="./index.html" aria-label="HORIZON accueil"><span class="brand-mark">H</span><span>HORIZON</span></a>
+    <div class="brand-copy">
+      <span class="eyebrow">CONNECTER · PARTAGER · CONSTRUIRE</span>
+      <h1>Un compte.<br><em>De nouvelles possibilités.</em></h1>
+      <p>Retrouvez votre communauté et les outils HORIZON avec une seule session, sur téléphone comme sur ordinateur.</p>
+    </div>
+    <div class="brand-footer">HORIZON WORKSPACE <span>•</span> RDC</div>
+  </section>
+  <section class="form-panel">
+    <div class="form-wrap">
+      <div class="mobile-brand"><span class="brand-mark">H</span><strong>HORIZON</strong></div>
+      <div class="form-heading"><span class="eyebrow">VOTRE ESPACE HORIZON</span><h2 id="formTitle">Bienvenue</h2><p id="formSubtitle">Connectez-vous ou créez votre compte avec Google.</p></div>
+      <div class="mode-switch" role="tablist" aria-label="Type d'accès">
+        <button type="button" class="mode-btn active" data-mode="login" role="tab" aria-selected="true">Connexion</button>
+        <button type="button" class="mode-btn" data-mode="signup" role="tab" aria-selected="false">Créer un compte</button>
+      </div>
+      <div id="signupFields" class="signup-fields" hidden>
+        <div class="field-row">
+          <label>Prénom<input id="firstName" autocomplete="given-name" maxlength="60" placeholder="Votre prénom"></label>
+          <label>Nom<input id="lastName" autocomplete="family-name" maxlength="60" placeholder="Votre nom"></label>
+        </div>
+        <label for="birthDateEntry">Date de naissance</label>
+        <div class="birth-date-row">
+          <input id="birthDateEntry" type="text" inputmode="numeric" autocomplete="bday" placeholder="JJ/MM/AAAA" maxlength="10" aria-describedby="birthDateStatus">
+          <button id="setBirthDateBtn" type="button" class="set-date-btn">SET</button>
+        </div>
+        <input id="birthDate" type="hidden" value="">
+        <p id="birthDateStatus" class="field-hint" aria-live="polite">Écrivez la date, par exemple 15/08/2008, puis appuyez sur SET.</p>
+        <p class="field-hint">L'inscription est réservée aux personnes âgées d'au moins 15 ans.</p>
+      </div>
+      <button id="googleBtn" class="google-btn" type="button"><span class="google-g">G</span><span>Continuer avec Google</span></button>
+      <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+      <p class="legal-note">En continuant, vous confirmez que les informations fournies sont exactes et acceptez les conditions d'utilisation de HORIZON.</p>
+      <a class="back-link" href="./index.html">← Retour à HORIZON</a>
+    </div>
+  </section>
+</main>
+<script type="module" src="./auth-page.js?v=20261024-auth-audit"></script>
+</body>
+</html>

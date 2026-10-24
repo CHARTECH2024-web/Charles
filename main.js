@@ -14,6 +14,7 @@ const PAGES = [
 ];
 
 let siteUser = null;
+let authGateReady = false;
 let chatHistory = [];
 let chatBusy = false;
 
@@ -204,33 +205,47 @@ function updateAccountUI(user) {
     button.innerHTML = user
       ? `👤 <span>${escapeHtml(user.displayName || "Compte")}</span>`
       : `🔐 <span data-i18n="login">${t("login")}</span>`;
-    button.title = user ? "Compte Charles" : t("login");
+    button.title = user ? "Compte HORIZON" : t("login");
   });
 }
 
+function enforceAuthenticationGate(user) {
+  if (user) return;
+  const next = currentPage();
+  window.location.replace("./auth.html?next=" + encodeURIComponent(next));
+}
+
 function initUnifiedAuth() {
+  let resolveInitialAuth;
+  const initialAuthState = new Promise(resolve => { resolveInitialAuth = resolve; });
+  let initialAuthResolved = false;
+
   observeUser(user => {
     siteUser = user || null;
+    if (!initialAuthResolved) {
+      initialAuthResolved = true;
+      resolveInitialAuth(siteUser);
+    }
     updateAccountUI(siteUser);
     window.dispatchEvent(new CustomEvent("charles:auth", { detail: { user: siteUser } }));
+    if (authGateReady) enforceAuthenticationGate(siteUser);
   });
 
-  finishGoogleRedirect().then(result => {
-    if (result?.user) {
-      siteUser = result.user;
-      updateAccountUI(siteUser);
-    }
-  }).catch(error => {
-    console.error("Charles Google redirect:", error);
+  const redirectResult = finishGoogleRedirect().catch(error => {
+    console.error("HORIZON Google redirect:", error);
     window.dispatchEvent(new CustomEvent("charles:auth-error", { detail: { code: error?.code || "unknown" } }));
+    return null;
+  });
+
+  Promise.all([redirectResult, initialAuthState]).then(([result, observedUser]) => {
+    siteUser = result?.user || observedUser || null;
+    authGateReady = true;
+    updateAccountUI(siteUser);
+    enforceAuthenticationGate(siteUser);
   });
 
   const handleAuthClick = () => {
-    if (siteUser) {
-      window.location.href = "profile.html";
-    } else {
-      startSiteLogin();
-    }
+    window.location.href = siteUser ? "profile.html" : ("auth.html?next=" + encodeURIComponent(currentPage()));
   };
 
   document.getElementById("siteAuthBtn")?.addEventListener("click", handleAuthClick);
@@ -277,7 +292,7 @@ function setupChatbot() {
     win.style.display = win.style.display === "flex" ? "none" : "flex";
     if (win.style.display === "flex" && chatHistory.length === 0) {
       const name = siteUser?.displayName ? ` ${siteUser.displayName}` : "";
-      appendChatMsg(`Bonjour${name} ! Je suis Charles. Je peux vous aider à naviguer sur le site, comprendre Cahier de Compte, utiliser les messages privés, découvrir les projets ou faire des calculs.`, "bot");
+      appendChatMsg(`Bonjour${name} ! Je suis HORIZON AI, l’assistant de HORIZON Workspace. Je peux vous aider à utiliser les services HORIZON et Cahier de Compte.`, "bot");
     } else if (win.style.display === "flex") {
       renderChatHistory();
     }
@@ -402,8 +417,8 @@ function processBotQuery(raw) {
 
   if (/^(bonjour|bonsoir|salut|hello|hi|hey)\b/.test(q)) {
     return siteUser
-      ? `Bonjour ${siteUser.displayName || "!"} 👋 Je suis Charles. Votre session est active sur tout le site.`
-      : "Bonjour 👋 Je suis Charles. Connectez-vous une seule fois pour débloquer les services privés du site.";
+      ? `Bonjour ${siteUser.displayName || "!"} 👋 Je suis HORIZON AI. Votre session est active dans HORIZON Workspace.`
+      : "Bonjour 👋 Je suis HORIZON AI. Connectez-vous pour accéder aux services de HORIZON Workspace.";
   }
 
   if (q.includes("connexion") || q.includes("connecter") || q.includes("login") || q.includes("compte")) {
@@ -415,23 +430,23 @@ function processBotQuery(raw) {
   if (q.includes("message") || q.includes("messagerie") || q.includes("chat prive")) {
     return siteUser
       ? "Vous êtes connecté. Ouvrez « Communauté » pour choisir un utilisateur et démarrer une conversation privée."
-      : "Les messages privés nécessitent votre compte Charles. Connectez-vous une seule fois, puis la messagerie sera disponible.";
+      : "Les messages privés nécessitent votre compte HORIZON. Connectez-vous une seule fois, puis la messagerie sera disponible.";
   }
 
   if (q.includes("cahier") || q.includes("compte")) {
     return siteUser
       ? "Cahier de Compte est disponible avec votre session actuelle : ventes, produits, stock, clients, crédits, paiements, dépenses et rapports."
-      : "Cahier de Compte utilise la même connexion Google que le reste de Charles. Connectez-vous une fois depuis le menu.";
+      : "Cahier de Compte utilise la même connexion Google que HORIZON Workspace. Connectez-vous une fois depuis la page d’authentification.";
   }
 
   if (q.includes("theme") || q.includes("couleur")) return "HORIZON propose uniquement deux thèmes : fond noir avec boutons jaunes, ou fond blanc avec boutons jaunes. Choisissez-les depuis le menu 🎨.";
   if (q.includes("langue") || q.includes("swahili") || q.includes("anglais") || q.includes("francais")) return "Charles est disponible en français, English et Kiswahili depuis le menu 🌐.";
 
-  if (q.includes("charles")) return "Bisimwa Mushimanja Charles est étudiant en électricité à l'EDAP/ISP Bukavu, passionné par l'électronique, la programmation et les systèmes embarqués.";
-  if (q.includes("competence") || q.includes("skills") || q.includes("technologie")) return "Le portfolio présente l'électricité, l'électronique, Python, C/C++, JavaScript, Arduino, ESP32, robotique, systèmes embarqués et d'autres technologies.";
-  if (q.includes("blacksmith")) return "Blacksmith est une initiative technologique orientée vers des solutions concrètes, notamment l'innovation environnementale à Bukavu.";
-  if (q.includes("ecochar")) return "EcoChar travaille sur la valorisation des déchets et la production de charbon écologique.";
-  if (q.includes("contact") || q.includes("email") || q.includes("whatsapp")) return "Vous pouvez utiliser la page Contact du site pour joindre Charles.";
+  if (q.includes("horizon")) return "HORIZON Workspace réunit votre profil, la messagerie et les outils de gestion destinés aux commerçants, dont Cahier de Compte.";
+  
+  
+  
+  
 
   if (q.includes("ouvre") || q.includes("ouvrir") || q.includes("aller")) {
     if (q.includes("cahier")) { window.location.href = "cahier-compte.html"; return "Ouverture de Cahier de Compte…"; }
@@ -440,7 +455,7 @@ function processBotQuery(raw) {
     if (q.includes("projet")) { window.location.href = "projects.html"; return "Ouverture des projets…"; }
   }
 
-  return "Je suis Charles 🤖. Je peux vous aider avec la connexion unique, les messages privés, Cahier de Compte, les thèmes, les langues, les projets ou les calculs.";
+  return "Je suis HORIZON AI 🤖, spécialisé dans HORIZON Workspace. Je peux aider avec la connexion, le profil, la messagerie et les fonctions de Cahier de Compte. L’accès direct à vos ventes par date/heure n’est pas encore disponible dans cette version.";
 }
 
 /* ---------- VISITOR TRACKING ---------- */

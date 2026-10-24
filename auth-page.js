@@ -1,0 +1,94 @@
+import { auth, googleProvider, db } from "./firebase-config.js";
+import { browserLocalPersistence, setPersistence, signInWithPopup, signInWithRedirect, getRedirectResult, updateProfile, signOut, getAdditionalUserInfo } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
+
+const $=id=>document.getElementById(id);
+const modeButtons=[...document.querySelectorAll("[data-mode]")];
+let mode="login",signupDetails=null;
+const status=(message,error=false)=>{const el=$("statusMessage");el.textContent=message;el.classList.toggle("error",error);};
+const busy=(on)=>{const el=$("googleBtn");if(el)el.disabled=on;};
+function ageAtLeast15(value){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value||""))return false;
+  const [year,month,day]=value.split("-").map(Number);
+  const birth=new Date(year,month-1,day);
+  if(birth.getFullYear()!==year||birth.getMonth()!==month-1||birth.getDate()!==day)return false;
+  const now=new Date();
+  let age=now.getFullYear()-year;
+  if(now.getMonth()+1<month||(now.getMonth()+1===month&&now.getDate()<day))age--;
+  return age>=15&&birth<=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+}
+function setBirthDate(){
+  const entry=$("birthDateEntry"), hidden=$("birthDate"), note=$("birthDateStatus");
+  const value=entry.value.trim();
+  const match=value.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(!match){hidden.value="";note.textContent="Écrivez la date au format JJ/MM/AAAA, par exemple 15/08/2008.";note.style.color="#ff7777";return false;}
+  const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);
+  const date=new Date(year,month-1,day);
+  if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==day||date>new Date()){
+    hidden.value="";note.textContent="Cette date n'est pas valide. Vérifiez le jour, le mois et l'année.";note.style.color="#ff7777";return false;
+  }
+  hidden.value=year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+  entry.value=String(day).padStart(2,"0")+"/"+String(month).padStart(2,"0")+"/"+year;
+  note.textContent="Date enregistrée dans le formulaire : "+entry.value;
+  note.style.color="var(--yellow)";
+  return true;
+}
+$("setBirthDateBtn").addEventListener("click",setBirthDate);
+$("birthDateEntry").addEventListener("input",()=>{ $("birthDate").value=""; $("birthDateStatus").textContent="Appuyez sur SET pour confirmer la date."; $("birthDateStatus").style.color=""; });
+
+function getSignupDetails(){const first=$("firstName").value.trim(),last=$("lastName").value.trim(),birth=$("birthDate").value;if(!first||!last){status("Saisissez votre prénom et votre nom.",true);return null;}if(!birth){$("birthDateStatus").textContent="Écrivez votre date puis appuyez sur SET."; $("birthDateStatus").style.color="#ff7777";status("Confirmez votre date de naissance avec le bouton SET.",true);return null;}if(!ageAtLeast15(birth)){status("Pour créer un compte, vous devez avoir au moins 15 ans.",true);return null;}return {displayName:(first+" "+last).replace(/\s+/g," ").slice(0,100),birthDate:birth};}
+function setMode(next){mode=next;modeButtons.forEach(b=>{const active=b.dataset.mode===mode;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));});$("signupFields").hidden=mode!=="signup";$("formTitle").textContent=mode==="signup"?"Créer votre compte":"Bienvenue";$("formSubtitle").textContent=mode==="signup"?"Rejoignez HORIZON en quelques étapes.":"Connectez-vous à votre espace HORIZON.";status("");}
+modeButtons.forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
+async function saveBasicProfile(user,displayName){const name=(displayName||user.displayName||"Membre").trim().slice(0,100);if(displayName&&displayName!==user.displayName)await updateProfile(user,{displayName:name});await setDoc(doc(db,"publicProfiles",user.uid),{uid:user.uid,displayName:name,photoURL:user.photoURL||"",updatedAt:serverTimestamp()},{merge:true});}
+function getNextPath(){const next=new URLSearchParams(window.location.search).get("next")||"index.html";const allowed=["index.html","about.html","skills.html","contact.html","profile.html","community.html","cahier-compte.html","media.html","documents.html","projects.html"];return allowed.includes(next)?("./"+next):"./index.html";}
+function continueAfterLogin(){status("Connexion réussie. Ouverture de HORIZON…");sessionStorage.removeItem("horizon_signup_pending");sessionStorage.removeItem("horizon_auth_mode");const destination=getNextPath();setTimeout(()=>{window.location.href=destination;},650);}
+async function googleAuth(){
+  if(mode==="signup"){signupDetails=getSignupDetails();if(!signupDetails)return;}
+  busy(true);status("Connexion sécurisée avec Google…");
+  try{
+    await setPersistence(auth,browserLocalPersistence);
+    let result;
+    try{result=await signInWithPopup(auth,googleProvider);}
+    catch(error){if(error.code==="auth/popup-blocked"||error.code==="auth/operation-not-supported-in-this-environment"){if(mode==="signup")sessionStorage.setItem("horizon_signup_pending",JSON.stringify(signupDetails));sessionStorage.setItem("horizon_auth_mode",mode);await signInWithRedirect(auth,googleProvider);return;}throw error;}
+    const user=result.user;
+    if(mode==="login"&&getAdditionalUserInfo(result)?.isNewUser){await signOut(auth);status("Ce compte est nouveau. Choisissez « Créer un compte » pour confirmer votre âge et terminer l'inscription.",true);return;}
+    await saveBasicProfile(user,mode==="signup"?signupDetails.displayName:(user.displayName||user.email?.split("@")[0]||"Membre"));
+    continueAfterLogin();
+  }catch(error){console.error("HORIZON Google auth:",error);status(authError(error),true);}
+  finally{busy(false);}
+}
+$("googleBtn").addEventListener("click",googleAuth);
+function authError(error){
+  const code=String(error?.code||"");
+  const message=String(error?.message||"").trim();
+  const messages={
+    "auth/unauthorized-domain":"Le domaine de cette version de HORIZON n'est pas autorisé dans Firebase Authentication.",
+    "auth/operation-not-allowed":"La connexion Google n'est pas activée dans Firebase Authentication.",
+    "auth/popup-blocked":"Le navigateur a bloqué la fenêtre Google. Rechargez la page ou ouvrez HORIZON dans Chrome.",
+    "auth/popup-closed-by-user":"La fenêtre Google a été fermée avant la fin de la connexion.",
+    "auth/cancelled-popup-request":"Une autre fenêtre de connexion Google est déjà ouverte. Réessayez.",
+    "auth/operation-not-supported-in-this-environment":"Ce navigateur ne permet pas la fenêtre Google. Ouvrez HORIZON dans Chrome.",
+    "auth/network-request-failed":"Connexion réseau impossible pendant l'authentification Google.",
+    "auth/invalid-api-key":"La clé API Firebase est invalide.",
+    "auth/api-key-not-valid":"La clé API Firebase est refusée. Vérifiez ses restrictions dans Google Cloud.",
+    "auth/invalid-credential":"Google n'a pas accepté les informations d'authentification. Réessayez.",
+    "auth/account-exists-with-different-credential":"Un compte existe déjà avec une autre méthode de connexion.",
+    "auth/too-many-requests":"Trop de tentatives. Attendez un moment puis réessayez."
+  };
+  if(code==="SIGNUP_DETAILS_REQUIRED")return"Recommencez l'inscription et confirmez votre date de naissance.";
+  if(messages[code])return messages[code];
+  if(code)return"Erreur d'authentification Google : "+code+(message&&message!==code?" — "+message:"");
+  if(message)return"Erreur technique : "+message;
+  return"Erreur inconnue lors de la connexion Google. Rechargez la page puis réessayez.";
+}
+try{
+  await setPersistence(auth,browserLocalPersistence);
+  const redirect=await getRedirectResult(auth);
+  if(redirect?.user){
+    const user=redirect.user,savedMode=sessionStorage.getItem("horizon_auth_mode")||"login";let savedDetails=null;try{savedDetails=JSON.parse(sessionStorage.getItem("horizon_signup_pending")||"null");}catch{}
+    if(savedMode==="signup"&&(!savedDetails||!ageAtLeast15(savedDetails.birthDate))){await signOut(auth);sessionStorage.removeItem("horizon_signup_pending");status("L'inscription n'a pas pu être confirmée. Recommencez et vérifiez votre date de naissance.",true);}
+    else if(savedMode==="login"&&getAdditionalUserInfo(redirect)?.isNewUser){await signOut(auth);status("Ce compte est nouveau. Choisissez « Créer un compte » pour terminer l'inscription.",true);}
+    else{await saveBasicProfile(user,savedMode==="signup"?savedDetails.displayName:(user.displayName||user.email?.split("@")[0]||"Membre"));continueAfterLogin();}
+  }
+}catch(error){console.error("HORIZON Google redirect:",error);status(authError(error),true);}
+if(auth.currentUser){status("Vous êtes déjà connecté à HORIZON. Ouverture de votre espace…");setTimeout(()=>{window.location.href=getNextPath();},500);}

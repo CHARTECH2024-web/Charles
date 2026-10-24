@@ -3,13 +3,23 @@
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="robots" content="noindex,nofollow"><title>Charles</title>
 <link rel="icon" type="image/svg+xml" href="./horizon-icon.svg?v=2">
-<link rel="stylesheet" href="style.css"><link rel="stylesheet" href="animations.css"><link rel="stylesheet" href="responsive.css"></head>
+<link rel="stylesheet" href="style.css?v=20261024-profile-hex"><link rel="stylesheet" href="animations.css"><link rel="stylesheet" href="responsive.css"></head>
 <body><div id="site-header"></div><main>
 <section class="community-hero"><span class="hero-badge">Compte utilisateur</span><h1>Mon <span class="text-orange">profil</span></h1></section>
 <section class="community-card" style="max-width:720px;margin:auto">
 <div id="profileLoading">Vérification du compte…</div>
 <div id="profileContent" style="display:none">
-<div class="profile-box"><img id="avatar" src="" alt=""><div><h2 id="displayName" style="margin:0">—</h2><p id="email" style="margin:.25rem 0;color:var(--text-muted)">—</p></div></div>
+<div class="profile-box profile-box-vertical">
+<h2 id="displayName" style="margin:0">—</h2>
+<img id="avatar" class="profile-avatar-hex" src="" alt="Photo de profil" hidden>
+<p class="profile-private-note">Votre adresse Google reste privée.</p>
+</div>
+<div class="profile-photo-editor">
+<label class="form-label" for="photoInput">Photo de profil</label>
+<input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp">
+<button id="uploadPhotoBtn" class="btn btn-primary" type="button">Enregistrer la photo</button>
+<p id="photoStatus" role="status" aria-live="polite"></p>
+</div>
 <label class="form-label" for="bio">Présentation</label>
 <textarea id="bio" class="form-control" maxlength="500" rows="5" placeholder="Parlez brièvement de vous…"></textarea>
 <div style="display:flex;gap:.7rem;flex-wrap:wrap;margin-top:1rem"><button id="saveBtn" class="btn btn-primary">Enregistrer</button><a href="community.html" class="btn btn-outline">Communauté</a><button id="logoutBtn" class="btn btn-outline">Déconnexion</button></div>
@@ -17,4 +27,4 @@
 </div>
 <div id="loginPrompt" style="display:none"><p>Connectez-vous avec Google pour accéder à votre profil.</p><button id="loginBtn" class="btn btn-primary">Connexion Google</button></div>
 </section></main><div id="site-footer"></div><div id="chatbot-root"></div>
-<script type="module" src="firebase-config.js"></script><script type="module" src="main.js"></script><script type="module" src="profile.js"></script></body></html>
+<script type="module" src="firebase-config.js"></script><script type="module" src="main.js?v=20261024-auth-gate"></script><script type="module" src="profile.js?v=20261024-profile-photo"></script></body></html>

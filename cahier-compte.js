@@ -5,7 +5,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[], debtPayments:[] };
+const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[], debtPayments:[], losses:[] };
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => `${Number(value || 0).toLocaleString("fr-FR")} FC`;
@@ -52,13 +52,17 @@ async function loadProducts() {
   state.products=snap.docs.map(d=>({id:d.id,...d.data()}));
   $("stat-products").textContent=state.products.length;
   const low=state.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockThreshold ?? 5));
+  const today=new Date(); today.setHours(0,0,0,0);
+  const expiring=state.products.filter(p=>p.expiryDate && !Number.isNaN(Date.parse(p.expiryDate)) && (new Date(p.expiryDate+"T00:00:00")-today)/(24*60*60*1000)<=30 && new Date(p.expiryDate+"T00:00:00")>=today);
+  const expired=state.products.filter(p=>p.expiryDate && !Number.isNaN(Date.parse(p.expiryDate)) && new Date(p.expiryDate+"T00:00:00")<today);
   $("stat-low-stock").textContent=low.length;
-  $("low-stock-list").innerHTML=low.length
-    ? low.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>Stock: ${Number(p.stock||0)} • Seuil: ${Number(p.lowStockThreshold ?? 5)}</span></div>`).join("")
-    : "<p class='text-muted'>Aucun stock faible.</p>";
+  const alerts=[...expired.map(p=>({p,label:"EXPIRÉ"})),...expiring.map(p=>({p,label:"Expire bientôt"})),...low.map(p=>({p,label:"Stock faible"}))];
+  $("low-stock-list").innerHTML=alerts.length
+    ? alerts.map(({p,label})=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)} — ${label}</strong><span>Stock: ${Number(p.stock||0)} • Seuil: ${Number(p.lowStockThreshold ?? 5)}${p.expiryDate ? " • Expiration: "+escapeHtml(p.expiryDate) : ""}</span></div>`).join("")
+    : "<p class='text-muted'>Aucune alerte de stock ou d'expiration.</p>";
   $("product-count").textContent=`${state.products.length} produit(s)`;
   $("product-list").innerHTML=state.products.length
-    ? state.products.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>${money(p.price)} • Stock: ${Number(p.stock||0)}</span></div>`).join("")
+    ? state.products.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>Achat: ${money(p.costPrice)} • Vente: ${money(p.price)} • Stock: ${Number(p.stock||0)}${p.manufactureDate ? " • Fab.: "+escapeHtml(p.manufactureDate) : ""}${p.expiryDate ? " • Exp.: "+escapeHtml(p.expiryDate) : ""}</span></div>`).join("")
     : "<p class='text-muted'>Aucun produit pour le moment.</p>";
   $("sale-product").innerHTML='<option value="">Sélectionner</option>' +
     state.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
@@ -117,6 +121,16 @@ async function loadDebts() {
 }
 
 
+async function loadLosses() {
+  const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"losses"),orderBy("createdAt","desc")));
+  state.losses=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const total=state.losses.reduce((sum,x)=>sum+Number(x.totalCost||0),0);
+  if($("stat-losses")) $("stat-losses").textContent=money(total);
+  if($("loss-list")) $("loss-list").innerHTML=state.losses.length ? state.losses.map(x=>"<div class=\"cahier-list-row\"><strong>"+escapeHtml(x.productName)+" — "+escapeHtml(x.reason)+"</strong><span>"+Number(x.quantity||0)+" unité(s) • "+money(x.totalCost)+" • "+escapeHtml(x.note||"")+"</span></div>").join("") : "<p class=\"text-muted\">Aucune perte enregistrée.</p>";
+  updateFinancialSummary();
+  updateReport();
+}
+
 async function loadExpenses() {
   const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"expenses"),orderBy("createdAt","desc")));
   state.expenses=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -159,7 +173,12 @@ function updateReport() {
   $("report-expenses").textContent=money(expenseTotal);
   $("report-debts").textContent=money(debtTotal);
   $("report-payments").textContent=money(paymentTotal);
-  $("report-profit").textContent=money(revenue-expenseTotal);
+  const knownSales=sales.filter(x=>typeof x.costTotal==="number");
+  const grossProfit=knownSales.reduce((sum,x)=>sum+Number(x.amount||0)-Number(x.costTotal||0),0);
+  const lossTotal=(state.losses||[]).filter(x=>inReportPeriod(x,period)).reduce((sum,x)=>sum+Number(x.totalCost||0),0);
+  $("report-profit").textContent=knownSales.length ? money(grossProfit-expenseTotal-lossTotal) : "Coûts à renseigner";
+  if ($("report-losses")) $("report-losses").textContent=money(lossTotal);
+  if ($("report-gross-profit")) $("report-gross-profit").textContent=knownSales.length ? money(grossProfit) : "Non calculable";
   const rows=[
     ...sales.map(x=>({t:timestampMs(x),label:"Vente",value:x.amount,detail:x.productName})),
     ...expenses.map(x=>({t:timestampMs(x),label:"Dépense",value:-x.amount,detail:x.label})),
@@ -173,7 +192,41 @@ function updateReport() {
 function updateFinancialSummary() {
   const revenue=state.sales.reduce((sum,s)=>sum+Number(s.amount||0),0);
   const expenses=state.expenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
-  $("stat-profit").textContent=money(revenue-expenses);
+  const knownSales=state.sales.filter(s=>typeof s.costTotal==="number");
+  const gross=knownSales.reduce((sum,s)=>sum+Number(s.amount||0)-Number(s.costTotal||0),0);
+  const losses=(state.losses||[]).reduce((sum,l)=>sum+Number(l.totalCost||0),0);
+  $("stat-profit").textContent=knownSales.length ? money(gross-expenses-losses) : "Coûts à renseigner";
+  renderBusinessInsights();
+}
+
+function renderBusinessInsights(){
+  const el=$("business-insights"); if(!el)return;
+  const low=state.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockThreshold??5));
+  const messages=[];
+  if(low.length) messages.push("⚠️ Stock faible : vérifiez "+low.slice(0,3).map(p=>escapeHtml(p.name)).join(", ")+".");
+  const now=Date.now(), week=7*24*60*60*1000;
+  const dated=state.sales.filter(s=>timestampMs(s)>0);
+  const sums=[2,1,0].map(o=>dated.filter(s=>timestampMs(s)>=now-(o+1)*week&&timestampMs(s)<now-o*week).reduce((sum,s)=>sum+Number(s.amount||0),0));
+  if(sums.every(v=>v>0)&&sums[0]>sums[1]&&sums[1]>sums[2]){
+    const byProduct={}; dated.filter(s=>timestampMs(s)>=now-3*week).forEach(s=>{const k=s.productName||"Produit";byProduct[k]=(byProduct[k]||0)+Number(s.amount||0);});
+    const top=Object.entries(byProduct).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+    messages.push("📉 Les ventes baissent depuis trois semaines. Vérifiez le stock des produits les plus vendus : "+(top.map(escapeHtml).join(", ")||"données insuffisantes")+".");
+  }
+  if(state.sales.some(s=>typeof s.costTotal!=="number")) messages.push("💡 Certaines ventes anciennes ne disposent pas de coût d’achat enregistré : leur bénéfice exact reste inconnu.");
+  if(!messages.length) messages.push("✅ Pas d’alerte évidente dans les données disponibles. Continuez à enregistrer ventes, achats et pertes.");
+  el.innerHTML=messages.map(m=>"<p class=\"cahier-insight\">"+m+"</p>").join("");
+  renderSalesChart();
+}
+function renderSalesChart(){
+  const el=$("sales-chart"); if(!el)return;
+  const now=Date.now(), week=7*24*60*60*1000;
+  const vals=[5,4,3,2,1,0].map(o=>state.sales.filter(s=>timestampMs(s)>=now-(o+1)*week&&timestampMs(s)<now-o*week).reduce((sum,s)=>sum+Number(s.amount||0),0));
+  const max=Math.max.apply(null,vals.concat([1])), w=600,h=180,p=24;
+  const points=vals.map((v,i)=>(p+i*(w-2*p)/5)+","+(h-p-(v/max)*(h-2*p))).join(" ");
+  const labels=["S-5","S-4","S-3","S-2","S-1","Cette sem."];
+  let marks="";
+  vals.forEach((v,i)=>{const x=p+i*(w-2*p)/5,y=h-p-(v/max)*(h-2*p);marks+="<circle cx=\""+x+"\" cy=\""+y+"\" r=\"5\" fill=\"var(--accent,#f4c430)\"><title>"+labels[i]+" : "+money(v)+"</title></circle><text x=\""+x+"\" y=\""+(h-4)+"\" text-anchor=\"middle\" font-size=\"12\" fill=\"currentColor\">"+labels[i]+"</text>";});
+  el.innerHTML="<svg viewBox=\"0 0 "+w+" "+h+"\" role=\"img\" aria-label=\"Évolution des ventes sur six semaines\" style=\"width:100%;height:auto\"><line x1=\""+p+"\" y1=\""+(h-p)+"\" x2=\""+(w-p)+"\" y2=\""+(h-p)+"\" stroke=\"currentColor\" opacity=\".3\"/><polyline points=\""+points+"\" fill=\"none\" stroke=\"var(--accent,#f4c430)\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"+marks+"</svg><p class=\"text-muted\">Ventes par semaine • "+vals.map(money).join(" · ")+"</p>";
 }
 
 function escapeHtml(value) {
@@ -196,18 +249,7 @@ function authErrorMessage(error) {
   return "Connexion Google impossible (" + (code || "erreur inconnue") + "). Réessayez.";
 }
 
-$("cahier-login-btn").onclick=async()=>{
-  const btn=$("cahier-login-btn");
-  btn.disabled=true;
-  $("cahier-login-error").hidden=true;
-  try { await loginUserWithGoogle(); }
-  catch(e) {
-    console.error("Cahier de Compte Google login:",e);
-    $("cahier-login-error").hidden=false;
-    $("cahier-login-error").textContent=authErrorMessage(e);
-    btn.disabled=false;
-  }
-};
+$("cahier-login-btn").onclick=()=>{window.location.href="./auth.html?next=cahier-compte.html";};
 
 $("cahier-logout").onclick=()=>logoutUser();
 
@@ -227,10 +269,19 @@ $("product-form").onsubmit=async(e)=>{
   e.preventDefault();
   if(!state.user)return;
   try {
+    const manufactureDate=$("product-manufacture-date").value;
+    const expiryDate=$("product-expiry-date").value;
+    if(manufactureDate && expiryDate && expiryDate < manufactureDate) {
+      setStatus("La date d'expiration ne peut pas précéder la date de fabrication.",true);
+      return;
+    }
     await addDoc(collection(db,"businesses",state.user.uid,"products"),{
       name:$("product-name").value.trim(),
+      costPrice:Number($("product-cost").value),
       price:Number($("product-price").value),
       stock:Number($("product-stock").value),
+      manufactureDate:manufactureDate || "",
+      expiryDate:expiryDate || "",
       lowStockThreshold:5,
       createdAt:serverTimestamp(),
       updatedAt:serverTimestamp()
@@ -266,15 +317,19 @@ $("sale-form").onsubmit=async(e)=>{
         lastStockMoveId:stockMoveRef.id,
         updatedAt:serverTimestamp()
       });
+      const costKnown=typeof fresh.costPrice==="number" && Number.isFinite(fresh.costPrice);
+      const unitCost=costKnown ? fresh.costPrice : null;
+      const costTotal=costKnown ? qty*unitCost : null;
       tx.set(saleRef,{
         productId, productName:fresh.name || product.name, quantity:qty, amount,
+        costKnown, ...(costKnown ? {unitCost,costTotal,grossProfit:amount-costTotal} : {}),
         stockMoveId:stockMoveRef.id,
         createdAt:serverTimestamp()
       });
       tx.set(stockMoveRef,{
         productId, productName:fresh.name || product.name, type:"sale", quantity:-qty,
         saleId:saleRef.id,
-        note:"Sortie liée à une vente", createdAt:serverTimestamp()
+        ...(costKnown?{unitCost,totalCost:costTotal}:{}), note:"Sortie liée à une vente", createdAt:serverTimestamp()
       });
     });
     e.target.reset();
@@ -289,6 +344,29 @@ $("sale-form").onsubmit=async(e)=>{
 
 
 
+
+$("loss-form").onsubmit=async(e)=>{
+  e.preventDefault(); if(!state.user)return;
+  const productId=$("loss-product").value, product=state.products.find(p=>p.id===productId);
+  const qty=Number($("loss-qty").value), reason=$("loss-reason").value, note=$("loss-note").value.trim();
+  if(!product || !Number.isInteger(qty) || qty<1){setStatus("Choisissez un produit et une quantité valide.",true);return;}
+  try {
+    const productRef=doc(db,"businesses",state.user.uid,"products",productId);
+    const lossRef=doc(collection(db,"businesses",state.user.uid,"losses"));
+    const moveRef=doc(collection(db,"businesses",state.user.uid,"stockMoves"));
+    await runTransaction(db,async(tx)=>{
+      const snap=await tx.get(productRef); if(!snap.exists())throw new Error("Produit introuvable");
+      const fresh=snap.data(), stock=Number(fresh.stock||0); if(qty>stock)throw new Error("Stock insuffisant");
+      const costKnown=typeof fresh.costPrice==="number" && Number.isFinite(fresh.costPrice);
+      const unitCost=costKnown?fresh.costPrice:0, totalCost=qty*unitCost;
+      tx.update(productRef,{stock:stock-qty,lastStockMoveId:moveRef.id,updatedAt:serverTimestamp()});
+      tx.set(lossRef,{productId:productId,productName:fresh.name||product.name,quantity:qty,unitCost:unitCost,totalCost:totalCost,costKnown:costKnown,reason:reason,note:note,stockMoveId:moveRef.id,createdAt:serverTimestamp()});
+      tx.set(moveRef,{productId:productId,productName:fresh.name||product.name,type:"loss",quantity:-qty,lossId:lossRef.id,unitCost:unitCost,totalCost:totalCost,note:reason+(note?": "+note:""),createdAt:serverTimestamp()});
+    });
+    e.target.reset(); $("loss-qty").value=1;
+    await Promise.all([loadProducts(),loadLosses()]); setStatus("Perte enregistrée et stock mis à jour.");
+  } catch(err){setStatus(err.message==="Stock insuffisant"?"La perte dépasse le stock disponible.":"Échec de sauvegarde de la perte.",true);}
+};
 
 $("expense-form").onsubmit=async(e)=>{
   e.preventDefault();
@@ -312,7 +390,9 @@ $("stock-form").onsubmit=async(e)=>{
   const productId=$("stock-product").value;
   const product=state.products.find(p=>p.id===productId);
   const qty=Number($("stock-qty").value);
-  if(!product || qty<1)return;
+  const costRaw=$("stock-unit-cost")?.value ?? "";
+  const purchaseUnitCost=costRaw==="" ? null : Number(costRaw);
+  if(!product || qty<1 || (purchaseUnitCost!==null && (!Number.isFinite(purchaseUnitCost)||purchaseUnitCost<0)))return;
   try {
     const productRef=doc(db,"businesses",state.user.uid,"products",productId);
     const stockMoveRef=doc(collection(db,"businesses",state.user.uid,"stockMoves"));
@@ -320,15 +400,11 @@ $("stock-form").onsubmit=async(e)=>{
       const freshSnap=await tx.get(productRef);
       if(!freshSnap.exists()) throw new Error("Produit introuvable");
       const fresh=freshSnap.data();
-      tx.update(productRef,{
-        stock:Number(fresh.stock||0)+qty,
-        lastStockMoveId:stockMoveRef.id,
-        updatedAt:serverTimestamp()
-      });
-      tx.set(stockMoveRef,{
-        productId, productName:fresh.name||product.name, type:"purchase", quantity:qty,
-        note:$("stock-note").value.trim(), createdAt:serverTimestamp()
-      });
+      const oldStock=Number(fresh.stock||0);
+      const update={stock:oldStock+qty,lastStockMoveId:stockMoveRef.id,updatedAt:serverTimestamp()};
+      if(purchaseUnitCost!==null){const oldCost=typeof fresh.costPrice==="number"?fresh.costPrice:purchaseUnitCost;update.costPrice=oldStock>0?((oldStock*oldCost)+(qty*purchaseUnitCost))/(oldStock+qty):purchaseUnitCost;}
+      tx.update(productRef,update);
+      tx.set(stockMoveRef,{productId,productName:fresh.name||product.name,type:"purchase",quantity:qty,...(purchaseUnitCost!==null?{unitCost:purchaseUnitCost,totalCost:qty*purchaseUnitCost}:{}),note:$("stock-note").value.trim(),createdAt:serverTimestamp()});
     });
     e.target.reset();
     $("stock-qty").value=1;
@@ -411,7 +487,7 @@ observeUser(async(user)=>{
   try {
     showApp(user);
     await ensureBusiness(user);
-    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts(),loadExpenses()]);
+    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts(),loadExpenses(),loadLosses()]);
   } catch(e) {
     setStatus("Impossible de charger votre espace Cahier de Compte.",true);
   }
