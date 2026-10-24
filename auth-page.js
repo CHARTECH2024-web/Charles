@@ -62,27 +62,24 @@ function authError(error){
   const code=String(error?.code||"");
   const message=String(error?.message||"").trim();
   const messages={
-    "auth/invalid-phone-number":"Le numéro de téléphone n'est pas valide.",
-    "auth/missing-phone-number":"Saisissez votre numéro de téléphone.",
-    "auth/too-many-requests":"Trop de tentatives. Réessayez plus tard.",
-    "auth/quota-exceeded":"La limite d'envoi de SMS du projet Firebase est atteinte.",
-    "auth/invalid-verification-code":"Le code saisi est incorrect.",
-    "auth/code-expired":"Le code a expiré. Demandez-en un nouveau.",
-    "auth/captcha-check-failed":"La vérification reCAPTCHA a échoué. Rechargez la page et réessayez.",
-    "auth/missing-app-credential":"Firebase n'a pas reçu la preuve de vérification reCAPTCHA. Détail technique : auth/missing-app-credential",
-    "auth/invalid-app-credential":"La preuve reCAPTCHA a été refusée par Firebase. Vérifiez la configuration du domaine et reCAPTCHA. Détail technique : auth/invalid-app-credential",
-    "auth/network-request-failed":"La requête Firebase a échoué à cause du réseau ou d'un accès bloqué. Vérifiez la connexion. Détail technique : auth/network-request-failed",
-    "auth/billing-not-enabled":"Firebase indique que la facturation doit être configurée pour cette opération. Détail technique : auth/billing-not-enabled",
-    "auth/operation-not-allowed":"Activez la connexion par téléphone dans Firebase Authentication.",
-    "auth/unauthorized-domain":"Ajoutez le domaine de cette application aux domaines autorisés dans Firebase Authentication.",
+    "auth/unauthorized-domain":"Le domaine de cette version de HORIZON n'est pas autorisé dans Firebase Authentication.",
+    "auth/operation-not-allowed":"La connexion Google n'est pas activée dans Firebase Authentication.",
+    "auth/popup-blocked":"Le navigateur a bloqué la fenêtre Google. Rechargez la page ou ouvrez HORIZON dans Chrome.",
     "auth/popup-closed-by-user":"La fenêtre Google a été fermée avant la fin de la connexion.",
-    "auth/account-exists-with-different-credential":"Ce numéro ou cette adresse est déjà associé à une autre méthode de connexion."
+    "auth/cancelled-popup-request":"Une autre fenêtre de connexion Google est déjà ouverte. Réessayez.",
+    "auth/operation-not-supported-in-this-environment":"Ce navigateur ne permet pas la fenêtre Google. Ouvrez HORIZON dans Chrome.",
+    "auth/network-request-failed":"Connexion réseau impossible pendant l'authentification Google.",
+    "auth/invalid-api-key":"La clé API Firebase est invalide.",
+    "auth/api-key-not-valid":"La clé API Firebase est refusée. Vérifiez ses restrictions dans Google Cloud.",
+    "auth/invalid-credential":"Google n'a pas accepté les informations d'authentification. Réessayez.",
+    "auth/account-exists-with-different-credential":"Un compte existe déjà avec une autre méthode de connexion.",
+    "auth/too-many-requests":"Trop de tentatives. Attendez un moment puis réessayez."
   };
-  if(code==="SIGNUP_DETAILS_REQUIRED")return"Recommencez l'inscription et confirmez votre âge.";
+  if(code==="SIGNUP_DETAILS_REQUIRED")return"Recommencez l'inscription et confirmez votre date de naissance.";
   if(messages[code])return messages[code];
-  if(code)return"Erreur d'authentification : "+code+(message&&message!==code?" — "+message:"");
+  if(code)return"Erreur d'authentification Google : "+code+(message&&message!==code?" — "+message:"");
   if(message)return"Erreur technique : "+message;
-  return"Erreur inconnue lors de l'authentification. Rechargez la page puis réessayez.";
+  return"Erreur inconnue lors de la connexion Google. Rechargez la page puis réessayez.";
 }
 try{
   await setPersistence(auth,browserLocalPersistence);
