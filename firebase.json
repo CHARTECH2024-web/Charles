@@ -5,7 +5,7 @@
   "auth": {
     "providers": {
       "googleSignIn": {
-        "oAuthBrandDisplayName": "NURU platform",
+        "oAuthBrandDisplayName": "HORIZON",
         "supportEmail": "chartech031@gmail.com",
         "authorizedRedirectUris": [
           "https://portfolio-charles-v31-98fc9.firebaseapp.com/__/auth/handler",
