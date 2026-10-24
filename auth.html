@@ -33,7 +33,13 @@
           <label>Prénom<input id="firstName" autocomplete="given-name" maxlength="60" placeholder="Votre prénom"></label>
           <label>Nom<input id="lastName" autocomplete="family-name" maxlength="60" placeholder="Votre nom"></label>
         </div>
-        <label>Date de naissance<input id="birthDate" type="date" autocomplete="bday"></label>
+        <label for="birthDateEntry">Date de naissance</label>
+        <div class="birth-date-row">
+          <input id="birthDateEntry" type="text" inputmode="numeric" autocomplete="bday" placeholder="JJ/MM/AAAA" maxlength="10" aria-describedby="birthDateStatus">
+          <button id="setBirthDateBtn" type="button" class="set-date-btn">SET</button>
+        </div>
+        <input id="birthDate" type="hidden" value="">
+        <p id="birthDateStatus" class="field-hint" aria-live="polite">Écrivez la date, par exemple 15/08/2008, puis appuyez sur SET.</p>
         <p class="field-hint">L'inscription est réservée aux personnes âgées d'au moins 15 ans.</p>
       </div>
       <button id="googleBtn" class="google-btn" type="button"><span class="google-g">G</span><span>Continuer avec Google</span></button>
