@@ -163,7 +163,12 @@ function updateReport() {
   $("report-expenses").textContent=money(expenseTotal);
   $("report-debts").textContent=money(debtTotal);
   $("report-payments").textContent=money(paymentTotal);
-  $("report-profit").textContent=money(revenue-expenseTotal);
+  const knownSales=sales.filter(x=>typeof x.costTotal==="number");
+  const grossProfit=knownSales.reduce((sum,x)=>sum+Number(x.amount||0)-Number(x.costTotal||0),0);
+  const lossTotal=(state.losses||[]).filter(x=>inReportPeriod(x,period)).reduce((sum,x)=>sum+Number(x.totalCost||0),0);
+  $("report-profit").textContent=knownSales.length ? money(grossProfit-expenseTotal-lossTotal) : "Coûts à renseigner";
+  if ($("report-losses")) $("report-losses").textContent=money(lossTotal);
+  if ($("report-gross-profit")) $("report-gross-profit").textContent=knownSales.length ? money(grossProfit) : "Non calculable";
   const rows=[
     ...sales.map(x=>({t:timestampMs(x),label:"Vente",value:x.amount,detail:x.productName})),
     ...expenses.map(x=>({t:timestampMs(x),label:"Dépense",value:-x.amount,detail:x.label})),
@@ -177,7 +182,10 @@ function updateReport() {
 function updateFinancialSummary() {
   const revenue=state.sales.reduce((sum,s)=>sum+Number(s.amount||0),0);
   const expenses=state.expenses.reduce((sum,e)=>sum+Number(e.amount||0),0);
-  $("stat-profit").textContent=money(revenue-expenses);
+  const knownSales=state.sales.filter(s=>typeof s.costTotal==="number");
+  const gross=knownSales.reduce((sum,s)=>sum+Number(s.amount||0)-Number(s.costTotal||0),0);
+  const losses=(state.losses||[]).reduce((sum,l)=>sum+Number(l.totalCost||0),0);
+  $("stat-profit").textContent=knownSales.length ? money(gross-expenses-losses) : "Coûts à renseigner";
 }
 
 function escapeHtml(value) {
@@ -276,7 +284,7 @@ $("sale-form").onsubmit=async(e)=>{
       tx.set(stockMoveRef,{
         productId, productName:fresh.name || product.name, type:"sale", quantity:-qty,
         saleId:saleRef.id,
-        note:"Sortie liée à une vente", createdAt:serverTimestamp()
+        ...(costKnown?{unitCost,totalCost:costTotal}:{}), note:"Sortie liée à une vente", createdAt:serverTimestamp()
       });
     });
     e.target.reset();
@@ -314,7 +322,9 @@ $("stock-form").onsubmit=async(e)=>{
   const productId=$("stock-product").value;
   const product=state.products.find(p=>p.id===productId);
   const qty=Number($("stock-qty").value);
-  if(!product || qty<1)return;
+  const costRaw=$("stock-unit-cost")?.value ?? "";
+  const purchaseUnitCost=costRaw==="" ? null : Number(costRaw);
+  if(!product || qty<1 || (purchaseUnitCost!==null && (!Number.isFinite(purchaseUnitCost)||purchaseUnitCost<0)))return;
   try {
     const productRef=doc(db,"businesses",state.user.uid,"products",productId);
     const stockMoveRef=doc(collection(db,"businesses",state.user.uid,"stockMoves"));
@@ -322,15 +332,11 @@ $("stock-form").onsubmit=async(e)=>{
       const freshSnap=await tx.get(productRef);
       if(!freshSnap.exists()) throw new Error("Produit introuvable");
       const fresh=freshSnap.data();
-      tx.update(productRef,{
-        stock:Number(fresh.stock||0)+qty,
-        lastStockMoveId:stockMoveRef.id,
-        updatedAt:serverTimestamp()
-      });
-      tx.set(stockMoveRef,{
-        productId, productName:fresh.name||product.name, type:"purchase", quantity:qty,
-        note:$("stock-note").value.trim(), createdAt:serverTimestamp()
-      });
+      const oldStock=Number(fresh.stock||0);
+      const update={stock:oldStock+qty,lastStockMoveId:stockMoveRef.id,updatedAt:serverTimestamp()};
+      if(purchaseUnitCost!==null){const oldCost=typeof fresh.costPrice==="number"?fresh.costPrice:purchaseUnitCost;update.costPrice=oldStock>0?((oldStock*oldCost)+(qty*purchaseUnitCost))/(oldStock+qty):purchaseUnitCost;}
+      tx.update(productRef,update);
+      tx.set(stockMoveRef,{productId,productName:fresh.name||product.name,type:"purchase",quantity:qty,...(purchaseUnitCost!==null?{unitCost:purchaseUnitCost,totalCost:qty*purchaseUnitCost}:{}),note:$("stock-note").value.trim(),createdAt:serverTimestamp()});
     });
     e.target.reset();
     $("stock-qty").value=1;
