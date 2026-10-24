@@ -261,6 +261,7 @@ function initUnifiedAuth() {
     siteUser = user || null;
     updateAccountUI(siteUser);
     window.dispatchEvent(new CustomEvent("charles:auth", { detail: { user: siteUser } }));
+    if (siteUser) initVisitorTracking();
   });
 
   finishGoogleRedirect().then(result => {
@@ -497,12 +498,10 @@ async function initVisitorTracking() {
     const { db } = await import("./firebase-config.js");
     const { doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js");
 
-    let sid = sessionStorage.getItem("charles_v35_sid");
-    if (!sid) {
-      sid = crypto.randomUUID ? crypto.randomUUID() : Date.now() + "-" + Math.random().toString(36).slice(2);
-      sessionStorage.setItem("charles_v35_sid", sid);
-    }
-
+    // The Firestore rules allow one statistics document per signed-in user.
+    // Do not write anonymous session IDs: they can be forged to inflate billable writes.
+    if (!siteUser?.uid) return;
+    const sid = siteUser.uid;
     const path = window.location.pathname.split("/").pop() || "index.html";
     await setDoc(doc(db, "visits", sid), {
       lastPage: path,
