@@ -12,9 +12,11 @@ let me=null, users=[], selected=null, stop=null;
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 function safeProfileImageUrl(value){
   if(typeof value!=="string" || value.length>25000) return "";
-  if(value.startsWith("data:image/jpeg;base64,")) return value;
-  try { const url=new URL(value); return url.protocol==="https:" ? url.href : ""; }
-  catch { return ""; }
+  if(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(value)) return value;
+  try {
+    const url=new URL(value);
+    return url.protocol==="https:" && url.hostname.endsWith(".googleusercontent.com") ? url.href : "";
+  } catch { return ""; }
 }
 const pair=(a,b)=>[a,b].sort().join("__");
 const msg=v=>{if(status)status.textContent=v;};
