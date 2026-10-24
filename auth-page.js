@@ -1,12 +1,12 @@
 import { auth, googleProvider, db } from "./firebase-config.js";
-import { browserLocalPersistence, setPersistence, signInWithPopup, signInWithRedirect, getRedirectResult, signInWithPhoneNumber, RecaptchaVerifier, updateProfile, signOut, getAdditionalUserInfo } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
+import { browserLocalPersistence, setPersistence, signInWithPopup, signInWithRedirect, getRedirectResult, updateProfile, signOut, getAdditionalUserInfo } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-auth.js";
 import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
 const modeButtons=[...document.querySelectorAll("[data-mode]")];
-let mode="login",recaptcha=null,confirmation=null,signupDetails=null;
+let mode="login",signupDetails=null;
 const status=(message,error=false)=>{const el=$("statusMessage");el.textContent=message;el.classList.toggle("error",error);};
-const busy=(on)=>{["googleBtn","sendCodeBtn"].forEach(id=>{const el=$(id);if(el)el.disabled=on;});};
+const busy=(on)=>{const el=$("googleBtn");if(el)el.disabled=on;};
 function ageAtLeast15(value){
   if(!/^\d{4}-\d{2}-\d{2}$/.test(value||""))return false;
   const [year,month,day]=value.split("-").map(Number);
@@ -58,29 +58,6 @@ async function googleAuth(){
   finally{busy(false);}
 }
 $("googleBtn").addEventListener("click",googleAuth);
-function ensureRecaptcha(){if(recaptcha)return recaptcha;recaptcha=new RecaptchaVerifier(auth,"recaptcha-container",{size:"invisible",callback:()=>{}});return recaptcha;}
-$("phoneForm").addEventListener("submit",async e=>{
-  e.preventDefault();signupDetails=null;
-  if(mode==="signup"){signupDetails=getSignupDetails();if(!signupDetails)return;}
-  const raw=$("phoneNumber").value.replace(/[\s().-]/g,"");
-  if(!/^\d{6,14}$/.test(raw)){status("Vérifiez le numéro de téléphone et son indicatif.",true);return;}
-  const phone=$("countryCode").value+raw;busy(true);status("Préparation de l'envoi du code SMS…");
-  try{await setPersistence(auth,browserLocalPersistence);confirmation=await signInWithPhoneNumber(auth,phone,ensureRecaptcha());$("phoneForm").hidden=true;$("codeForm").hidden=false;status("Code envoyé par SMS au numéro indiqué. Saisissez-le pour continuer.");$("verificationCode").focus();}
-  catch(error){console.error("HORIZON phone auth:",error);status(authError(error),true);if(recaptcha){try{await recaptcha.clear();}catch{}recaptcha=null;}}
-  finally{busy(false);}
-});
-$("codeForm").addEventListener("submit",async e=>{
-  e.preventDefault();const code=$("verificationCode").value.trim();if(!confirmation||!/^\d{4,8}$/.test(code)){status("Saisissez le code reçu par SMS.",true);return;}
-  const submit=$("codeForm").querySelector('button[type="submit"]');if(submit)submit.disabled=true;status("Vérification du code…");
-  try{
-    const result=await confirmation.confirm(code),user=result.user;
-    if(mode==="login"&&getAdditionalUserInfo(result)?.isNewUser){await signOut(auth);confirmation=null;$("codeForm").hidden=true;$("phoneForm").hidden=false;status("Ce numéro n'a pas encore de compte. Choisissez « Créer un compte » pour terminer l'inscription.",true);return;}
-    if(mode==="signup"&&!signupDetails)throw new Error("SIGNUP_DETAILS_REQUIRED");
-    await saveBasicProfile(user,mode==="signup"?signupDetails.displayName:(user.displayName||"Membre"));continueAfterLogin();
-  }catch(error){console.error("HORIZON SMS verification:",error);status(authError(error),true);}
-  finally{if(submit)submit.disabled=false;}
-});
-$("changePhoneBtn").addEventListener("click",()=>{confirmation=null;$("codeForm").hidden=true;$("phoneForm").hidden=false;$("verificationCode").value="";status("Vous pouvez modifier votre numéro.");});
 function authError(error){
   const code=String(error?.code||"");
   const message=String(error?.message||"").trim();
