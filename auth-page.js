@@ -7,7 +7,16 @@ const modeButtons=[...document.querySelectorAll("[data-mode]")];
 let mode="login",recaptcha=null,confirmation=null,signupDetails=null;
 const status=(message,error=false)=>{const el=$("statusMessage");el.textContent=message;el.classList.toggle("error",error);};
 const busy=(on)=>{["googleBtn","sendCodeBtn"].forEach(id=>{const el=$(id);if(el)el.disabled=on;});};
-function ageAtLeast15(value){if(!value)return false;const birth=new Date(value+"T00:00:00");if(Number.isNaN(birth.getTime()))return false;const now=new Date();let age=now.getFullYear()-birth.getFullYear();const beforeBirthday=now.getMonth()<birth.getMonth()||(now.getMonth()===birth.getMonth()&&now.getDate()<birth.getDate());if(beforeBirthday)age--;return age>=15&&birth<=now;}
+function ageAtLeast15(value){
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(value||""))return false;
+  const [year,month,day]=value.split("-").map(Number);
+  const birth=new Date(year,month-1,day);
+  if(birth.getFullYear()!==year||birth.getMonth()!==month-1||birth.getDate()!==day)return false;
+  const now=new Date();
+  let age=now.getFullYear()-year;
+  if(now.getMonth()+1<month||(now.getMonth()+1===month&&now.getDate()<day))age--;
+  return age>=15&&birth<=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+}
 function setBirthDate(){
   const entry=$("birthDateEntry"), hidden=$("birthDate"), note=$("birthDateStatus");
   const value=entry.value.trim();
