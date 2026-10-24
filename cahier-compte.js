@@ -276,8 +276,12 @@ $("sale-form").onsubmit=async(e)=>{
         lastStockMoveId:stockMoveRef.id,
         updatedAt:serverTimestamp()
       });
+      const costKnown=typeof fresh.costPrice==="number" && Number.isFinite(fresh.costPrice);
+      const unitCost=costKnown ? fresh.costPrice : null;
+      const costTotal=costKnown ? qty*unitCost : null;
       tx.set(saleRef,{
         productId, productName:fresh.name || product.name, quantity:qty, amount,
+        costKnown, ...(costKnown ? {unitCost,costTotal,grossProfit:amount-costTotal} : {}),
         stockMoveId:stockMoveRef.id,
         createdAt:serverTimestamp()
       });
