@@ -205,7 +205,7 @@ function updateAccountUI(user) {
     button.innerHTML = user
       ? `👤 <span>${escapeHtml(user.displayName || "Compte")}</span>`
       : `🔐 <span data-i18n="login">${t("login")}</span>`;
-    button.title = user ? "Compte Charles" : t("login");
+    button.title = user ? "Compte HORIZON" : t("login");
   });
 }
 
@@ -292,7 +292,7 @@ function setupChatbot() {
     win.style.display = win.style.display === "flex" ? "none" : "flex";
     if (win.style.display === "flex" && chatHistory.length === 0) {
       const name = siteUser?.displayName ? ` ${siteUser.displayName}` : "";
-      appendChatMsg(`Bonjour${name} ! Je suis Charles. Je peux vous aider à naviguer sur le site, comprendre Cahier de Compte, utiliser les messages privés, découvrir les projets ou faire des calculs.`, "bot");
+      appendChatMsg(`Bonjour${name} ! Je suis HORIZON AI, l’assistant de HORIZON Workspace. Je peux vous aider à utiliser les services HORIZON et Cahier de Compte.`, "bot");
     } else if (win.style.display === "flex") {
       renderChatHistory();
     }
@@ -417,8 +417,8 @@ function processBotQuery(raw) {
 
   if (/^(bonjour|bonsoir|salut|hello|hi|hey)\b/.test(q)) {
     return siteUser
-      ? `Bonjour ${siteUser.displayName || "!"} 👋 Je suis Charles. Votre session est active sur tout le site.`
-      : "Bonjour 👋 Je suis Charles. Connectez-vous une seule fois pour débloquer les services privés du site.";
+      ? `Bonjour ${siteUser.displayName || "!"} 👋 Je suis HORIZON AI. Votre session est active dans HORIZON Workspace.`
+      : "Bonjour 👋 Je suis HORIZON AI. Connectez-vous pour accéder aux services de HORIZON Workspace.";
   }
 
   if (q.includes("connexion") || q.includes("connecter") || q.includes("login") || q.includes("compte")) {
@@ -455,7 +455,7 @@ function processBotQuery(raw) {
     if (q.includes("projet")) { window.location.href = "projects.html"; return "Ouverture des projets…"; }
   }
 
-  return "Je suis Charles 🤖. Je peux vous aider avec la connexion unique, les messages privés, Cahier de Compte, les thèmes, les langues, les projets ou les calculs.";
+  return "Je suis HORIZON AI 🤖, spécialisé dans HORIZON Workspace. Je peux aider avec la connexion, le profil, la messagerie et les fonctions de Cahier de Compte. L’accès direct à vos ventes par date/heure n’est pas encore disponible dans cette version.";
 }
 
 /* ---------- VISITOR TRACKING ---------- */
