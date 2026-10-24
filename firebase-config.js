@@ -25,4 +25,6 @@ export const ADMIN_EMAIL = "chartech031@gmail.com";
 export const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
+// Demande de choisir explicitement un compte Google ; Google garde le contrôle de ses propres vérifications de sécurité.
+googleProvider.setCustomParameters({ prompt: "select_account" });
 export const db = getFirestore(app);
