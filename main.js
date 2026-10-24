@@ -223,6 +223,25 @@ async function startSiteLogin() {
   }
 }
 
+window.addEventListener("charles:auth-error", event => {
+  const message = event.detail?.message || (
+    event.detail?.code === "auth/unauthorized-domain"
+      ? "Ce domaine n'est pas autorisé dans Firebase Authentication."
+      : "Connexion Google interrompue. Réessayez dans Chrome ou votre navigateur principal."
+  );
+  let notice = document.getElementById("horizon-auth-notice");
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "horizon-auth-notice";
+    notice.setAttribute("role", "alert");
+    notice.style.cssText = "position:fixed;z-index:2000;top:1rem;left:1rem;right:1rem;max-width:620px;margin:auto;padding:1rem 1.1rem;border:1px solid #f2c500;border-radius:12px;background:var(--surface,#111);color:var(--text,#fff);box-shadow:0 8px 30px #0003";
+    document.body.appendChild(notice);
+  }
+  notice.textContent = message;
+  window.clearTimeout(notice._hideTimer);
+  notice._hideTimer = window.setTimeout(() => notice.remove(), 9000);
+});
+
 function updateAccountUI(user) {
   const buttons = [document.getElementById("siteAuthBtn"), document.getElementById("mobileAuthBtn")].filter(Boolean);
   buttons.forEach(button => {
