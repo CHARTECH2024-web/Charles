@@ -6,6 +6,7 @@ const loading=document.getElementById("profileLoading"), content=document.getEle
 const prompt=document.getElementById("loginPrompt"), status=document.getElementById("status");
 let user=null;
 let selectedPhotoURL="";
+let selectedPhotoThumbURL="";
 const photoInput=document.getElementById("profilePhoto");
 const avatar=document.getElementById("avatar");
 const say=(message,error=false)=>{status.textContent=message;status.style.color=error?"#d33":"var(--text-muted)";};
@@ -23,17 +24,21 @@ function compressImage(file){
    const image=new Image();
    image.onerror=()=>reject(new Error("Ce format d'image n'est pas lisible."));
    image.onload=()=>{
-    const canvas=document.createElement("canvas");
-    const scale=Math.min(1,512/Math.max(image.naturalWidth,image.naturalHeight));
-    canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
-    canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
-    const ctx=canvas.getContext("2d");
-    if(!ctx){reject(new Error("Compression d'image indisponible."));return;}
-    ctx.drawImage(image,0,0,canvas.width,canvas.height);
-    let quality=.78, data=canvas.toDataURL("image/jpeg",quality);
-    while(data.length>175000 && quality>.35){quality-=.08;data=canvas.toDataURL("image/jpeg",quality);}
-    if(data.length>180000){reject(new Error("Cette photo reste trop volumineuse. Choisissez une image plus petite."));return;}
-    resolve(data);
+    const render=(maxSide,limit,initialQuality)=>{
+     const canvas=document.createElement("canvas");
+     const scale=Math.min(1,maxSide/Math.max(image.naturalWidth,image.naturalHeight));
+     canvas.width=Math.max(1,Math.round(image.naturalWidth*scale));
+     canvas.height=Math.max(1,Math.round(image.naturalHeight*scale));
+     const ctx=canvas.getContext("2d");
+     if(!ctx)throw new Error("Compression d'image indisponible.");
+     ctx.drawImage(image,0,0,canvas.width,canvas.height);
+     let quality=initialQuality,data=canvas.toDataURL("image/jpeg",quality);
+     while(data.length>limit && quality>.28){quality-=.07;data=canvas.toDataURL("image/jpeg",quality);}
+     if(data.length>limit)throw new Error("Cette photo reste trop volumineuse. Choisissez une image plus petite.");
+     return data;
+    };
+    try{resolve({full:render(512,175000,.78),thumb:render(128,24000,.65)});}
+    catch(error){reject(error);}
    };
    image.src=String(reader.result);
   };
@@ -43,7 +48,7 @@ function compressImage(file){
 
 photoInput?.addEventListener("change",async()=>{
  const file=photoInput.files?.[0];if(!file)return;
- try{say("Préparation de la photo…");selectedPhotoURL=await compressImage(file);avatar.src=selectedPhotoURL;avatar.style.display="block";say("Aperçu prêt. Appuyez sur « Changer la photo » pour enregistrer.");}
+ try{say("Préparation de la photo…");const photos=await compressImage(file);selectedPhotoURL=photos.full;selectedPhotoThumbURL=photos.thumb;avatar.src=selectedPhotoURL;avatar.style.display="block";say("Aperçu prêt. Appuyez sur « Changer la photo » pour enregistrer.");}
  catch(e){selectedPhotoURL="";say(e.message||"Impossible de préparer cette photo.",true);}
 });
 
@@ -54,9 +59,9 @@ document.getElementById("savePhotoBtn")?.addEventListener("click",async()=>{
  try{
   const stamp=serverTimestamp();
   await setDoc(doc(db,"profiles",user.uid),{uid:user.uid,displayName:user.displayName||"Membre",email:user.email||"",photoURL:selectedPhotoURL,updatedAt:stamp},{merge:true});
-  await setDoc(doc(db,"publicProfiles",user.uid),{uid:user.uid,displayName:user.displayName||user.email?.split("@")[0]||"Membre",photoURL:selectedPhotoURL,updatedAt:serverTimestamp()},{merge:true});
+  await setDoc(doc(db,"publicProfiles",user.uid),{uid:user.uid,displayName:user.displayName||user.email?.split("@")[0]||"Membre",photoURL:selectedPhotoThumbURL,updatedAt:serverTimestamp()},{merge:true});
   say("Photo de profil mise à jour.");
-  selectedPhotoURL="";
+  selectedPhotoURL="";selectedPhotoThumbURL="";
   if(photoInput)photoInput.value="";
  }catch(e){console.error(e);say(e?.code==="permission-denied"?"La photo n'a pas été enregistrée : les règles Firestore doivent autoriser la taille de cette image.":"Impossible d'enregistrer la photo. Réessayez.",true);}
  finally{btn.disabled=false;}
