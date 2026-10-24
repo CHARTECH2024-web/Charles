@@ -168,7 +168,10 @@ function setupThemePicker() {
 
 /* ---------- HORIZON MOBILE APP NAVIGATION ---------- */
 function injectBottomNavigation() {
-  if (document.querySelector(".horizon-bottom-nav")) return;
+  if (document.querySelector(".horizon-bottom-nav") ||
+      !document.querySelector(".site-header") ||
+      /^(?:admin|login|signup)/i.test(currentPage()) ||
+      currentPage() === "cahier-compte.html") return;
   const links = [
     { href:"index.html", icon:"⌂", label:"Accueil", key:"index.html" },
     { href:"community.html", icon:"✉", label:"Messages", key:"community.html" },
