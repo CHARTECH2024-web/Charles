@@ -9,7 +9,11 @@ import { collection, getCountFromServer } from "https://www.gstatic.com/firebase
 import { loadAllMediaAdmin, toggleMediaVisibility, deleteMedia } from "./media.js";
 import { loadAllDocumentsAdmin, toggleDocumentVisibility, deleteDocument } from "./documents.js";
 
-function esc(s) { const d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c])
+  );
+}
 function formatBytes(bytes) {
   if (!bytes) return '0 Ko';
   const k = 1024, sizes = ['o', 'Ko', 'Mo', 'Go'];
