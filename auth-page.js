@@ -8,7 +8,26 @@ let mode="login",recaptcha=null,confirmation=null,signupDetails=null;
 const status=(message,error=false)=>{const el=$("statusMessage");el.textContent=message;el.classList.toggle("error",error);};
 const busy=(on)=>{["googleBtn","sendCodeBtn"].forEach(id=>{const el=$(id);if(el)el.disabled=on;});};
 function ageAtLeast15(value){if(!value)return false;const birth=new Date(value+"T00:00:00");if(Number.isNaN(birth.getTime()))return false;const now=new Date();let age=now.getFullYear()-birth.getFullYear();const beforeBirthday=now.getMonth()<birth.getMonth()||(now.getMonth()===birth.getMonth()&&now.getDate()<birth.getDate());if(beforeBirthday)age--;return age>=15&&birth<=now;}
-function getSignupDetails(){const first=$("firstName").value.trim(),last=$("lastName").value.trim(),birth=$("birthDate").value;if(!first||!last){status("Saisissez votre prénom et votre nom.",true);return null;}if(!ageAtLeast15(birth)){status("Pour créer un compte, vous devez avoir au moins 15 ans.",true);return null;}return {displayName:(first+" "+last).replace(/\s+/g," ").slice(0,100),birthDate:birth};}
+function setBirthDate(){
+  const entry=$("birthDateEntry"), hidden=$("birthDate"), note=$("birthDateStatus");
+  const value=entry.value.trim();
+  const match=value.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);
+  if(!match){hidden.value="";note.textContent="Écrivez la date au format JJ/MM/AAAA, par exemple 15/08/2008.";note.style.color="#ff7777";return false;}
+  const day=Number(match[1]),month=Number(match[2]),year=Number(match[3]);
+  const date=new Date(year,month-1,day);
+  if(date.getFullYear()!==year||date.getMonth()!==month-1||date.getDate()!==day||date>new Date()){
+    hidden.value="";note.textContent="Cette date n'est pas valide. Vérifiez le jour, le mois et l'année.";note.style.color="#ff7777";return false;
+  }
+  hidden.value=year+"-"+String(month).padStart(2,"0")+"-"+String(day).padStart(2,"0");
+  entry.value=String(day).padStart(2,"0")+"/"+String(month).padStart(2,"0")+"/"+year;
+  note.textContent="Date enregistrée dans le formulaire : "+entry.value;
+  note.style.color="var(--yellow)";
+  return true;
+}
+$("setBirthDateBtn").addEventListener("click",setBirthDate);
+$("birthDateEntry").addEventListener("input",()=>{ $("birthDate").value=""; $("birthDateStatus").textContent="Appuyez sur SET pour confirmer la date."; $("birthDateStatus").style.color=""; });
+
+function getSignupDetails(){const first=$("firstName").value.trim(),last=$("lastName").value.trim(),birth=$("birthDate").value;if(!first||!last){status("Saisissez votre prénom et votre nom.",true);return null;}if(!birth){$("birthDateStatus").textContent="Écrivez votre date puis appuyez sur SET."; $("birthDateStatus").style.color="#ff7777";status("Confirmez votre date de naissance avec le bouton SET.",true);return null;}if(!ageAtLeast15(birth)){status("Pour créer un compte, vous devez avoir au moins 15 ans.",true);return null;}return {displayName:(first+" "+last).replace(/\s+/g," ").slice(0,100),birthDate:birth};}
 function setMode(next){mode=next;modeButtons.forEach(b=>{const active=b.dataset.mode===mode;b.classList.toggle("active",active);b.setAttribute("aria-selected",String(active));});$("signupFields").hidden=mode!=="signup";$("formTitle").textContent=mode==="signup"?"Créer votre compte":"Bienvenue";$("formSubtitle").textContent=mode==="signup"?"Rejoignez HORIZON en quelques étapes.":"Connectez-vous à votre espace HORIZON.";status("");}
 modeButtons.forEach(b=>b.addEventListener("click",()=>setMode(b.dataset.mode)));
 async function saveBasicProfile(user,displayName){const name=(displayName||user.displayName||"Membre").trim().slice(0,100);if(displayName&&displayName!==user.displayName)await updateProfile(user,{displayName:name});await setDoc(doc(db,"publicProfiles",user.uid),{uid:user.uid,displayName:name,photoURL:user.photoURL||"",updatedAt:serverTimestamp()},{merge:true});}
