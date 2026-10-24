@@ -495,3 +495,9 @@ footer.site-footer {
 .profile-photo-editor{display:grid;gap:.6rem;margin:1rem 0 1.4rem}
 .profile-photo-editor input{width:100%;max-width:100%}
 #photoStatus{min-height:1.3rem;color:var(--text-muted);font-size:.85rem;margin:0}
+
+/* Profile photos use the same hexagon shape throughout HORIZON */
+.user-item img,.user-avatar{border-radius:0;clip-path:polygon(25% 6.7%,75% 6.7%,100% 50%,75% 93.3%,25% 93.3%,0 50%)}
+.profile-box img.profile-avatar-hex[hidden]{display:none}
+.profile-photo-editor .btn-primary{background:#ffd000;color:#080808}
+.profile-photo-editor .btn-primary:hover{background:#ffe04b}
