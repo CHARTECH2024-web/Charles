@@ -59,9 +59,12 @@
       <section class="cahier-card">
         <div class="section-heading-row"><h3>Ajouter un produit</h3></div>
         <form id="product-form" class="cahier-form">
-          <label>Nom<input id="product-name" maxlength="100" required></label>
-          <label>Prix de vente (FC)<input id="product-price" type="number" min="0" step="1" required></label>
+          <label>Nom du produit<input id="product-name" maxlength="100" required></label>
+          <label>Prix d'achat unitaire (FC)<input id="product-cost" type="number" min="0" step="1" value="0" required></label>
+          <label>Prix de vente unitaire (FC)<input id="product-price" type="number" min="0" step="1" required></label>
           <label>Stock initial<input id="product-stock" type="number" min="0" step="1" value="0" required></label>
+          <label>Date de fabrication (facultatif)<input id="product-manufacture-date" type="date"></label>
+          <label>Date d'expiration (facultatif)<input id="product-expiry-date" type="date"></label>
           <button class="btn btn-primary" type="submit">Ajouter</button>
         </form>
       </section>
