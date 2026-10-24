@@ -166,33 +166,34 @@ function setupThemePicker() {
 }
 
 
-/* ---------- HORIZON MOBILE APP NAVIGATION ---------- */
-function injectBottomNavigation() {
-  if (document.querySelector(".horizon-bottom-nav") ||
+/* ---------- HORIZON MULTI-PAGE PRIMARY NAVIGATION ---------- */
+function injectPrimaryNavigation() {
+  if (document.querySelector(".horizon-primary-nav") ||
       !document.querySelector(".site-header") ||
-      /^(?:admin|login|signup)/i.test(currentPage()) ||
-      currentPage() === "cahier-compte.html") return;
+      /^(?:admin|login|signup)/i.test(currentPage())) return;
   const links = [
-    { href:"index.html", icon:"⌂", label:"Accueil", key:"index.html" },
-    { href:"community.html", icon:"✉", label:"Messages", key:"community.html" },
-    { href:"media.html", icon:"▶", label:"Médias", key:"media.html" },
-    { href:"cahier-compte.html", icon:"▤", label:"Cahier", key:"cahier-compte.html" },
-    { href:"projects.html", icon:"✳", label:"Explorer", key:"projects.html" },
-    { href:"profile.html", icon:"●", label:"Profil", key:"profile.html" }
+    { href:"index.html", icon:"⌂", label:"Accueil" },
+    { href:"community.html", icon:"♙", label:"Commerçants" },
+    { href:"community.html#messages", icon:"✉", label:"Messages" },
+    { href:"documents.html", icon:"▤", label:"Documents" },
+    { href:"media.html", icon:"▶", label:"Médias" },
+    { href:"cahier-compte.html", icon:"📒", label:"Cahier" },
+    { href:"profile.html", icon:"●", label:"Profil" }
   ];
   const current = currentPage();
   const nav = document.createElement("nav");
-  nav.className = "horizon-bottom-nav";
+  nav.className = "horizon-primary-nav";
   nav.setAttribute("aria-label", "Navigation principale HORIZON");
   nav.innerHTML = links.map(item => {
-    const active = current === item.key;
-    return `<a href="./${item.href}" class="horizon-bottom-link${active ? " active" : ""}"${active ? ' aria-current="page"' : ""}>
-      <span class="horizon-bottom-icon" aria-hidden="true">${item.icon}</span><span class="horizon-bottom-label">${item.label}</span>
+    const active = current === item.href || (item.href === "community.html#messages" && current === "community.html");
+    return `<a href="./${item.href}" class="horizon-primary-link${active ? " active" : ""}"${active ? ' aria-current="page"' : ""} title="${item.label}">
+      <span class="horizon-primary-icon" aria-hidden="true">${item.icon}</span><span class="horizon-primary-label">${item.label}</span>
     </a>`;
   }).join("");
-  document.body.appendChild(nav);
+  const header = document.querySelector(".site-header");
+  header?.insertAdjacentElement("afterend", nav);
 }
-
+ 
 /* ---------- LIGHTBOX ---------- */
 function setupLightbox() {
   const modal = document.getElementById("lightboxModal");
@@ -574,7 +575,7 @@ window.addEventListener("DOMContentLoaded", () => {
   registerHorizonPwaUpdates();
   document.title = document.title.replace(/Charles/gi, "HORIZON");
   injectHeader();
-  injectBottomNavigation();
+  injectPrimaryNavigation();
   injectFooter();
   injectChatbot();
 
