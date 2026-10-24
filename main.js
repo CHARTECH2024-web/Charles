@@ -174,7 +174,7 @@ function injectPrimaryNavigation() {
   const links = [
     { href:"index.html", icon:"⌂", label:"Accueil" },
     { href:"community.html", icon:"♙", label:"Commerçants" },
-    { href:"community.html#messages", icon:"✉", label:"Messages" },
+    { href:"community.html#privateMessages", icon:"✉", label:"Messages" },
     { href:"documents.html", icon:"▤", label:"Documents" },
     { href:"media.html", icon:"▶", label:"Médias" },
     { href:"cahier-compte.html", icon:"📒", label:"Cahier" },
@@ -185,7 +185,7 @@ function injectPrimaryNavigation() {
   nav.className = "horizon-primary-nav";
   nav.setAttribute("aria-label", "Navigation principale HORIZON");
   nav.innerHTML = links.map(item => {
-    const active = current === item.href || (item.href === "community.html#messages" && current === "community.html");
+    const active = current === item.href || (item.href === "community.html#privateMessages" && current === "community.html");
     return `<a href="./${item.href}" class="horizon-primary-link${active ? " active" : ""}"${active ? ' aria-current="page"' : ""} title="${item.label}">
       <span class="horizon-primary-icon" aria-hidden="true">${item.icon}</span><span class="horizon-primary-label">${item.label}</span>
     </a>`;
