@@ -5,7 +5,7 @@ import {
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore.js";
 
-const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[], debtPayments:[] };
+const state = { user:null, products:[], sales:[], customers:[], debts:[], stockMoves:[], expenses:[], debtPayments:[], losses:[] };
 
 const $ = (id) => document.getElementById(id);
 const money = (value) => `${Number(value || 0).toLocaleString("fr-FR")} FC`;
@@ -120,6 +120,15 @@ async function loadDebts() {
   updateReport();
 }
 
+
+async function loadLosses() {
+  const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"losses"),orderBy("createdAt","desc")));
+  state.losses=snap.docs.map(d=>({id:d.id,...d.data()}));
+  const total=state.losses.reduce((sum,x)=>sum+Number(x.totalCost||0),0);
+  if($("stat-losses")) $("stat-losses").textContent=money(total);
+  if($("loss-list")) $("loss-list").innerHTML=state.losses.length ? state.losses.map(x=>"<div class=\"cahier-list-row\"><strong>"+escapeHtml(x.productName)+" — "+escapeHtml(x.reason)+"</strong><span>"+Number(x.quantity||0)+" unité(s) • "+money(x.totalCost)+" • "+escapeHtml(x.note||"")+"</span></div>").join("") : "<p class=\"text-muted\">Aucune perte enregistrée.</p>";
+  updateReport();
+}
 
 async function loadExpenses() {
   const snap=await getDocs(query(collection(db,"businesses",state.user.uid,"expenses"),orderBy("createdAt","desc")));
@@ -304,6 +313,29 @@ $("sale-form").onsubmit=async(e)=>{
 
 
 
+$("loss-form").onsubmit=async(e)=>{
+  e.preventDefault(); if(!state.user)return;
+  const productId=$("loss-product").value, product=state.products.find(p=>p.id===productId);
+  const qty=Number($("loss-qty").value), reason=$("loss-reason").value, note=$("loss-note").value.trim();
+  if(!product || !Number.isInteger(qty) || qty<1){setStatus("Choisissez un produit et une quantité valide.",true);return;}
+  try {
+    const productRef=doc(db,"businesses",state.user.uid,"products",productId);
+    const lossRef=doc(collection(db,"businesses",state.user.uid,"losses"));
+    const moveRef=doc(collection(db,"businesses",state.user.uid,"stockMoves"));
+    await runTransaction(db,async(tx)=>{
+      const snap=await tx.get(productRef); if(!snap.exists())throw new Error("Produit introuvable");
+      const fresh=snap.data(), stock=Number(fresh.stock||0); if(qty>stock)throw new Error("Stock insuffisant");
+      const costKnown=typeof fresh.costPrice==="number" && Number.isFinite(fresh.costPrice);
+      const unitCost=costKnown?fresh.costPrice:0, totalCost=qty*unitCost;
+      tx.update(productRef,{stock:stock-qty,lastStockMoveId:moveRef.id,updatedAt:serverTimestamp()});
+      tx.set(lossRef,{productId:productId,productName:fresh.name||product.name,quantity:qty,unitCost:unitCost,totalCost:totalCost,costKnown:costKnown,reason:reason,note:note,stockMoveId:moveRef.id,createdAt:serverTimestamp()});
+      tx.set(moveRef,{productId:productId,productName:fresh.name||product.name,type:"loss",quantity:-qty,lossId:lossRef.id,unitCost:unitCost,totalCost:totalCost,note:reason+(note?": "+note:""),createdAt:serverTimestamp()});
+    });
+    e.target.reset(); $("loss-qty").value=1;
+    await Promise.all([loadProducts(),loadLosses()]); setStatus("Perte enregistrée et stock mis à jour.");
+  } catch(err){setStatus(err.message==="Stock insuffisant"?"La perte dépasse le stock disponible.":"Échec de sauvegarde de la perte.",true);}
+};
+
 $("expense-form").onsubmit=async(e)=>{
   e.preventDefault();
   if(!state.user)return;
@@ -423,7 +455,7 @@ observeUser(async(user)=>{
   try {
     showApp(user);
     await ensureBusiness(user);
-    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts(),loadExpenses()]);
+    await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts(),loadExpenses(),loadLosses()]);
   } catch(e) {
     setStatus("Impossible de charger votre espace Cahier de Compte.",true);
   }
