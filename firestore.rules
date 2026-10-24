@@ -286,6 +286,13 @@ service cloud.firestore {
               && getAfter(/databases/$(database)/documents/businesses/$(businessId)/sales/$(request.resource.data.saleId)).data.productId == request.resource.data.productId
               && getAfter(/databases/$(database)/documents/businesses/$(businessId)/sales/$(request.resource.data.saleId)).data.quantity == 0 - request.resource.data.quantity
             )
+            || (request.resource.data.type == "loss"
+              && request.resource.data.lossId is string
+              && existsAfter(/databases/$(database)/documents/businesses/$(businessId)/losses/$(request.resource.data.lossId))
+              && getAfter(/databases/$(database)/documents/businesses/$(businessId)/losses/$(request.resource.data.lossId)).data.stockMoveId == moveId
+              && getAfter(/databases/$(database)/documents/businesses/$(businessId)/losses/$(request.resource.data.lossId)).data.productId == request.resource.data.productId
+              && getAfter(/databases/$(database)/documents/businesses/$(businessId)/losses/$(request.resource.data.lossId)).data.quantity == 0 - request.resource.data.quantity
+            )
           );
         allow update, delete: if false;
       }
