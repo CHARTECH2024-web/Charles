@@ -52,13 +52,17 @@ async function loadProducts() {
   state.products=snap.docs.map(d=>({id:d.id,...d.data()}));
   $("stat-products").textContent=state.products.length;
   const low=state.products.filter(p=>Number(p.stock||0)<=Number(p.lowStockThreshold ?? 5));
+  const today=new Date(); today.setHours(0,0,0,0);
+  const expiring=state.products.filter(p=>p.expiryDate && !Number.isNaN(Date.parse(p.expiryDate)) && (new Date(p.expiryDate+"T00:00:00")-today)/(24*60*60*1000)<=30 && new Date(p.expiryDate+"T00:00:00")>=today);
+  const expired=state.products.filter(p=>p.expiryDate && !Number.isNaN(Date.parse(p.expiryDate)) && new Date(p.expiryDate+"T00:00:00")<today);
   $("stat-low-stock").textContent=low.length;
-  $("low-stock-list").innerHTML=low.length
-    ? low.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>Stock: ${Number(p.stock||0)} • Seuil: ${Number(p.lowStockThreshold ?? 5)}</span></div>`).join("")
-    : "<p class='text-muted'>Aucun stock faible.</p>";
+  const alerts=[...expired.map(p=>({p,label:"EXPIRÉ"})),...expiring.map(p=>({p,label:"Expire bientôt"})),...low.map(p=>({p,label:"Stock faible"}))];
+  $("low-stock-list").innerHTML=alerts.length
+    ? alerts.map(({p,label})=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)} — ${label}</strong><span>Stock: ${Number(p.stock||0)} • Seuil: ${Number(p.lowStockThreshold ?? 5)}${p.expiryDate ? " • Expiration: "+escapeHtml(p.expiryDate) : ""}</span></div>`).join("")
+    : "<p class='text-muted'>Aucune alerte de stock ou d'expiration.</p>";
   $("product-count").textContent=`${state.products.length} produit(s)`;
   $("product-list").innerHTML=state.products.length
-    ? state.products.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>${money(p.price)} • Stock: ${Number(p.stock||0)}</span></div>`).join("")
+    ? state.products.map(p=>`<div class="cahier-list-row"><strong>${escapeHtml(p.name)}</strong><span>Achat: ${money(p.costPrice)} • Vente: ${money(p.price)} • Stock: ${Number(p.stock||0)}${p.manufactureDate ? " • Fab.: "+escapeHtml(p.manufactureDate) : ""}${p.expiryDate ? " • Exp.: "+escapeHtml(p.expiryDate) : ""}</span></div>`).join("")
     : "<p class='text-muted'>Aucun produit pour le moment.</p>";
   $("sale-product").innerHTML='<option value="">Sélectionner</option>' +
     state.products.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("");
@@ -216,10 +220,19 @@ $("product-form").onsubmit=async(e)=>{
   e.preventDefault();
   if(!state.user)return;
   try {
+    const manufactureDate=$("product-manufacture-date").value;
+    const expiryDate=$("product-expiry-date").value;
+    if(manufactureDate && expiryDate && expiryDate < manufactureDate) {
+      setStatus("La date d'expiration ne peut pas précéder la date de fabrication.",true);
+      return;
+    }
     await addDoc(collection(db,"businesses",state.user.uid,"products"),{
       name:$("product-name").value.trim(),
+      costPrice:Number($("product-cost").value),
       price:Number($("product-price").value),
       stock:Number($("product-stock").value),
+      manufactureDate:manufactureDate || "",
+      expiryDate:expiryDate || "",
       lowStockThreshold:5,
       createdAt:serverTimestamp(),
       updatedAt:serverTimestamp()
