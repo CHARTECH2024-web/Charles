@@ -486,11 +486,76 @@ $("report-period").onchange=updateReport;
 $("report-refresh").onclick=updateReport;
 
 
+function setupCahierNavigation(){
+  const app=$("cahier-app");
+  if(!app || $("cahier-bottom-nav")) return;
+  const definitions=[
+    {id:"home",label:"Accueil",icon:'<path d="m3 10 9-7 9 7"/><path d="M5 9v11h14V9"/><path d="M9 20v-6h6v6"/>'},
+    {id:"sales",label:"Ventes",icon:'<path d="M3 4h2l2.2 10.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 1.9-1.4L21 8H6"/><circle cx="10" cy="20" r="1"/><circle cx="18" cy="20" r="1"/>'},
+    {id:"stock",label:"Stock",icon:'<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="M3 8v9l9 5 9-5V8"/><path d="M12 13v9"/>'},
+    {id:"ledger",label:"Cahier",icon:'<path d="M5 3h13a2 2 0 0 1 2 2v16H7a2 2 0 0 1-2-2V3Z"/><path d="M5 17h15M9 7h7M9 11h7"/><path d="M3 6v13a2 2 0 0 0 2 2"/>'},
+    {id:"reports",label:"Rapports",icon:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'},
+    {id:"more",label:"Plus",icon:'<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>'}
+  ];
+  const panelsRoot=document.createElement("div");
+  panelsRoot.className="cahier-tab-panels";
+  panelsRoot.id="cahier-tab-panels";
+  const firstContent=app.querySelector(".cahier-topbar");
+  app.insertBefore(panelsRoot,firstContent||app.firstChild);
+  const panels={};
+  definitions.forEach(item=>{
+    const panel=document.createElement("div");
+    panel.className="cahier-tab-panel";
+    panel.dataset.tabPanel=item.id;
+    panel.hidden=item.id!=="home";
+    panels[item.id]=panel;
+    panelsRoot.appendChild(panel);
+  });
+  const move=(node,panelId)=>{if(node)panels[panelId].appendChild(node);};
+  move(app.querySelector(".cahier-topbar"),"home");
+  move(app.querySelector(":scope > .cahier-grid"),"home");
+  const cardFor=id=>$(id)?.closest("section.cahier-card");
+  move(cardFor("sale-form"),"sales");
+  ["product-form","stock-form","loss-form","product-list"].forEach(id=>move(cardFor(id),"stock"));
+  ["customer-form","debt-form","debt-payment-form","expense-form"].forEach(id=>move(cardFor(id),"ledger"));
+  move(cardFor("report-period"),"reports");
+  move(cardFor("business-form"),"more");
+  app.querySelectorAll(".cahier-columns").forEach(wrapper=>{
+    if(!wrapper.querySelector("section,form,article")) wrapper.remove();
+  });
+  const nav=document.createElement("nav");
+  nav.className="cahier-bottom-nav";
+  nav.id="cahier-bottom-nav";
+  nav.setAttribute("aria-label","Navigation du Cahier de Compte");
+  definitions.forEach(item=>{
+    const button=document.createElement("button");
+    button.type="button";
+    button.className="cahier-tab";
+    button.dataset.tab=item.id;
+    button.setAttribute("aria-controls","cahier-tab-panels");
+    button.setAttribute("aria-label",item.label);
+    button.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true">'+item.icon+'</svg><span>'+item.label+'</span>';
+    button.addEventListener("click",()=>{
+      Object.entries(panels).forEach(([id,panel])=>{panel.hidden=id!==item.id;});
+      nav.querySelectorAll(".cahier-tab").forEach(tab=>{
+        if(tab.dataset.tab===item.id) tab.setAttribute("aria-current","page");
+        else tab.removeAttribute("aria-current");
+      });
+      if(item.id!=="home") panels[item.id].scrollIntoView({block:"start",behavior:"smooth"});
+      else window.scrollTo({top:0,behavior:"smooth"});
+    });
+    if(item.id==="home") button.setAttribute("aria-current","page");
+    nav.appendChild(button);
+  });
+  app.appendChild(nav);
+}
+
 observeUser(async(user)=>{
   state.user=user;
   if(!user){showLogin();return;}
   try {
     showApp(user);
+    setupCahierNavigation();
     await ensureBusiness(user);
     await Promise.all([loadProducts(),loadSales(),loadCustomers(),loadDebts(),loadExpenses(),loadLosses()]);
   } catch(e) {
