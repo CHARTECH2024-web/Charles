@@ -88,9 +88,9 @@
 <script type="module">
   import { auth, observeUser, loginUserWithGoogle } from "./auth.js";
   const loginButtons = document.querySelectorAll("[data-horizon-login]");
+  loginButtons.forEach(button => { button.dataset.originalLabel = button.textContent; });
   const refreshButtons = user => loginButtons.forEach(button => {
-    button.textContent = user ? "Ouvrir mon espace →" : (button.dataset.originalLabel || button.textContent);
-    button.dataset.originalLabel ||= button.textContent;
+    button.textContent = user ? "Ouvrir mon espace →" : button.dataset.originalLabel;
   });
   observeUser(refreshButtons);
   loginButtons.forEach(button => button.addEventListener("click", async () => {
