@@ -6,11 +6,10 @@ const isStandalone = () =>
   window.matchMedia("(display-mode: standalone)").matches ||
   window.navigator.standalone === true;
 
-function isIosSafari() {
+function isIosDevice() {
   const ua = navigator.userAgent;
-  const ios = /iPad|iPhone|iPod/.test(ua) ||
+  return /iPad|iPhone|iPod/.test(ua) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-  return ios && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
 }
 
 function setInstallButtonsVisible(visible) {
