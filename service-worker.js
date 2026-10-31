@@ -2,7 +2,7 @@
  * Scope-aware for GitHub Pages (/Charles/) and Cloudflare Workers (/).
  * Cache only public static assets; never cache HTML, accounts, messages or business data.
  */
-const CACHE_NAME = "horizon-static-v5";
+const CACHE_NAME = "horizon-static-v6";
 const SCOPE_URL = new URL(self.registration.scope);
 const OFFLINE_URL = new URL("offline.html", SCOPE_URL).href;
 const STATIC_EXTENSIONS = /\.(?:css|js|svg|png|jpg|jpeg|webp|ico|woff2?)$/i;
