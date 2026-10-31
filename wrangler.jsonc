@@ -5,5 +5,6 @@
   "assets": {
     "directory": "./frontend",
     "html_handling": "none"
-  }
+  },
+  "previews": {}
 }
