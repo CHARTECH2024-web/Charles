@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="HORIZON Workspace — Connecter. Partager. Construire. Un espace numérique pour la communauté, les entreprises et l'innovation.">
 <meta name="theme-color" content="#050505">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="HORIZON">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="manifest" href="./manifest.webmanifest?v=2">
 <link rel="icon" type="image/svg+xml" href="./horizon-icon.svg?v=2">
-<link rel="apple-touch-icon" href="./horizon-icon.svg?v=2">
+<link rel="apple-touch-icon" href="./Horizon%20logo.png">
 <title>HORIZON Workspace — Connecter. Partager. Construire.</title>
 <link rel="stylesheet" href="./style.css">
 <link rel="stylesheet" href="./animations.css">
@@ -28,6 +32,7 @@
       <div class="hz-actions">
         <button class="hz-action hz-action-primary" type="button" data-horizon-login>Se connecter <span aria-hidden="true">→</span></button>
         <button class="hz-action hz-action-secondary" type="button" data-horizon-login>Créer un compte</button>
+        <button class="hz-action hz-action-secondary hz-install-action" type="button" data-pwa-install>⬇ Installer HORIZON</button>
       </div>
       <p class="hz-note"><b>COMMUNAUTÉ</b>　•　MESSAGERIE　•　BUSINESS　•　INNOVATION</p>
     </div>
@@ -70,7 +75,7 @@
   </section>
   <section class="hz-final hz-shell">
     <div><p class="hz-kicker">HORIZON Workspace</p><h2>Pour une RDC connectée,<br>une Bukavu innovante.</h2><p>Connecter les talents. Partager les idées. Construire l'avenir ensemble.</p></div>
-    <a class="hz-action hz-action-primary" href="./community.html">Rejoindre la communauté ↗</a>
+    <div class="hz-final-actions"><button class="hz-action hz-action-primary" type="button" data-pwa-install>⬇ Installer HORIZON</button><a class="hz-action hz-action-secondary" href="./community.html">Rejoindre la communauté ↗</a></div>
   </section>
 </main>
 <nav class="hz-bottom-nav" aria-label="Navigation principale">
@@ -85,6 +90,7 @@
 <div id="chatbot-root"></div>
 <script type="module" src="./firebase-config.js"></script>
 <script type="module" src="./main.js"></script>
+<script type="module" src="./pwa-install.js"></script>
 <script type="module">
   import { auth, observeUser, loginUserWithGoogle } from "./auth.js";
   const loginButtons = document.querySelectorAll("[data-horizon-login]");
