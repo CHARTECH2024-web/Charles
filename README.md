@@ -1,27 +1,21 @@
-# HORIZON V4.0 — Platform Foundation
+# HORIZON Workspace — V4.0
 
-The `main` branch now contains the initial **HORIZON V4** platform foundation, with existing services being hardened incrementally.
+## Structure
+- `frontend/`: all browser-facing HTML, CSS, JavaScript modules, PWA files and public images.
+- `backend/`: Firebase security rules and backend configuration assets.
 
-## What changed in this foundation
-- Rebuilt the homepage around HORIZON's proposed technology domains: Digital, AI, Electronics, EcoTech and Lab.
-- Introduced a responsive yellow/black/white visual identity inspired by the HORIZON mark.
-- Rebranded the shared navigation, footer and assistant label to HORIZON.
-- Preserved the existing HTML/CSS/JavaScript structure and kept existing service links to projects, community, media, contact and Cahier de Compte.
-- Applied the visual foundation to `main`; existing authentication, messaging, media and business features remain under staged verification.
+## Cloudflare Workers
+The root `wrangler.jsonc` serves `frontend/` at the domain root. The public URLs remain `/index.html`, `/manifest.webmanifest`, and `/service-worker.js`; do not expose a `/frontend/` URL prefix.
 
-## Existing services to preserve and audit
-- Firebase Google Authentication
-- Firestore-backed community/messaging
-- Public media and document pages
-- Cahier de Compte
-- Admin dashboard and upload workflows
-- Theme/language controls and visitor tracking
+Deploy from the repository root with `npx wrangler deploy`. The Worker name remains `charles`.
 
-## Important implementation note
-The homepage introduces the proposed HORIZON service architecture and does not claim every proposed division is already operational. Existing service pages and admin workflows still require end-to-end regression testing. Firestore rules have been tightened for business ownership, immutable financial history, linked stock movements and linked debt payments; these rules must be tested in the Firebase Emulator before being treated as production-validated.
+## Firebase
+The root `firebase.json` points to `backend/firestore.rules` and `backend/storage.rules`. The project alias remains in root `.firebaserc`.
 
-## Next phase
-1. Run Firebase Emulator tests for Firestore rules and business transactions.
-2. Validate Google sign-in and the shared session on Android and desktop.
-3. Regression-test private messaging, media/document publishing, admin controls and business records.
-4. Review Storage/Cloudinary access and complete the release checklist.
+Deploy rules from the repository root with `firebase deploy --only firestore:rules,storage`.
+
+## Safeguards
+- Keep private service-account keys and server secrets out of `frontend/`.
+- Firebase browser configuration is client-side configuration, not a service-account secret.
+- This folder split does not replace Firebase Authentication/Firestore or the existing Cloudinary/Cloudflare media flow.
+- Production `main` stays unchanged until preview and device tests pass.

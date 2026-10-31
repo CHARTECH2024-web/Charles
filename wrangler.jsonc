@@ -1,0 +1,9 @@
+{
+  "$schema": "https://schema.cloudflare.com/wrangler/config-schema.json",
+  "name": "charles",
+  "compatibility_date": "2026-10-31",
+  "assets": {
+    "directory": "./frontend",
+    "html_handling": "none"
+  }
+}
