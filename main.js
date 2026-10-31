@@ -473,6 +473,23 @@ function registerHorizonPwaUpdates() {
   const hadControllerAtStart = Boolean(navigator.serviceWorker.controller);
   let updateBanner = null;
   let reloadRequested = false;
+  let hasUnsavedChanges = false;
+
+  // Keep automatic updates from discarding text, form edits or selected files.
+  const markDirty = event => {
+    if (event.target?.matches?.("input, textarea, select, [contenteditable='true']")) {
+      hasUnsavedChanges = true;
+    }
+  };
+  document.addEventListener("input", markDirty, true);
+  document.addEventListener("change", markDirty, true);
+  document.addEventListener("submit", () => { hasUnsavedChanges = false; }, true);
+
+  const reloadWithUpdate = () => {
+    if (reloadRequested) return;
+    reloadRequested = true;
+    window.location.reload();
+  };
 
   const showUpdateBanner = () => {
     if (updateBanner || !document.body) return;
@@ -480,12 +497,8 @@ function registerHorizonPwaUpdates() {
     updateBanner.className = "horizon-update-banner";
     updateBanner.setAttribute("role", "status");
     updateBanner.setAttribute("aria-live", "polite");
-    updateBanner.innerHTML = '<span>Une nouvelle version de HORIZON est prête.</span><button type="button">Mettre à jour</button><button type="button" class="horizon-update-dismiss" aria-label="Plus tard">×</button>';
-    updateBanner.querySelector("button:not(.horizon-update-dismiss)")?.addEventListener("click", () => {
-      if (reloadRequested) return;
-      reloadRequested = true;
-      window.location.reload();
-    });
+    updateBanner.innerHTML = '<span>Une mise à jour HORIZON est prête. Rechargez pour l’appliquer.</span><button type="button">Mettre à jour</button><button type="button" class="horizon-update-dismiss" aria-label="Plus tard">×</button>';
+    updateBanner.querySelector("button:not(.horizon-update-dismiss)")?.addEventListener("click", reloadWithUpdate);
     updateBanner.querySelector(".horizon-update-dismiss")?.addEventListener("click", () => {
       updateBanner?.remove();
       updateBanner = null;
@@ -493,11 +506,17 @@ function registerHorizonPwaUpdates() {
     document.body.appendChild(updateBanner);
   };
 
-  navigator.serviceWorker.addEventListener("controllerchange", () => {
-    // Do not reload on the first-ever installation. On later updates, let the
-    // user choose when to reload so unsaved form entries are not lost.
-    if (hadControllerAtStart) showUpdateBanner();
-  });
+  const applyOrDeferUpdate = () => {
+    if (!hadControllerAtStart || reloadRequested) return;
+    if (hasUnsavedChanges) {
+      showUpdateBanner();
+      return;
+    }
+    // Updates apply automatically when the page has no unsaved form edits.
+    reloadWithUpdate();
+  };
+
+  navigator.serviceWorker.addEventListener("controllerchange", applyOrDeferUpdate);
 
   navigator.serviceWorker.register("./service-worker.js", { updateViaCache: "none" })
     .then(registration => {
@@ -507,7 +526,7 @@ function registerHorizonPwaUpdates() {
         if (!worker) return;
         worker.addEventListener("statechange", () => {
           if (worker.state === "installed" && navigator.serviceWorker.controller) {
-            showUpdateBanner();
+            applyOrDeferUpdate();
           }
         });
       });
