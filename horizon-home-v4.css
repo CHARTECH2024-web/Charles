@@ -109,3 +109,9 @@ body.horizon-v4-page{background:var(--bg);padding-bottom:0}
 }
 @media(min-width:761px){.hz-bottom-nav{display:none}}
 @media(prefers-reduced-motion:reduce){.hz-action{transition:none}.hz-action:hover{transform:none}}
+
+/* PWA installation actions */
+.hz-install-action{background:rgba(255,208,0,.1);color:var(--hz-yellow)}
+.hz-final-actions{display:flex;flex-wrap:wrap;gap:10px;position:relative;z-index:1}
+[data-pwa-install][hidden]{display:none!important}
+@media(max-width:760px){.hz-final-actions{display:grid;grid-template-columns:1fr}.hz-final-actions .hz-action{width:100%}}
