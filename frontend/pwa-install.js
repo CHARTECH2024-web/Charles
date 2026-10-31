@@ -21,8 +21,8 @@ function setInstallButtonsVisible(visible) {
 
 function showInstallHelp() {
   let message;
-  if (isIosSafari()) {
-    message = "Pour installer HORIZON sur iPhone ou iPad :\n1. Ouvrez cette page dans Safari.\n2. Touchez le bouton Partager.\n3. Choisissez « Sur l’écran d’accueil ».\n4. Touchez « Ajouter ».";
+  if (isIosDevice()) {
+    message = "Pour installer HORIZON sur iPhone ou iPad :\n1. Ouvrez le menu Partager du navigateur.\n2. Choisissez « Sur l’écran d’accueil ».\n3. Touchez « Ajouter ».\nSi l’option n’apparaît pas, ouvrez HORIZON dans Safari et recommencez.";
   } else if (/Android/i.test(navigator.userAgent)) {
     message = "Pour installer HORIZON : ouvrez le menu ⋮ de Chrome puis choisissez « Installer l'application » ou « Ajouter à l'écran d'accueil ».";
   } else if (/Macintosh|Mac OS X/i.test(navigator.userAgent)) {
