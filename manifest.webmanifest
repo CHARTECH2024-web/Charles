@@ -1,28 +1,36 @@
 {
   "id": "./",
-  "name": "HORIZON — Technology. Innovation. Solutions.",
+  "name": "HORIZON Workspace",
   "short_name": "HORIZON",
-  "description": "La plateforme HORIZON : projets, communauté et outils numériques.",
+  "description": "Connecter. Partager. Construire. La plateforme HORIZON pour la communauté, les entreprises et l'innovation.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
-  "background_color": "#080808",
+  "display_override": [
+    "standalone",
+    "minimal-ui"
+  ],
+  "orientation": "any",
+  "background_color": "#050505",
   "theme_color": "#FFD000",
   "lang": "fr",
   "icons": [
     {
-      "src": "./horizon-icon.svg?v=2",
+      "src": "./horizon-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
     },
     {
-      "src": "./horizon-icon.svg?v=2",
+      "src": "./horizon-icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ],
-  "categories": ["business", "productivity", "education"]
+  "categories": [
+    "business",
+    "productivity",
+    "education"
+  ]
 }
