@@ -2,9 +2,9 @@
 <html lang="fr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="HORIZON Workspace — réseau social et espace numérique pour connecter les personnes, partager des idées, collaborer et accéder à des outils utiles.">
-<meta name="theme-color" content="#FFD000">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="HORIZON Workspace — Connecter. Partager. Construire. Un espace numérique pour la communauté, les entreprises et l'innovation.">
+<meta name="theme-color" content="#050505">
 <link rel="manifest" href="./manifest.webmanifest?v=2">
 <link rel="icon" type="image/svg+xml" href="./horizon-icon.svg?v=2">
 <link rel="apple-touch-icon" href="./horizon-icon.svg?v=2">
@@ -12,63 +12,103 @@
 <link rel="stylesheet" href="./style.css">
 <link rel="stylesheet" href="./animations.css">
 <link rel="stylesheet" href="./responsive.css">
+<link rel="stylesheet" href="./horizon-home-v4.css">
 </head>
-<body>
+<body class="horizon-v4-page">
 <div id="site-header"></div>
-<main class="horizon-home">
-  <section class="horizon-hero">
-    <div class="horizon-hero-grid" aria-hidden="true"></div>
-    <div class="horizon-hero-content">
-      <span class="hero-badge"><span class="horizon-live-dot"></span> Votre espace numérique et social</span>
-      <div class="horizon-wordmark" aria-label="HORIZON"><img class="horizon-title-logo" src="./Horizon%20logo.png" alt=""><span>HORIZON</span></div>
-      <p class="horizon-eyebrow">HORIZON WORKSPACE</p>
-      <h1>Connectez-vous.<br><span>Partagez. Construisez ensemble.</span></h1>
-      <p class="horizon-lead">HORIZON Workspace réunit un réseau social, des conversations privées, des profils, des projets et des outils numériques dans un même espace accessible depuis votre téléphone ou votre ordinateur.</p>
-      <div class="hero-buttons">
-        <a href="./community.html" class="btn btn-primary">Rejoindre le réseau <span aria-hidden="true">↘</span></a>
-        <a href="./profile.html" class="btn btn-outline">Mon espace</a>
+<main class="horizon-v4">
+  <section class="hz-hero hz-shell">
+    <div class="hz-hero-copy">
+      <div class="hz-brand">
+        <img src="./Horizon%20logo.png" alt="Logo HORIZON">
+        <div class="hz-brand-name">HORIZON<span>Workspace</span></div>
       </div>
-      <div class="horizon-trust-line"><span>COMMUNAUTÉ</span><i></i><span>MESSAGES PRIVÉS</span><i></i><span>PROJETS</span><i></i><span>OUTILS</span></div>
+      <p class="hz-tagline">Connecter. <em>Partager.</em> Construire.</p>
+      <p class="hz-lead">Un espace numérique pour rapprocher les personnes, connecter les entreprises, partager des idées et construire ensemble des solutions pour demain.</p>
+      <div class="hz-actions">
+        <button class="hz-action hz-action-primary" type="button" data-horizon-login>Se connecter <span aria-hidden="true">→</span></button>
+        <button class="hz-action hz-action-secondary" type="button" data-horizon-login>Créer un compte</button>
+      </div>
+      <p class="hz-note"><b>COMMUNAUTÉ</b>　•　MESSAGERIE　•　BUSINESS　•　INNOVATION</p>
     </div>
-    <div class="horizon-orbit" aria-hidden="true">
-      <div class="orbit-ring orbit-ring-one"></div><div class="orbit-ring orbit-ring-two"></div>
-      <div class="orbit-core"><img class="horizon-orbit-logo" src="./Horizon%20logo.png" alt=""><small>IDEAS → IMPACT</small></div>
-      <span class="orbit-node node-one">AI</span><span class="orbit-node node-two">IoT</span><span class="orbit-node node-three">↗</span>
-    </div>
-  </section>
-  <section class="horizon-intro section-wrap">
-    <div><p class="horizon-eyebrow">HORIZON WORKSPACE</p><h2>Un réseau pour échanger.<br>Un espace pour avancer.</h2></div>
-    <p>HORIZON Workspace est conçu pour rapprocher les personnes : créer un profil, retrouver une communauté, échanger en privé, partager des idées et faire avancer des projets ensemble.</p>
-  </section>
-  <section id="solutions" class="section-wrap horizon-solutions">
-    <div class="section-topline"><div><p class="horizon-eyebrow">VOTRE ESPACE DE TRAVAIL</p><h2>Tout au même endroit</h2></div><span class="section-index">01 / 05</span></div>
-    <div class="horizon-service-grid">
-      <a class="horizon-service-card" href="./projects.html"><span class="service-number">01</span><span class="service-icon">⌘</span><h3>HORIZON Connect</h3><p>Un espace communautaire pour rencontrer des membres, échanger et développer son réseau.</p><span class="service-link">Découvrir <b>↗</b></span></a>
-      <a class="horizon-service-card" href="./projects.html"><span class="service-number">02</span><span class="service-icon">✳</span><h3>Messages privés</h3><p>Des conversations directes pour communiquer avec les autres membres de façon privée.</p><span class="service-link">Découvrir <b>↗</b></span></a>
-      <a class="horizon-service-card" href="./projects.html"><span class="service-number">03</span><span class="service-icon">ϟ</span><h3>Profils & communauté</h3><p>Un espace pour présenter son profil, découvrir les membres et créer des liens.</p><span class="service-link">Découvrir <b>↗</b></span></a>
-      <a class="horizon-service-card" href="./projects.html"><span class="service-number">04</span><span class="service-icon">♧</span><h3>Projets collaboratifs</h3><p>Présenter ses idées, partager des initiatives et trouver des personnes avec qui avancer.</p><span class="service-link">Découvrir <b>↗</b></span></a>
-      <a class="horizon-service-card horizon-service-featured" href="./projects.html"><span class="service-number">05</span><span class="service-icon">⌁</span><h3>Outils HORIZON</h3><p>Accéder aux services numériques qui accompagnent les activités personnelles, communautaires et professionnelles.</p><span class="service-link">Explorer le laboratoire <b>↗</b></span></a>
-    </div>
-  </section>
-  <section class="horizon-platform section-wrap">
-    <div class="platform-copy"><p class="horizon-eyebrow">UN COMPTE, UN ESPACE CONNECTÉ</p><h2>Bienvenue dans<br>HORIZON Workspace.</h2><p>Le réseau social et les outils HORIZON sont réunis dans une même plateforme. Les fonctionnalités communautaires seront enrichies progressivement.</p><a href="./community.html" class="btn btn-primary">Rejoindre la communauté ↗</a></div>
-    <div class="platform-list">
-      <a href="./projects.html"><span class="platform-icon">▦</span><span><strong>Projets & innovation</strong><small>Suivre les idées, prototypes et expérimentations.</small></span><b>↗</b></a>
-      <a href="./community.html"><span class="platform-icon">◎</span><span><strong>Réseau social HORIZON</strong><small>Retrouver la communauté et discuter avec les membres.</small></span><b>↗</b></a>
-      <a href="./cahier-compte.html"><span class="platform-icon">▤</span><span><strong>HORIZON Business</strong><small>Accéder à l'outil de gestion des ventes et des stocks.</small></span><b>↗</b></a>
-      <a href="./media.html"><span class="platform-icon">◫</span><span><strong>Médias & ressources</strong><small>Retrouver les contenus publiés sur la plateforme.</small></span><b>↗</b></a>
+    <div class="hz-device-wrap" aria-label="Aperçu de l'application HORIZON">
+      <div class="hz-device"><div class="hz-device-screen">
+        <div class="hz-device-top"><span>9:41</span><span>●●●　▰</span></div>
+        <div class="hz-mini-brand"><img src="./Horizon%20logo.png" alt=""> HORIZON</div>
+        <h2>Bienvenue sur<br><span>HORIZON !</span></h2>
+        <p>Connecter. Partager. Construire.</p>
+        <div class="hz-demo-btn">Se connecter</div><div class="hz-demo-btn outline">Créer un compte</div>
+        <div class="hz-domain-title">Nos domaines</div>
+        <div class="hz-domain-grid">
+          <div class="hz-domain"><b>⌘</b>Digital</div><div class="hz-domain"><b>✺</b>IA</div><div class="hz-domain"><b>▦</b>Électronique</div>
+          <div class="hz-domain"><b>♧</b>EcoTech</div><div class="hz-domain"><b>⚗</b>Lab</div>
+        </div>
+        <div class="hz-device-nav"><span>⌂ Accueil</span><span>▣ Also</span><span>♧ Notif.</span><span>▶ Média</span><span>✉ Messages</span></div>
+      </div></div>
     </div>
   </section>
-  <section class="horizon-cta section-wrap">
-    <div><p class="horizon-eyebrow">VOTRE COMMUNAUTÉ VOUS ATTEND</p><h2>Les bonnes idées<br>grandissent ensemble.</h2><p>Rejoignez HORIZON Workspace pour échanger, partager vos idées et construire des liens autour de vos projets.</p></div>
-    <div class="horizon-cta-actions"><a href="./community.html" class="btn btn-primary">Découvrir la communauté ↗</a><a href="./about.html" class="text-link">En savoir plus sur notre vision</a></div>
-    <div class="horizon-cta-mark" aria-hidden="true">H</div>
+  <section class="hz-section hz-shell">
+    <div class="hz-section-heading"><p class="hz-kicker">Un espace. Plusieurs possibilités.</p><h2>Tout ce qu'il faut pour avancer</h2><p>HORIZON rassemble les outils utiles à votre vie numérique, sociale et professionnelle dans une seule plateforme.</p></div>
+    <div class="hz-feature-grid">
+      <article class="hz-feature"><div class="hz-feature-icon">♟</div><div><h3>Réseau social intelligent</h3><p>Échangez avec vos amis, découvrez des membres et connectez vos entreprises et votre communauté.</p></div></article>
+      <article class="hz-feature"><div class="hz-feature-icon">▣</div><div><h3>Cahier de Compte</h3><p>Gérez vos ventes, vos achats, vos stocks et vos dettes depuis votre espace professionnel.</p></div></article>
+      <article class="hz-feature"><div class="hz-feature-icon">⌘</div><div><h3>Technologie & innovation</h3><p>Explorez l'intelligence artificielle, l'électronique, le numérique et les projets innovants.</p></div></article>
+      <article class="hz-feature"><div class="hz-feature-icon">♧</div><div><h3>EcoTech & développement</h3><p>Faisons émerger des idées et des initiatives pour une RDC plus verte et innovante.</p></div></article>
+      <article class="hz-feature"><div class="hz-feature-icon">↔</div><div><h3>Une communauté forte</h3><p>Connectez-vous, collaborez et construisez des relations autour de projets concrets.</p></div></article>
+      <article class="hz-feature"><div class="hz-feature-icon">✉</div><div><h3>Messagerie privée</h3><p>Retrouvez vos conversations et partagez vos idées avec les autres membres.</p></div></article>
+    </div>
+  </section>
+  <section class="hz-section hz-shell">
+    <div class="hz-section-heading"><p class="hz-kicker">Nos domaines</p><h2>Découvrez l'univers HORIZON</h2></div>
+    <div class="hz-domains">
+      <div class="hz-domain-card"><strong>⌘</strong><span>Digital</span></div>
+      <div class="hz-domain-card"><strong>✺</strong><span>Intelligence artificielle</span></div>
+      <div class="hz-domain-card"><strong>▦</strong><span>Électronique</span></div>
+      <div class="hz-domain-card"><strong>♧</strong><span>EcoTech</span></div>
+      <div class="hz-domain-card"><strong>⚗</strong><span>Lab</span></div>
+    </div>
+  </section>
+  <section class="hz-final hz-shell">
+    <div><p class="hz-kicker">HORIZON Workspace</p><h2>Pour une RDC connectée,<br>une Bukavu innovante.</h2><p>Connecter les talents. Partager les idées. Construire l'avenir ensemble.</p></div>
+    <a class="hz-action hz-action-primary" href="./community.html">Rejoindre la communauté ↗</a>
   </section>
 </main>
+<nav class="hz-bottom-nav" aria-label="Navigation principale">
+  <a class="active" href="./index.html"><span>⌂</span>Accueil</a>
+  <a href="./projects.html"><span>▣</span>Also</a>
+  <a href="./community.html"><span>♧</span>Notifs</a>
+  <a href="./media.html"><span>▶</span>Média</a>
+  <a href="./community.html"><span>✉</span>Messages</a>
+  <a href="./cahier-compte.html"><span>▤</span>Cahier</a>
+</nav>
 <div id="site-footer"></div>
 <div id="chatbot-root"></div>
 <script type="module" src="./firebase-config.js"></script>
 <script type="module" src="./main.js"></script>
-<!-- L'enregistrement et la vérification des mises à jour PWA sont gérés par main.js sur les pages qui le chargent. -->
+<script type="module">
+  import { auth, observeUser, loginUserWithGoogle } from "./auth.js";
+  const loginButtons = document.querySelectorAll("[data-horizon-login]");
+  const refreshButtons = user => loginButtons.forEach(button => {
+    button.textContent = user ? "Ouvrir mon espace →" : (button.dataset.originalLabel || button.textContent);
+    button.dataset.originalLabel ||= button.textContent;
+  });
+  observeUser(refreshButtons);
+  loginButtons.forEach(button => button.addEventListener("click", async () => {
+    if (auth.currentUser) { window.location.href = "./profile.html"; return; }
+    button.disabled = true;
+    const label = button.textContent;
+    button.textContent = "Connexion…";
+    try {
+      await loginUserWithGoogle();
+      if (auth.currentUser) window.location.href = "./profile.html";
+    } catch (error) {
+      console.error("HORIZON sign-in:", error);
+      window.dispatchEvent(new CustomEvent("charles:auth-error", {detail:{code:error?.code || "unknown"}}));
+      button.textContent = "Réessayer";
+    } finally {
+      button.disabled = false;
+    }
+  }));
+</script>
 </body>
 </html>
