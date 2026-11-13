@@ -211,9 +211,9 @@ export const addMember = mutation({
 
     const existing = await ctx.db
       .query("shopMembers")
-      .withIndex("by_shop", (q) => q.eq("shopId", args.shopId))
-      .collect()
-    if (existing.some((row) => row.userId === profile.userId)) {
+      .withIndex("by_shop_user", (q) => q.eq("shopId", args.shopId).eq("userId", profile.userId))
+      .unique()
+    if (existing) {
       return { ok: false as const, code: "ALREADY_MEMBER" as const }
     }
     await ctx.db.insert("shopMembers", {
@@ -232,11 +232,10 @@ export const removeMember = mutation({
     const userId = await requireUser(ctx)
     const role = await requireShop(ctx, args.shopId, userId)
     if (role !== "owner") return { ok: false as const, code: "FORBIDDEN" as const }
-    const rows = await ctx.db
+    const target = await ctx.db
       .query("shopMembers")
-      .withIndex("by_shop", (q) => q.eq("shopId", args.shopId))
-      .collect()
-    const target = rows.find((row) => row.userId === args.userId)
+      .withIndex("by_shop_user", (q) => q.eq("shopId", args.shopId).eq("userId", args.userId))
+      .unique()
     if (!target) return { ok: false as const, code: "NOT_FOUND" as const }
     await ctx.db.delete(target._id)
     return { ok: true as const }
