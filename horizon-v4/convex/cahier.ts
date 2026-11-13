@@ -223,8 +223,8 @@ export const list = query({
     const filtered = all
       .filter((entry) => (args.type ? entry.type === args.type : true))
       .filter((entry) => (category ? entry.category === category : true))
-      .filter((entry) => (args.from ? entryTime(entry) >= args.from : true))
-      .filter((entry) => (args.to ? entryTime(entry) <= args.to : true))
+      .filter((entry) => (args.from !== undefined ? entryTime(entry) >= args.from : true))
+      .filter((entry) => (args.to !== undefined ? entryTime(entry) <= args.to : true))
       .filter((entry) =>
         search
           ? `${entry.label} ${entry.note ?? ""}`.toLowerCase().includes(search)
