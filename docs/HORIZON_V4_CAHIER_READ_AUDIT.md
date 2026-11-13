@@ -58,3 +58,71 @@ Any aggregate design must cover every create, settlement, payment, reversal, edi
 - Unit / integration tests: not run.
 - Convex development deployment: not run.
 - Macaly Live, Neon, Vercel Production, and Convex Production: untouched.
+
+
+## Frontend contract audit — Macaly source
+
+Read-only source inspection covered src/routes/cahier.tsx, src/components/cahier/extra-tabs.tsx, src/components/cahier/evolution-chart.tsx, src/lib/cahier-export.ts and src/lib/offline-queue.ts in the original Macaly project.
+
+The isolated GitHub branch currently contains the Cahier Convex modules, but the two frontend component paths are not yet present under horizon-v4/src/. This is a source-contract audit, not a frontend integration or compile check.
+
+### Existing query contracts and UI dependencies
+
+| Query | Current UI dependency | Pagination implication |
+|---|---|---|
+| cahier.list | Journal cards; entries, exact totalCount and totals (sales, expenses, debts, settled debts, receivable, payable, balance). Type/category filters affect rows and totals. UI shows count when totalCount exceeds loaded entries. | Split exact summary/count from cursor-paginated rows. Preserve totals for active filters. Add a visible load-more control; never silently truncate at 300. |
+| cahier.evolution | Chart consumes points, totalSales, totalExpenses, totalProfit and premium lock state. Periods: day, month, twoYear. | Keep response contract and exact period aggregates; fixed 30/12/24 buckets need no row pagination. |
+| cahier.products | Used by journal/purchase forms as product dropdown and by Products tab as complete inventory; stock, minStock, lowStock and stockValue are displayed. | Do not cap inventory silently. Add paginated inventory/searchable product picker. Report stock totals need a separate exact aggregate. |
+| cahier.contacts | Used in sale/purchase forms and Contacts tab; full results populate dropdowns and contact cards. | A hard cap hides selectable contacts. Add cursor pagination plus searchable/load-more selector, or explicitly decide a separate bounded selector. |
+| cahier.purchases | Purchase cards use results, totalCount and monthTotal; current rows capped at 200. | Cursor-paginate displayed rows. Keep monthTotal and totalCount exact through aggregates. |
+| cahier_plus.listCredits | Credit cards use all returned rows; each has paid, remaining, overdue, dueDate and reminderCount. No paging control exists. | Paginate cards; paid/remaining/overdue must use exact payment totals, not capped payment history. |
+| cahier_plus.cashToday | Shows today's sales/expenses/expected cash, today's close and latest 30 closings. | Today's figures and close remain exact. Only historical closing list is intentionally limited to 30. |
+| cahier_plus.report | PDF/XLSX exports consume period totals and stock array. XLSX exports every stock row; PDF intentionally prints at most 40. | Financial totals and stockValue/lowStock stay exact regardless of page size. XLSX needs a complete export path independent of on-screen inventory pagination. |
+| cahier_plus.shopEntries | Backend endpoint exists, but no caller was found in inspected Cahier route/components. | Do not treat it as a current UI contract until a caller is found. |
+| listShops, shopMembers, listTargets | Shop selector, team panel and target form expect complete small lists. | Assess separately as administrative lists; don't mix them into journal financial aggregation. |
+
+### Compatibility findings
+
+1. Journal totals are filtered by selected transaction type and category, not only by the first 300 cards. A summary endpoint must accept the same filters and return the same seven total fields.
+2. The backend search argument exists, but no search input/caller was found in inspected frontend. Preserve it if used elsewhere, but it need not block the first compatible pagination slice.
+3. The UI has no load-more control for journal, products, contacts, purchases or credits. Returning fewer rows without UI changes would hide records.
+4. Products and contacts are form inputs as well as display lists. Pagination must not make older items impossible to select.
+5. XLSX requires all report.stock rows; PDF intentionally slices to 40. Full export must remain independent of on-screen inventory pagination.
+
+### Concrete write-integrity issue in the offline queue
+
+The browser queue creates a local id, but flushQueue sends only the payload to cahier.add; the mutation does not receive or persist that queue ID. If the server commits a sale and its response is lost, the client catches the error and queues the same sale again. Replaying it can create a duplicate. Also, a rejected result is removed from the queue as permanently failed.
+
+Before claiming no lost or duplicated writes, the write path needs:
+- A stable client-generated idempotency key sent with every online/offline attempt.
+- An indexed operation receipt scoped to authenticated owner and shop.
+- The journal insert, stock movement and aggregate contribution in the same Convex mutation.
+- Replay that returns the original result when a key has already committed.
+- Rejected items retained or surfaced for review, not silently discarded.
+
+### Proposed compatible read architecture — design only
+
+A. Exact summary/read model
+- Keep a separate exact journal summary query for totals and count under active shop, type and category filters.
+- Maintain daily ledger aggregates by ledger owner, optional shop, business-day key, transaction type, category and debt state/direction. Use them for period totals, evolution, expected cash, report totals and exact filtered journal totals where dimensions suffice.
+- Maintain purchase-period aggregates and inventory aggregates separately. Stock value and low-stock count must change atomically with every product stock, price or minStock change.
+- Maintain exact payment totals per credit so remaining/overdue never depend on collecting every payment row.
+
+B. Paginated detail queries
+- Add cursor-based endpoints for journal, purchases, credits, products, contacts and (if needed) cash-closing history.
+- Use stable indexed ordering and pass the same shop/type/category filters to every page.
+- UI consumes Convex usePaginatedQuery, displays exact summary/count separately and offers load more. Existing row fields and ordering remain unchanged.
+- Page length is never a financial count or total.
+
+C. No-gap aggregate rollout
+- First add idempotency keys and transactional contribution updates to every relevant mutation: create, settle/reverse, delete, purchase create/delete, credit create/payment/delete, stock adjust/sale/purchase and product price/minStock changes.
+- Represent each source row's current aggregate contribution in an indexed contribution record. Updating/deleting a source row changes its contribution and rollup in the same transaction.
+- Backfill legacy rows in cursor batches. Each batch checks/creates the source contribution transactionally; if a live mutation already contributed that source row, backfill skips it. Concurrent change/delete must be resolved through Convex transaction conflict/retry and the contribution record, preventing double application or omission.
+- Reconcile aggregate totals against a full cursor scan before switching reads. Keep the old exact scan as comparison/fallback until reconciliation passes.
+- Only then switch summary/report/evolution reads to aggregates. Keep an audit/rebuild path to regenerate aggregates from source rows.
+
+Important: the contribution/rollup design is a proposal, not a proven implementation. Validate transaction limits, index uniqueness assumptions, OCC retries and every mutation path before making it authoritative. No financial read has been switched to a capped sum.
+
+## Next implementation slice
+
+The safest first slice is not a broad rewrite. Implement and test Cahier write idempotency first, because duplicate replay is a concrete integrity risk. Then add a read-only aggregate prototype for one operation family (journal sale/expense/debt), compare it with the existing exact scan on fixtures, and only after reconciliation design the paginated UI contract. No production deployment is authorized or planned.
