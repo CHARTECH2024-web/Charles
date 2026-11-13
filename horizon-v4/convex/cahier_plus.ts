@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { mutation, query } from "./_generated/server"
+import { requireShopPermission } from "./shopAccess"
 
 const SHOP_ROLE = v.union(
   v.literal("owner"),
@@ -318,7 +319,11 @@ export const setBarcode = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
     const product = await ctx.db.get(args.productId)
-    if (!product || product.ownerId !== userId) {
+    if (!product) {
+      return { ok: false as const, code: "NOT_FOUND" as const }
+    }
+    if (product.shopId) await requireShopPermission(ctx, product.shopId, userId, "product:write")
+    else if (product.ownerId !== userId) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
     await ctx.db.patch(product._id, { barcode: clean(args.barcode, 64) })
@@ -513,6 +518,7 @@ export const removeCredit = mutation({
     if (!credit || !(await canAccessCredit(ctx, userId, credit))) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
+    if (credit.shopId) await requireShopPermission(ctx, credit.shopId, userId, "accounting:write")
     const payments = await ctx.db
       .query("creditPayments")
       .withIndex("by_credit", (q) => q.eq("creditId", credit._id))
@@ -685,6 +691,7 @@ export const closeCash = mutation({
     }
     const day = dayKey(Date.now())
     const scope = await ledgerScope(ctx, userId, args.shopId)
+    if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, "accounting:write")
     const totals = await expectedCash(ctx, scope, day)
     const rows = scope.shopId
       ? await ctx.db
