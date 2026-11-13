@@ -293,6 +293,7 @@ export const add = mutation({
     type: ENTRY_TYPE,
     label: v.string(),
     amount: v.number(),
+    idempotencyKey: v.string(),
     note: v.optional(v.string()),
     category: v.optional(v.string()),
     occurredAt: v.optional(v.number()),
@@ -306,6 +307,10 @@ export const add = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
+    const idempotencyKey = args.idempotencyKey.trim()
+    if (idempotencyKey.length < 8 || idempotencyKey.length > 128) {
+      return { ok: false as const, code: "INVALID_IDEMPOTENCY_KEY" as const }
+    }
     const scope = await scopeFor(ctx, userId, args.shopId)
     if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, args.type === "expense" ? "accounting:write" : args.type === "debt" ? "debt" : "sale")
     const label = cleanText(args.label, 80)
@@ -315,15 +320,45 @@ export const add = mutation({
     if (!positive(args.amount)) {
       return { ok: false as const, code: "INVALID_AMOUNT" as const }
     }
-    const occurredAt = businessDate(args.occurredAt)
-    if (occurredAt === null) {
-      return { ok: false as const, code: "INVALID_DATE" as const }
-    }
 
+    // Fingerprint the client payload, not the resolved server timestamp. A retry
+    // with an omitted occurredAt must still match the first attempt.
+    const normalizedNote = cleanText(args.note ?? "", 200)
+    const normalizedCategory = cleanText(args.category ?? "", 40) || undefined
     const quantity =
       args.quantity && positive(args.quantity, 1_000_000)
         ? Math.round(args.quantity)
         : undefined
+    const payloadFingerprint = JSON.stringify({
+      type: args.type,
+      label,
+      amount: Math.round(args.amount),
+      note: normalizedNote,
+      category: normalizedCategory ?? null,
+      occurredAt: args.occurredAt ?? null,
+      contactId: args.contactId ?? null,
+      productId: args.productId ?? null,
+      quantity: quantity ?? null,
+      shopId: scope.shopId ?? null,
+      debtDirection: args.type === "debt" ? args.debtDirection ?? "receivable" : null,
+    })
+    const previous = await ctx.db
+      .query("cahierOperations")
+      .withIndex("by_actor_key", (q) =>
+        q.eq("actorId", userId).eq("idempotencyKey", idempotencyKey),
+      )
+      .unique()
+    if (previous) {
+      if (previous.payloadFingerprint !== payloadFingerprint) {
+        throw new ConvexError({ code: "IDEMPOTENCY_KEY_REUSED" })
+      }
+      return { ok: true as const, id: previous.entryId, duplicate: true as const }
+    }
+
+    const occurredAt = businessDate(args.occurredAt)
+    if (occurredAt === null) {
+      return { ok: false as const, code: "INVALID_DATE" as const }
+    }
 
     if (args.contactId) {
       const contact = await ctx.db.get(args.contactId)
@@ -357,8 +392,8 @@ export const add = mutation({
       type: args.type,
       label,
       amount: Math.round(args.amount),
-      note: cleanText(args.note ?? "", 200),
-      category: cleanText(args.category ?? "", 40) || undefined,
+      note: normalizedNote,
+      category: normalizedCategory,
       settled: args.type === "debt" ? false : undefined,
       createdAt: Date.now(),
       occurredAt,
@@ -370,6 +405,18 @@ export const add = mutation({
       ...(args.type === "debt"
         ? { debtDirection: args.debtDirection ?? ("receivable" as const) }
         : {}),
+    })
+
+    // The receipt and every side effect below commit atomically with the entry.
+    // Convex serializable transactions retry overlapping concurrent key claims.
+    await ctx.db.insert("cahierOperations", {
+      actorId: userId,
+      ownerId: scope.ownerId,
+      ...(scope.shopId ? { shopId: scope.shopId } : {}),
+      idempotencyKey,
+      payloadFingerprint,
+      entryId: id,
+      createdAt: Date.now(),
     })
 
     // A sale linked to a product takes the quantity out of that shop's stock.
