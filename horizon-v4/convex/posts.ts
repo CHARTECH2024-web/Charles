@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values"
 import type { Id } from "./_generated/dataModel"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { mutation, query } from "./_generated/server"
+import { consumeOwnedUpload } from "./uploads"
 import { internal } from "./_generated/api"
 import { limitsOf, planOf } from "./billing"
 
@@ -163,6 +164,8 @@ export const create = mutation({
       if (used + file.size > limits.storageMb * 1024 * 1024) {
         return { ok: false as const, code: "STORAGE_FULL" as const }
       }
+      const owned = await consumeOwnedUpload(ctx, userId, args.mediaId, "post")
+      if (!owned) return { ok: false as const, code: "INVALID_MEDIA_OWNER" as const }
     }
     const id = await ctx.db.insert("posts", {
       authorId: userId,
