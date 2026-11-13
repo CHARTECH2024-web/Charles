@@ -213,7 +213,7 @@ export const list = query({
       ? await entriesInPeriod(
           ctx,
           scope,
-          args.from ?? Date.UTC(2000, 0, 1),
+          args.from ?? 0,
           args.to ?? Date.now(),
         )
       : await entriesForScope(ctx, scope)
