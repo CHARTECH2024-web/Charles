@@ -126,3 +126,34 @@ Important: the contribution/rollup design is a proposal, not a proven implementa
 ## Next implementation slice
 
 The safest first slice is not a broad rewrite. Implement and test Cahier write idempotency first, because duplicate replay is a concrete integrity risk. Then add a read-only aggregate prototype for one operation family (journal sale/expense/debt), compare it with the existing exact scan on fixtures, and only after reconciliation design the paginated UI contract. No production deployment is authorized or planned.
+
+
+## Idempotency implementation — first backend slice
+
+Implemented on the isolated migration branch:
+
+- Added the `cahierOperations` receipt table, indexed by authenticated actor + idempotency key and by source journal entry.
+- `cahier.add` now requires an `idempotencyKey` (8–128 characters).
+- The receipt stores the normalized payload fingerprint and the created journal entry ID.
+- A retry with the same actor, key and payload returns the original entry ID with `duplicate: true`, without inserting another journal row or repeating stock deductions.
+- Reusing a key with a different normalized payload throws `IDEMPOTENCY_KEY_REUSED`.
+- Receipt creation and journal/stock writes are in the same Convex mutation transaction. The receipt remains if a user later deletes the journal entry, preventing a delayed retry from resurrecting that transaction.
+
+### Required frontend contract — not yet integrated
+
+The original Macaly frontend was inspected but was not modified, and its UI files are not yet present in the isolated `horizon-v4/` app tree. Before this backend can be called by the migrated UI:
+
+1. Generate a stable UUID before an online submission and reuse that exact key if the request times out.
+2. Persist the same key with an offline queue item; replay must pass it as `idempotencyKey`.
+3. Change the queue sender signature to pass both payload and idempotency key.
+4. Remove a queued item only after a confirmed `ok: true` response. A rejected or ambiguous result must remain visible for retry/review; never silently discard it.
+5. For offline queue records created before this change, create and persist one key per queue item before the first replay.
+
+The inspected original queue currently passes only the payload to `cahier.add`, and drops rejected results from localStorage. Therefore end-to-end duplicate protection is **not yet complete** until the frontend contract above is integrated. The backend now enforces a key, so the old frontend contract will not compile against the new generated API and must be updated as part of the frontend port.
+
+### Validation status for this slice
+
+- GitHub source edits committed to the isolated branch.
+- Static source review only; no TypeScript compile, Convex codegen, unit test, concurrency test, or development deployment has been run.
+- No live app preview is implied by these commits. Vercel preview availability must be checked separately.
+- No Macaly Live, Neon, Vercel Production, or Convex Production resource was modified.
