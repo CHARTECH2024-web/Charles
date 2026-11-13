@@ -1,0 +1,62 @@
+{
+  "default": {
+    "title": "HORIZON Workspace",
+    "description": "HORIZON Workspace — Connecter. Partager. Construire."
+  },
+  "/": {
+    "title": "HORIZON Workspace",
+    "description": "Votre espace de travail numérique : communication, commerce et outils. Connecter. Partager. Construire."
+  },
+  "/auth": {
+    "title": "Connexion — HORIZON",
+    "description": "Connectez-vous ou créez votre compte HORIZON."
+  },
+  "/also": {
+    "title": "Also from HORIZON",
+    "description": "Les services et outils de l'écosystème HORIZON."
+  },
+  "/notifications": {
+    "title": "Notifications — HORIZON",
+    "description": "Votre centre de notifications HORIZON."
+  },
+  "/media": {
+    "title": "Media — HORIZON",
+    "description": "Partage d'images, vidéos et documents sur HORIZON."
+  },
+  "/messages": {
+    "title": "Messagerie — HORIZON",
+    "description": "La messagerie HORIZON."
+  },
+  "/account": {
+    "title": "Mon compte — HORIZON",
+    "description": "Gérez votre profil et votre adresse HORIZON."
+  },
+  "/connect": {
+    "title": "Connect — HORIZON",
+    "description": "Trouvez des membres HORIZON et développez votre réseau."
+  },
+  "/ai": {
+    "title": "CHARLES — HORIZON",
+    "description": "CHARLES, l'assistant HORIZON : questions, analyse du cahier de compte, mémoire des échanges et résumé de l'actualité."
+  },
+  "/cahier": {
+    "title": "Cahier — HORIZON",
+    "description": "Le cahier de gestion HORIZON : ventes, dépenses, dettes et solde."
+  },
+  "/checkout": {
+    "title": "Abonnement Premium — HORIZON",
+    "description": "Activez l'abonnement Premium du Cahier HORIZON : historique et graphiques sur 2 ans."
+  },
+  "/admin": {
+    "title": "Administration — HORIZON",
+    "description": "Membres, rôles et statistiques de HORIZON."
+  },
+  "/premium": {
+    "title": "Premium — HORIZON",
+    "description": "Offres Gratuit, Premium mensuel et annuel, packs de crédits CHARLES et paiement mobile money."
+  },
+  "/pro": {
+    "title": "Page pro — HORIZON",
+    "description": "Page professionnelle publique des membres Premium HORIZON."
+  }
+}
