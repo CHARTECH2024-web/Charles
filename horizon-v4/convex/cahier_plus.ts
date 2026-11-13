@@ -37,7 +37,7 @@ async function shopRole(
   if (shop.ownerId === userId) return "owner"
   const member = await ctx.db
     .query("shopMembers")
-    .withIndex("by_shop", (q) => q.eq("shopId", shopId))
+    .withIndex("by_shop_user", (q) => q.eq("shopId", shopId).eq("userId", userId))
     .collect()
   return member.find((row) => row.userId === userId)?.role ?? null
 }
@@ -141,7 +141,8 @@ export const removeShop = mutation({
     if (role !== "owner") return { ok: false as const, code: "FORBIDDEN" as const }
     const members = await ctx.db
       .query("shopMembers")
-      .withIndex("by_shop", (q) => q.eq("shopId", args.shopId))
+      .withIndex("by_shop_createdAt", (q) => q.eq("shopId", args.shopId))
+      .order("desc")
       .collect()
     for (const member of members) await ctx.db.delete(member._id)
     await ctx.db.delete(args.shopId)
@@ -295,11 +296,10 @@ export const findByBarcode = query({
     if (!userId) return { ok: true as const, product: null }
     const code = clean(args.code, 64)
     if (!code) return { ok: true as const, product: null }
-    const rows = await ctx.db
+    const product = await ctx.db
       .query("products")
-      .withIndex("by_owner", (q) => q.eq("ownerId", userId))
-      .collect()
-    const product = rows.find((row) => row.barcode === code)
+      .withIndex("by_owner_barcode", (q) => q.eq("ownerId", userId).eq("barcode", code))
+      .first()
     if (!product) return { ok: true as const, product: null }
     return {
       ok: true as const,
@@ -339,7 +339,8 @@ async function creditState(
 ) {
   const payments = await ctx.db
     .query("creditPayments")
-    .withIndex("by_credit", (q) => q.eq("creditId", credit._id))
+    .withIndex("by_credit_createdAt", (q) => q.eq("creditId", credit._id))
+    .order("desc")
     .collect()
   const paid = payments.reduce((sum, row) => sum + row.amount, 0)
   const remaining = Math.max(0, credit.total - paid)
