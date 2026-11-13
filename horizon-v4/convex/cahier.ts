@@ -750,7 +750,7 @@ export const removePurchase = mutation({
     const userId = await requireUser(ctx)
     const purchase = await ctx.db.get(args.purchaseId)
     if (!purchase) return { ok: false as const, code: "NOT_FOUND" as const }
-    if (purchase.shopId) await scopeFor(ctx, userId, purchase.shopId)
+    if (purchase.shopId) await requireShopPermission(ctx, purchase.shopId, userId, "accounting:write")
     else if (purchase.ownerId !== userId) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
