@@ -71,3 +71,22 @@ The source inventory and most text-file path transfer are complete, but the tran
 4. Provision a separate non-production Convex deployment for Preview; never point Preview at Macaly Live.
 5. Generate the Preview Convex types, install dependencies, and run a clean build on the isolated branch.
 6. Create a Vercel Preview deployment only after the source tree is complete and the Preview environment is confirmed not to target Macaly Live Convex.
+
+
+## New findings — 2026-11-13
+
+### Vercel build failure diagnosis
+
+The latest failed Vercel deployment was inspected. Its build cloned branch `migration/horizon-v4-vercel`, then ran `npm install` at repository root. It failed with `ENOENT: Could not read package.json: /vercel/path0/package.json`. This is a root-directory mismatch: the migrated app's package.json is in `horizon-v4/`, while the Vercel project is currently building from repository root. No project settings were changed. Do not change the shared Vercel rootDirectory globally without first checking the production branch, because that could break existing production deployments. A branch-scoped build configuration or an isolated Preview project is safer.
+
+### Current access limitation
+
+The Macaly workspace has reached its 100/100 monthly Cloud action allowance (reset shown as 2026-12-01 UTC). Further Macaly file reads and shell inspection are currently blocked. As a result, the original 8 PNG/ICO bytes and the full 10,399-line package-lock cannot be retrieved in this session. The Macaly media library listing contains only one unrelated WAV asset; it does not contain the eight PWA icons. Do not recreate or substitute those icons while claiming an exact copy.
+
+### Backend-difference review
+
+The 23 differing Convex files remain a review item. The branch's versions must be retained unless a file-by-file semantic review proves a specific safe reconciliation. The Macaly read limit currently prevents completing that side-by-side review. No backend source was overwritten in this update.
+
+### Revised readiness
+
+Still not ready to compile or deploy. The known Vercel root cause is identified, but the original lockfile and icon assets remain unavailable, the 23 backend differences have not been semantically reviewed, Macaly-specific integrations have not yet been decoupled, and no separate Preview Convex deployment has been provisioned. No Vercel settings, deployments, production branch, or Macaly project were changed by this inspection.
