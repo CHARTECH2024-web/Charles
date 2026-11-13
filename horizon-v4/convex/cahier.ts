@@ -209,7 +209,14 @@ export const list = query({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
     const scope = await scopeFor(ctx, userId, args.shopId)
-    const all = await entriesForScope(ctx, scope)
+    const all = args.from !== undefined || args.to !== undefined
+      ? await entriesInPeriod(
+          ctx,
+          scope,
+          args.from ?? Date.UTC(2000, 0, 1),
+          args.to ?? Date.now(),
+        )
+      : await entriesForScope(ctx, scope)
     const search = cleanText(args.search ?? "", 80).toLowerCase()
     const category = cleanText(args.category ?? "", 40)
 
