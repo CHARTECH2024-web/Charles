@@ -16,7 +16,7 @@ export function HorizonPasswordForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setError('')
-    const normalizedHandle = handle.trim().toLowerCase().replace(/\\.hz$/, '')
+    const normalizedHandle = handle.trim().toLowerCase().replace(/\.hz$/i, '')
     if (normalizedHandle.length < 3 || password.length === 0 || password.length > 128) {
       setError(t('auth.errorLogin'))
       return
