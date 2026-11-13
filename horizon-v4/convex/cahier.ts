@@ -4,6 +4,7 @@ import type { Doc, Id } from "./_generated/dataModel"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { mutation, query } from "./_generated/server"
 import { isPremiumUser } from "./premium"
+import { requireShopPermission } from "./shopAccess"
 
 const ENTRY_TYPE = v.union(
   v.literal("sale"),
@@ -259,6 +260,7 @@ export const add = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
     const scope = await scopeFor(ctx, userId, args.shopId)
+    if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, args.type === "expense" ? "accounting:write" : args.type === "debt" ? "debt" : "sale")
     const label = cleanText(args.label, 80)
     if (label.length < 2) {
       return { ok: false as const, code: "INVALID_LABEL" as const }
@@ -346,6 +348,7 @@ export const toggleSettled = mutation({
     if (!entry || !(await canAccessEntry(ctx, userId, entry))) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
+    if (entry.shopId) await requireShopPermission(ctx, entry.shopId, userId, "accounting:write")
     if (entry.type !== "debt") {
       return { ok: false as const, code: "NOT_A_DEBT" as const }
     }
@@ -394,6 +397,7 @@ export const remove = mutation({
     if (!entry || !(await canAccessEntry(ctx, userId, entry))) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
+    if (entry.shopId) await requireShopPermission(ctx, entry.shopId, userId, "accounting:write")
     if (entry.purchaseId || entry.creditId || entry.debtEntryId) {
       return { ok: false as const, code: "LINKED_ENTRY" as const }
     }
@@ -468,6 +472,7 @@ export const addProduct = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
     const scope = await scopeFor(ctx, userId, args.shopId)
+    if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, "product:write")
     const name = cleanText(args.name, 60)
     if (name.length < 2) return { ok: false as const, code: "INVALID_NAME" as const }
     if (!positive(args.price)) return { ok: false as const, code: "INVALID_PRICE" as const }
@@ -504,7 +509,7 @@ export const adjustStock = mutation({
     const userId = await requireUser(ctx)
     const product = await ctx.db.get(args.productId)
     if (!product) return { ok: false as const, code: "NOT_FOUND" as const }
-    if (product.shopId) await scopeFor(ctx, userId, product.shopId)
+    if (product.shopId) await requireShopPermission(ctx, product.shopId, userId, "stock:write")
     else if (product.ownerId !== userId) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
@@ -532,7 +537,7 @@ export const removeProduct = mutation({
     const userId = await requireUser(ctx)
     const product = await ctx.db.get(args.productId)
     if (!product) return { ok: false as const, code: "NOT_FOUND" as const }
-    if (product.shopId) await scopeFor(ctx, userId, product.shopId)
+    if (product.shopId) await requireShopPermission(ctx, product.shopId, userId, "product:write")
     else if (product.ownerId !== userId) {
       return { ok: false as const, code: "NOT_FOUND" as const }
     }
@@ -580,6 +585,7 @@ export const addContact = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
     const scope = await scopeFor(ctx, userId, args.shopId)
+    if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, "contact:create")
     const name = cleanText(args.name, 60)
     if (name.length < 2) return { ok: false as const, code: "INVALID_NAME" as const }
     const id = await ctx.db.insert("contacts", {
@@ -651,6 +657,7 @@ export const addPurchase = mutation({
   handler: async (ctx, args) => {
     const userId = await requireUser(ctx)
     const scope = await scopeFor(ctx, userId, args.shopId)
+    if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, "accounting:write")
     const label = cleanText(args.label, 80)
     if (label.length < 2) return { ok: false as const, code: "INVALID_LABEL" as const }
     if (!positive(args.unitCost)) {
