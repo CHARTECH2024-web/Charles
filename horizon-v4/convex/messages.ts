@@ -134,14 +134,14 @@ export const thread = query({
     const userId = await requireUser(ctx)
     const sent = await ctx.db
       .query("messages")
-      .withIndex("by_pair", (q) =>
+      .withIndex("by_pair_createdAt", (q) =>
         q.eq("fromId", userId).eq("toId", args.withUserId),
       )
       .order("desc")
       .take(100)
     const received = await ctx.db
       .query("messages")
-      .withIndex("by_pair", (q) =>
+      .withIndex("by_pair_createdAt", (q) =>
         q.eq("fromId", args.withUserId).eq("toId", userId),
       )
       .order("desc")
