@@ -24,6 +24,10 @@ const ALLOWED: Record<ShopPermission, readonly ShopRole[]> = {
   "shop:manage": ["owner"],
 }
 
+export function roleCan(role: ShopRole, permission: ShopPermission): boolean {
+  return ALLOWED[permission].includes(role)
+}
+
 export async function getShopRole(
   ctx: QueryCtx | MutationCtx,
   shopId: Id<"shops">,
@@ -48,7 +52,7 @@ export async function requireShopPermission(
   permission: ShopPermission,
 ): Promise<ShopRole> {
   const role = await getShopRole(ctx, shopId, userId)
-  if (!role || !ALLOWED[permission].includes(role)) {
+  if (!role || !roleCan(role, permission)) {
     throw new ConvexError({ code: "FORBIDDEN" })
   }
   return role
