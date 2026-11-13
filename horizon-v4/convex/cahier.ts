@@ -53,6 +53,44 @@ function entryTime(entry: { occurredAt?: number; createdAt: number }): number {
   return entry.occurredAt ?? entry.createdAt
 }
 
+/**
+ * Read a closed business-date interval using the date indexes. Legacy rows
+ * without occurredAt are read by createdAt and included exactly once.
+ */
+async function entriesInPeriod(
+  ctx: QueryCtx,
+  scope: Scope,
+  from: number,
+  to: number,
+) {
+  if (scope.shopId) {
+    const [dated, legacyCandidates] = await Promise.all([
+      ctx.db.query("cahierEntries")
+        .withIndex("by_shop_occurredAt", (q) =>
+          q.eq("shopId", scope.shopId!).gte("occurredAt", from).lte("occurredAt", to),
+        ).collect(),
+      ctx.db.query("cahierEntries")
+        .withIndex("by_shop_createdAt", (q) =>
+          q.eq("shopId", scope.shopId!).gte("createdAt", from).lte("createdAt", to),
+        ).collect(),
+    ])
+    return [...dated, ...legacyCandidates.filter((row) => row.occurredAt === undefined)]
+  }
+  const [dated, legacyCandidates] = await Promise.all([
+    ctx.db.query("cahierEntries")
+      .withIndex("by_owner_shop_occurredAt", (q) =>
+        q.eq("ownerId", scope.ownerId).eq("shopId", undefined)
+          .gte("occurredAt", from).lte("occurredAt", to),
+      ).collect(),
+    ctx.db.query("cahierEntries")
+      .withIndex("by_owner_shop_createdAt", (q) =>
+        q.eq("ownerId", scope.ownerId).eq("shopId", undefined)
+          .gte("createdAt", from).lte("createdAt", to),
+      ).collect(),
+  ])
+  return [...dated, ...legacyCandidates.filter((row) => row.occurredAt === undefined)]
+}
+
 /** Resolve the ledger owner and verify shop membership for the signed-in user. */
 async function scopeFor(
   ctx: QueryCtx | MutationCtx,
@@ -828,7 +866,6 @@ export const evolution = query({
     }
 
     const scope = await scopeFor(ctx, userId, args.shopId)
-    const entries = await entriesForScope(ctx, scope)
 
     const now = new Date()
     const buckets: { key: string; date: Date }[] = []
@@ -853,6 +890,13 @@ export const evolution = query({
         buckets.push({ key: bucketKey(date, "month"), date })
       }
     }
+
+    const entries = await entriesInPeriod(
+      ctx,
+      scope,
+      buckets[0].date.getTime(),
+      Date.now(),
+    )
 
     const totals = new Map<string, { sales: number; expenses: number }>()
     for (const bucket of buckets) {
