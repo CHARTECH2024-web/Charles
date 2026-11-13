@@ -381,11 +381,11 @@ export const toggleSettled = mutation({
 
     const linked = await ctx.db
       .query("cahierEntries")
-      .withIndex("by_owner", (q) => q.eq("ownerId", entry.ownerId))
+      .withIndex("by_owner_debtEntryId", (q) =>
+        q.eq("ownerId", entry.ownerId).eq("debtEntryId", entry._id),
+      )
       .collect()
-    for (const row of linked) {
-      if (row.debtEntryId === entry._id) await ctx.db.delete(row._id)
-    }
+    for (const row of linked) await ctx.db.delete(row._id)
     await ctx.db.patch(entry._id, { settled: false })
     return { ok: true as const, settled: false }
   },
@@ -407,11 +407,11 @@ export const remove = mutation({
     if (entry.type === "debt") {
       const linked = await ctx.db
         .query("cahierEntries")
-        .withIndex("by_owner", (q) => q.eq("ownerId", entry.ownerId))
+        .withIndex("by_owner_debtEntryId", (q) =>
+          q.eq("ownerId", entry.ownerId).eq("debtEntryId", entry._id),
+        )
         .collect()
-      for (const row of linked) {
-        if (row.debtEntryId === entry._id) await ctx.db.delete(row._id)
-      }
+      for (const row of linked) await ctx.db.delete(row._id)
     }
 
     // Removing a product sale puts the goods back in the same shop's stock.
@@ -781,11 +781,9 @@ export const removePurchase = mutation({
     // Remove the expense created with the purchase, so cash stays correct.
     const entries = await ctx.db
       .query("cahierEntries")
-      .withIndex("by_owner", (q) => q.eq("ownerId", purchase.ownerId))
+      .withIndex("by_purchaseId", (q) => q.eq("purchaseId", purchase._id))
       .collect()
-    for (const entry of entries) {
-      if (entry.purchaseId === purchase._id) await ctx.db.delete(entry._id)
-    }
+    for (const entry of entries) await ctx.db.delete(entry._id)
     await ctx.db.delete(purchase._id)
     return { ok: true as const }
   },
