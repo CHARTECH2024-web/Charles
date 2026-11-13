@@ -331,6 +331,27 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_shop_user", ["shopId", "userId"]),
 
+  // Ownership registry for files uploaded through HORIZON. The storage ID is
+  // unguessable; a short-lived upload grant is consumed when the client claims it.
+  uploads: defineTable({
+    ownerId: v.id("users"),
+    storageId: v.id("_storage"),
+    purpose: v.union(
+      v.literal("post"),
+      v.literal("message"),
+      v.literal("profile"),
+      v.literal("assistant"),
+    ),
+    status: v.union(v.literal("ready"), v.literal("attached")),
+    contentType: v.string(),
+    fileSize: v.number(),
+    createdAt: v.number(),
+    expiresAt: v.optional(v.number()),
+  })
+    .index("by_storage", ["storageId"])
+    .index("by_owner_createdAt", ["ownerId", "createdAt"])
+    .index("by_owner_status", ["ownerId", "status"]),
+
   // Customer credit with installments and payment reminders.
   credits: defineTable({
     ownerId: v.id("users"),
