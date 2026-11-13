@@ -156,7 +156,10 @@ export default defineSchema({
     .index("by_owner_shop_occurredAt", ["ownerId", "shopId", "occurredAt"])
     .index("by_shop_createdAt", ["shopId", "createdAt"])
     .index("by_shop_occurredAt", ["shopId", "occurredAt"])
-    .index("by_owner_debtEntryId", ["ownerId", "debtEntryId"]),
+    .index("by_owner_debtEntryId", ["ownerId", "debtEntryId"])
+    .index("by_purchaseId", ["purchaseId"])
+    .index("by_creditId", ["creditId"])
+    .index("by_debtEntryId", ["debtEntryId"]),
 
   // Customers and suppliers of one shop.
   contacts: defineTable({
