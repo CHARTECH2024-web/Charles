@@ -161,6 +161,20 @@ export default defineSchema({
     .index("by_creditId", ["creditId"])
     .index("by_debtEntryId", ["debtEntryId"]),
 
+  // Durable receipts for idempotent Cahier writes. Kept even if the ledger
+  // entry is later deleted, so a delayed offline retry cannot recreate it.
+  cahierOperations: defineTable({
+    actorId: v.id("users"),
+    ownerId: v.id("users"),
+    shopId: v.optional(v.id("shops")),
+    idempotencyKey: v.string(),
+    payloadFingerprint: v.string(),
+    entryId: v.id("cahierEntries"),
+    createdAt: v.number(),
+  })
+    .index("by_actor_key", ["actorId", "idempotencyKey"])
+    .index("by_entry", ["entryId"]),
+
   // Customers and suppliers of one shop.
   contacts: defineTable({
     ownerId: v.id("users"),
