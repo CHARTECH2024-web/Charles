@@ -108,3 +108,13 @@ Date: 2026-11-13
 - No application code was changed.
 - No database was provisioned or migrated.
 - No Vercel deployment was created or promoted.
+
+
+## Décision de données confirmée par l'utilisateur — 2026-11-13
+
+- L'utilisateur confirme que tous les comptes et toutes les données de l'ancien Convex Live de Macaly étaient ses propres comptes de test. Aucun compte tiers important ni donnée de production n'y est conservé.
+- L'utilisateur autorise explicitement un nouveau déploiement Convex vierge. Les anciens comptes et données applicatives Macaly (profils, publications, messages, Cahier, boutiques, stock, etc.) sont exclus de la migration.
+- Cette autorisation ne signifie pas qu'il faut supprimer immédiatement l'ancien déploiement Live. Il restera intact comme référence/secours temporaire jusqu'à validation du nouveau Preview. Toute suppression définitive demandera une confirmation distincte.
+- Neon est une source séparée et reste préservé. Ses comptes existants doivent être conservés et migrés/compatibilisés avec le nouveau Convex. La décision d'abandon des comptes Macaly ne s'applique pas aux comptes Neon.
+- La réconciliation ligne par ligne Macaly ↔ Neon n'est donc plus nécessaire pour les données Macaly abandonnées. Il faut toutefois conserver les UUID Neon via une correspondance d'identifiant legacy et vérifier l'unicité des handles avant import.
+- À ce stade, aucune donnée Live n'a été supprimée ou modifiée et aucun nouveau déploiement Convex n'a encore été créé.
