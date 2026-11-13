@@ -78,12 +78,14 @@ export const conversations = query({
     const userId = await requireUser(ctx)
     const sent = await ctx.db
       .query("messages")
-      .withIndex("by_from", (q) => q.eq("fromId", userId))
-      .collect()
+      .withIndex("by_from_createdAt", (q) => q.eq("fromId", userId))
+      .order("desc")
+      .take(500)
     const received = await ctx.db
       .query("messages")
-      .withIndex("by_to", (q) => q.eq("toId", userId))
-      .collect()
+      .withIndex("by_to_createdAt", (q) => q.eq("toId", userId))
+      .order("desc")
+      .take(500)
 
     const latest = new Map<
       Id<"users">,
@@ -135,13 +137,15 @@ export const thread = query({
       .withIndex("by_pair", (q) =>
         q.eq("fromId", userId).eq("toId", args.withUserId),
       )
-      .collect()
+      .order("desc")
+      .take(100)
     const received = await ctx.db
       .query("messages")
       .withIndex("by_pair", (q) =>
         q.eq("fromId", args.withUserId).eq("toId", userId),
       )
-      .collect()
+      .order("desc")
+      .take(100)
 
     const messages = [...sent, ...received]
       .sort((a, b) => a.createdAt - b.createdAt)
@@ -224,10 +228,11 @@ export const markRead = mutation({
     const userId = await requireUser(ctx)
     const unread = await ctx.db
       .query("messages")
-      .withIndex("by_pair", (q) =>
+      .withIndex("by_pair_createdAt", (q) =>
         q.eq("fromId", args.withUserId).eq("toId", userId),
       )
-      .collect()
+      .order("desc")
+      .take(500)
     for (const message of unread) {
       if (!message.readAt) await ctx.db.patch(message._id, { readAt: Date.now() })
     }
@@ -241,8 +246,9 @@ export const unreadCount = query({
     const userId = await requireUser(ctx)
     const received = await ctx.db
       .query("messages")
-      .withIndex("by_to", (q) => q.eq("toId", userId))
-      .collect()
+      .withIndex("by_to_createdAt", (q) => q.eq("toId", userId))
+      .order("desc")
+      .take(1000)
     return { ok: true as const, count: received.filter((m) => !m.readAt).length }
   },
 })
