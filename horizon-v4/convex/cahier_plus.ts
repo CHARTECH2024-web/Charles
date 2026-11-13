@@ -61,6 +61,79 @@ function entryTime(entry: { occurredAt?: number; createdAt: number }): number {
   return entry.occurredAt ?? entry.createdAt
 }
 
+/**
+ * Read a closed business-date interval through compound indexes.
+ * Rows written before occurredAt existed are included through createdAt,
+ * but only when occurredAt is absent, so no transaction is counted twice.
+ */
+async function entriesInPeriod(
+  ctx: QueryCtx,
+  scope: { ownerId: Id<"users">; shopId?: Id<"shops"> },
+  from: number,
+  to: number,
+) {
+  if (scope.shopId) {
+    const [dated, legacyCandidates] = await Promise.all([
+      ctx.db.query("cahierEntries")
+        .withIndex("by_shop_occurredAt", (q) =>
+          q.eq("shopId", scope.shopId!).gte("occurredAt", from).lte("occurredAt", to),
+        ).collect(),
+      ctx.db.query("cahierEntries")
+        .withIndex("by_shop_createdAt", (q) =>
+          q.eq("shopId", scope.shopId!).gte("createdAt", from).lte("createdAt", to),
+        ).collect(),
+    ])
+    return [...dated, ...legacyCandidates.filter((row) => row.occurredAt === undefined)]
+  }
+  const [dated, legacyCandidates] = await Promise.all([
+    ctx.db.query("cahierEntries")
+      .withIndex("by_owner_shop_occurredAt", (q) =>
+        q.eq("ownerId", scope.ownerId).eq("shopId", undefined)
+          .gte("occurredAt", from).lte("occurredAt", to),
+      ).collect(),
+    ctx.db.query("cahierEntries")
+      .withIndex("by_owner_shop_createdAt", (q) =>
+        q.eq("ownerId", scope.ownerId).eq("shopId", undefined)
+          .gte("createdAt", from).lte("createdAt", to),
+      ).collect(),
+  ])
+  return [...dated, ...legacyCandidates.filter((row) => row.occurredAt === undefined)]
+}
+
+async function purchasesInPeriod(
+  ctx: QueryCtx,
+  scope: { ownerId: Id<"users">; shopId?: Id<"shops"> },
+  from: number,
+  to: number,
+) {
+  if (scope.shopId) {
+    const [dated, legacyCandidates] = await Promise.all([
+      ctx.db.query("purchases")
+        .withIndex("by_shop_occurredAt", (q) =>
+          q.eq("shopId", scope.shopId!).gte("occurredAt", from).lte("occurredAt", to),
+        ).collect(),
+      ctx.db.query("purchases")
+        .withIndex("by_shop_createdAt", (q) =>
+          q.eq("shopId", scope.shopId!).gte("createdAt", from).lte("createdAt", to),
+        ).collect(),
+    ])
+    return [...dated, ...legacyCandidates.filter((row) => row.occurredAt === undefined)]
+  }
+  const [dated, legacyCandidates] = await Promise.all([
+    ctx.db.query("purchases")
+      .withIndex("by_owner_shop_occurredAt", (q) =>
+        q.eq("ownerId", scope.ownerId).eq("shopId", undefined)
+          .gte("occurredAt", from).lte("occurredAt", to),
+      ).collect(),
+    ctx.db.query("purchases")
+      .withIndex("by_owner_shop_createdAt", (q) =>
+        q.eq("ownerId", scope.ownerId).eq("shopId", undefined)
+          .gte("createdAt", from).lte("createdAt", to),
+      ).collect(),
+  ])
+  return [...dated, ...legacyCandidates.filter((row) => row.occurredAt === undefined)]
+}
+
 /** Owner of a personal or shop ledger, after checking membership. */
 async function ledgerScope(
   ctx: QueryCtx | MutationCtx,
@@ -598,19 +671,12 @@ async function expectedCash(
   scope: { ownerId: Id<"users">; shopId?: Id<"shops"> },
   day: string,
 ) {
-  const rows = scope.shopId
-    ? await ctx.db
-        .query("cahierEntries")
-        .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
-        .collect()
-    : (await ctx.db
-        .query("cahierEntries")
-        .withIndex("by_owner", (q) => q.eq("ownerId", scope.ownerId))
-        .collect()).filter((entry) => !entry.shopId)
+  const start = new Date(day).getTime()
+  const end = start + 24 * 60 * 60 * 1000 - 1
+  const rows = await entriesInPeriod(ctx, scope, start, end)
   let sales = 0
   let expenses = 0
   for (const entry of rows) {
-    if (dayKey(entryTime(entry)) !== day) continue
     if (entry.type === "sale") sales += entry.amount
     if (entry.type === "expense") expenses += entry.amount
   }
@@ -767,16 +833,7 @@ export const report = query({
       label = `${now.getFullYear()}`
     }
 
-    const entries = scope.shopId
-      ? await ctx.db
-          .query("cahierEntries")
-          .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
-          .collect()
-      : (await ctx.db
-          .query("cahierEntries")
-          .withIndex("by_owner", (q) => q.eq("ownerId", scope.ownerId))
-          .collect()).filter((entry) => !entry.shopId)
-    const scoped = entries.filter((entry) => entryTime(entry) >= from)
+    const scoped = await entriesInPeriod(ctx, scope, from, Date.now())
 
     let sales = 0
     let expenses = 0
@@ -795,18 +852,8 @@ export const report = query({
       }
     }
 
-    const purchases = scope.shopId
-      ? await ctx.db
-          .query("purchases")
-          .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
-          .collect()
-      : (await ctx.db
-          .query("purchases")
-          .withIndex("by_owner", (q) => q.eq("ownerId", scope.ownerId))
-          .collect()).filter((row) => !row.shopId)
-    const purchasesTotal = purchases
-      .filter((row) => entryTime(row) >= from)
-      .reduce((sum, row) => sum + row.total, 0)
+    const purchases = await purchasesInPeriod(ctx, scope, from, Date.now())
+    const purchasesTotal = purchases.reduce((sum, row) => sum + row.total, 0)
 
     const products = scope.shopId
       ? await ctx.db
