@@ -16,7 +16,7 @@ Date: 2026-11-13
 
 - React 19 + TypeScript + TanStack Start/Vite.
 - Convex backend with Convex Auth.
-- Convex schema has 28 application tables, in addition to Convex Auth tables.
+- Convex schema has 29 application tables, in addition to Convex Auth tables.
 - Main backend domains: profiles/auth, posts/likes/comments, connections, messages, notifications, Cahier, shops/members, stock, purchases, credits/payments, cash closings, targets, premium/mobile money, assistant history/memory, uploads.
 - Main frontend routes: home, auth, account, connect, messages, notifications, AI, Cahier, media, admin, premium, pro, checkout.
 - Main Macaly-specific dependencies to replace: Google OAuth grant/redeem endpoints, email OTP delivery endpoint, LLM usage endpoint, App Files/R2 bridge.
