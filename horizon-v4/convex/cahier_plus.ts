@@ -671,7 +671,8 @@ async function expectedCash(
   scope: { ownerId: Id<"users">; shopId?: Id<"shops"> },
   day: string,
 ) {
-  const start = new Date(day).getTime()
+  const [year, month, date] = day.split("-").map(Number)
+  const start = new Date(year, month - 1, date).getTime()
   const end = start + 24 * 60 * 60 * 1000 - 1
   const rows = await entriesInPeriod(ctx, scope, start, end)
   let sales = 0
@@ -701,21 +702,24 @@ export const cashToday = query({
     }
     const scope = await ledgerScope(ctx, userId, args.shopId)
     const totals = await expectedCash(ctx, scope, day)
-    const closings = (
+    const [today, closings] = await Promise.all([
       scope.shopId
-        ? await ctx.db
-            .query("cashClosings")
-            .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
-            .collect()
-        : (await ctx.db
-            .query("cashClosings")
-            .withIndex("by_owner", (q) => q.eq("ownerId", scope.ownerId))
-            .collect()).filter((row) => !row.shopId)
-    ).sort((a, b) => b.day.localeCompare(a.day))
-    const today =
-      closings.find(
-        (row) => row.day === day && (row.shopId ?? null) === (args.shopId ?? null),
-      ) ?? null
+        ? ctx.db.query("cashClosings")
+            .withIndex("by_shop_day", (q) => q.eq("shopId", scope.shopId!).eq("day", day))
+            .first()
+        : ctx.db.query("cashClosings")
+            .withIndex("by_owner_shop_day", (q) =>
+              q.eq("ownerId", scope.ownerId).eq("shopId", undefined).eq("day", day),
+            ).first(),
+      scope.shopId
+        ? ctx.db.query("cashClosings")
+            .withIndex("by_shop_day", (q) => q.eq("shopId", scope.shopId!))
+            .order("desc").take(30)
+        : ctx.db.query("cashClosings")
+            .withIndex("by_owner_shop_day", (q) =>
+              q.eq("ownerId", scope.ownerId).eq("shopId", undefined),
+            ).order("desc").take(30),
+    ])
     return {
       ok: true as const,
       day,
@@ -755,18 +759,14 @@ export const closeCash = mutation({
     const scope = await ledgerScope(ctx, userId, args.shopId)
     if (scope.shopId) await requireShopPermission(ctx, scope.shopId, userId, "accounting:write")
     const totals = await expectedCash(ctx, scope, day)
-    const rows = scope.shopId
-      ? await ctx.db
-          .query("cashClosings")
-          .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
-          .collect()
-      : (await ctx.db
-          .query("cashClosings")
-          .withIndex("by_owner", (q) => q.eq("ownerId", scope.ownerId))
-          .collect()).filter((row) => !row.shopId)
-    const existing = rows.find(
-      (row) => row.day === day && (row.shopId ?? null) === (args.shopId ?? null),
-    )
+    const existing = scope.shopId
+      ? await ctx.db.query("cashClosings")
+          .withIndex("by_shop_day", (q) => q.eq("shopId", scope.shopId!).eq("day", day))
+          .first()
+      : await ctx.db.query("cashClosings")
+          .withIndex("by_owner_shop_day", (q) =>
+            q.eq("ownerId", scope.ownerId).eq("shopId", undefined).eq("day", day),
+          ).first()
     const payload = {
       expected: totals.expected,
       counted: Math.round(args.counted),
