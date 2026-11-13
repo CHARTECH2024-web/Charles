@@ -35,10 +35,40 @@ Date: 2026-11-13
 - The latest inspected deployment has empty Git metadata even though the Vercel project is linked to the GitHub repository. Treat the deployed source and Git branch as separate until reconciled.
 - The deployment file API returns truncated content for some larger source files; full source reconciliation is still required before claiming a complete Vercel code audit.
 
+## Identity reconciliation: Macaly Convex Live ↔ Neon
+
+### What the schemas establish
+
+- Neon `hz_users` contains a legacy UUID, username, display name, birth date, bio, username-change timestamp, creation timestamp and scrypt password hash. The inspected bootstrap does not define email or phone fields.
+- Macaly stores private account identifiers in Convex `users` (email, phone, Google subject and provider-auth relationships) and the public HORIZON identity in `profiles` (unique normalized `handle`, display name, bio, age-confirmation timestamp and `userId`).
+- Therefore the only common stable-looking identity field established by the inspected schemas is the HORIZON username/handle. It is a candidate matching key, not proof that two rows are the same person.
+- Display name is not a safe identity key. It can be shared or changed.
+- Do not merge accounts using display name, approximate spelling, or a guessed email/phone relationship.
+
+### Required matching rules
+
+1. Normalize both Neon `username` and Macaly `profiles.handle`: trim whitespace, lowercase, remove one trailing `.HZ` suffix, and normalize Unicode only if the source format requires it. Preserve original values in the audit report.
+2. Classify exact normalized-handle matches as **candidate matches**. Do not automatically merge or delete either account.
+3. Classify one Neon handle matching multiple Convex profiles, or one Convex handle matching multiple Neon rows, as **conflicts** requiring manual review.
+4. Classify unmatched Neon rows as **Neon-only** and unmatched Macaly profiles as **Convex-only**.
+5. Where both systems later provide a verified identical email or E.164 phone, that can strengthen a candidate match. Never infer verification from an unverified provider claim.
+6. For every approved match, retain both source IDs in a dedicated identity-mapping record (source system + source ID → canonical Convex user ID). Keep a unique constraint/index per source-system/source-ID pair. Do not reuse a Neon UUID as a Convex document ID.
+7. Preserve all Convex-auth account/provider relationships and all Macaly-owned feature data. Repointing a duplicate identity must also preserve foreign-key relationships to posts, messages, Cahier, shops, credits, notifications and assistant history. No account merge is safe until a complete reference map exists.
+8. Keep ambiguous and unmatched accounts separate pending verified account linking or recovery. Never discard a source row just because a candidate match exists.
+
+### Actual comparison status — BLOCKED, NOT YET EXECUTED
+
+- Macaly project metadata confirms the selected sandbox and published database both target the same Live Convex deployment. No test writes or schema changes were made there.
+- The available Macaly connector exposes project/schema reads and database imports, but no read-only Convex table query or database export action. The existing admin query returns aggregate counts and its member listing requires an authenticated administrator session; neither gives an authorized cross-system export through the available connector.
+- The available Vercel connector exposes deployment files and environment-variable metadata, but no SQL query interface for Neon. No decrypted database secret was retrieved or exposed.
+- Consequently, no row-level comparison, overlap count, duplicate count, or identity merge has been performed. Claiming that accounts have been reconciled would be false.
+- To execute the comparison safely, obtain two read-only exports: (A) Neon `hz_users` with only legacy UUID, username, display name and timestamps (exclude password hashes and birth dates from the matching file); (B) Macaly Convex `users` + `profiles` with Convex user ID, profile handle/display name and only the verified email/phone fields needed for matching. Keep exports private and temporary; do not commit them to GitHub or upload them to a public media library.
+- Run a local/offline reconciliation report that outputs only aggregate counts and masked candidate identifiers. Keep the raw export files out of chat and delete temporary copies after the report is validated.
+
 ## Data migration design: Neon → Convex
 
 1. Keep Neon read-only as the migration source during the cutover window; do not drop or rewrite its tables.
-2. Export a consistent snapshot of `hz_users` with legacy UUID, username, display name, birth date, bio, username-change timestamp, creation timestamp and password hash.
+2. Export a consistent snapshot of `hz_users` with legacy UUID, username, display name, birth date, bio, username-change timestamp, creation timestamp and password hash. Store it securely; exclude password hashes from the identity-matching report.
 3. Import users into a dedicated Preview Convex deployment using an idempotent migration job and a stable legacy-ID mapping. Add a legacy source ID field/index or a dedicated migration mapping table; do not assume Neon UUIDs can be used as Convex document IDs.
 4. Map username → normalized profile handle, display name → profile display name, bio → profile bio. Validate the age requirement from birth date and retain only the minimum age-confirmation evidence needed by the product; do not copy full birth dates unless required.
 5. Password hashes in Neon use scrypt (`s1$...`); Macaly's current password credential helper uses PBKDF2. Do not copy scrypt hashes into PBKDF2 fields. Implement and test a server-side legacy-password verification/rehash-on-first-login bridge, or use a verified account-recovery flow if that cannot be done safely. Never export plaintext passwords.
@@ -71,7 +101,10 @@ Date: 2026-11-13
 
 ## Current state
 
-- Branch created: `migration/horizon-v4-vercel` (based on repository `main`).
-- No application files changed.
-- No database provisioned or migrated.
-- No Vercel deployment created or promoted.
+- Branch: `migration/horizon-v4-vercel` (based on repository `main`).
+- Added an explicit identity reconciliation protocol and recorded why the live row-level comparison is blocked.
+- No account rows were merged, created or deleted.
+- No Macaly Live or Neon data was changed.
+- No application code was changed.
+- No database was provisioned or migrated.
+- No Vercel deployment was created or promoted.
