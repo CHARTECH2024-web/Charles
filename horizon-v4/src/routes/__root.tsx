@@ -1,5 +1,4 @@
 import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
-import { MacalyBridge } from '@macaly/bridge'
 
 // CSS imported as a side effect — do NOT add `?url` or `?inline`.
 //
@@ -250,12 +249,10 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <MacalyBridge>
-        <body>
-          <AppProviders>{children}</AppProviders>
-          <Scripts />
-        </body>
-      </MacalyBridge>
+      <body>
+        <AppProviders>{children}</AppProviders>
+        <Scripts />
+      </body>
     </html>
   )
 }
