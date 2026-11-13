@@ -335,20 +335,22 @@ export default defineSchema({
   // unguessable; a short-lived upload grant is consumed when the client claims it.
   uploads: defineTable({
     ownerId: v.id("users"),
-    storageId: v.id("_storage"),
+    storageId: v.optional(v.id("_storage")),
+    uploadToken: v.optional(v.string()),
     purpose: v.union(
       v.literal("post"),
       v.literal("message"),
       v.literal("profile"),
       v.literal("assistant"),
     ),
-    status: v.union(v.literal("ready"), v.literal("attached")),
-    contentType: v.string(),
-    fileSize: v.number(),
+    status: v.union(v.literal("pending"), v.literal("ready"), v.literal("attached")),
+    contentType: v.optional(v.string()),
+    fileSize: v.optional(v.number()),
     createdAt: v.number(),
     expiresAt: v.optional(v.number()),
   })
     .index("by_storage", ["storageId"])
+    .index("by_uploadToken", ["uploadToken"])
     .index("by_owner_createdAt", ["ownerId", "createdAt"])
     .index("by_owner_status", ["ownerId", "status"]),
 
