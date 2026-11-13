@@ -482,12 +482,10 @@ export const payCredit = mutation({
     if (remaining <= 0) {
       const entries = await ctx.db
         .query("cahierEntries")
-        .withIndex("by_owner", (q) => q.eq("ownerId", credit.ownerId))
+        .withIndex("by_creditId", (q) => q.eq("creditId", credit._id))
         .collect()
       for (const entry of entries) {
-        if (entry.creditId === credit._id && entry.type === "debt") {
-          await ctx.db.patch(entry._id, { settled: true })
-        }
+        if (entry.type === "debt") await ctx.db.patch(entry._id, { settled: true })
       }
     }
     return { ok: true as const, remaining }
@@ -528,11 +526,9 @@ export const removeCredit = mutation({
     // Remove the receivable and every payment sale booked for this credit.
     const entries = await ctx.db
       .query("cahierEntries")
-      .withIndex("by_owner", (q) => q.eq("ownerId", credit.ownerId))
+      .withIndex("by_creditId", (q) => q.eq("creditId", credit._id))
       .collect()
-    for (const entry of entries) {
-      if (entry.creditId === credit._id) await ctx.db.delete(entry._id)
-    }
+    for (const entry of entries) await ctx.db.delete(entry._id)
     await ctx.db.delete(credit._id)
     return { ok: true as const }
   },
