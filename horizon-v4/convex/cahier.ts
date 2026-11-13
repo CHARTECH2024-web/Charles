@@ -65,7 +65,7 @@ async function scopeFor(
   if (shop.ownerId !== userId) {
     const members = await ctx.db
       .query("shopMembers")
-      .withIndex("by_shop", (q) => q.eq("shopId", shopId))
+      .withIndex("by_shop_user", (q) => q.eq("shopId", shopId).eq("userId", userId))
       .collect()
     if (!members.some((member) => member.userId === userId)) {
       throw new ConvexError({ code: "FORBIDDEN" })
@@ -85,7 +85,7 @@ async function canAccessEntry(
   if (shop.ownerId === userId) return true
   const members = await ctx.db
     .query("shopMembers")
-    .withIndex("by_shop", (q) => q.eq("shopId", entry.shopId!))
+    .withIndex("by_shop_user", (q) => q.eq("shopId", entry.shopId!).eq("userId", userId))
     .collect()
   return members.some((member) => member.userId === userId)
 }
@@ -94,7 +94,8 @@ async function entriesForScope(ctx: QueryCtx, scope: Scope) {
   if (scope.shopId) {
     return ctx.db
       .query("cahierEntries")
-      .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
+      .withIndex("by_shop_createdAt", (q) => q.eq("shopId", scope.shopId))
+      .order("desc")
       .collect()
   }
   const rows = await ctx.db
@@ -108,7 +109,8 @@ async function purchasesForScope(ctx: QueryCtx, scope: Scope) {
   if (scope.shopId) {
     return ctx.db
       .query("purchases")
-      .withIndex("by_shop", (q) => q.eq("shopId", scope.shopId))
+      .withIndex("by_shop_createdAt", (q) => q.eq("shopId", scope.shopId))
+      .order("desc")
       .collect()
   }
   const rows = await ctx.db
@@ -482,10 +484,14 @@ export const addProduct = mutation({
     const barcode = cleanText(args.barcode ?? "", 64) || undefined
 
     if (barcode) {
-      const existing = await productsForScope(ctx, scope)
-      if (existing.some((product) => product.barcode === barcode)) {
-        return { ok: false as const, code: "DUPLICATE_BARCODE" as const }
-      }
+      const existing = scope.shopId
+        ? await ctx.db.query("products")
+            .withIndex("by_shop_barcode", (q) => q.eq("shopId", scope.shopId).eq("barcode", barcode))
+            .first()
+        : await ctx.db.query("products")
+            .withIndex("by_owner_barcode", (q) => q.eq("ownerId", scope.ownerId).eq("barcode", barcode))
+            .first()
+      if (existing) return { ok: false as const, code: "DUPLICATE_BARCODE" as const }
     }
 
     const id = await ctx.db.insert("products", {
@@ -543,7 +549,8 @@ export const removeProduct = mutation({
     }
     const moves = await ctx.db
       .query("stockMoves")
-      .withIndex("by_product", (q) => q.eq("productId", product._id))
+      .withIndex("by_product_createdAt", (q) => q.eq("productId", product._id))
+      .order("desc")
       .collect()
     for (const move of moves) await ctx.db.delete(move._id)
     await ctx.db.delete(product._id)
@@ -560,7 +567,7 @@ export const contacts = query({
     const scope = await scopeFor(ctx, userId, args.shopId)
     const rows = await ctx.db
       .query("contacts")
-      .withIndex("by_owner", (q) => q.eq("ownerId", scope.ownerId))
+      .withIndex("by_owner_createdAt", (q) => q.eq("ownerId", scope.ownerId))
       .order("desc")
       .collect()
     return {
