@@ -1,6 +1,7 @@
 import { getAuthUserId } from "@convex-dev/auth/server"
 import { v } from "convex/values"
 import { mutation, query } from "./_generated/server"
+import { consumeOwnedUpload } from "./uploads"
 import type { QueryCtx } from "./_generated/server"
 
 // ---------------------------------------------------------------------------
@@ -342,6 +343,8 @@ export const setPhoto = mutation({
     }
     const url = await ctx.storage.getUrl(args.storageId)
     if (!url) return { ok: false as const, code: "INVALID_FILE" as const }
+    const owned = await consumeOwnedUpload(ctx, userId, args.storageId, "profile")
+    if (!owned) return { ok: false as const, code: "INVALID_FILE_OWNER" as const }
     await ctx.db.patch(profile._id, { photoUrl: url })
     return { ok: true as const, photoUrl: url }
   },
