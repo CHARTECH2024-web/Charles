@@ -29,6 +29,7 @@ export const push = internalMutation({
       title: args.title.slice(0, 120),
       body: args.body.slice(0, 300),
       ...(args.href ? { href: args.href } : {}),
+      readAt: 0,
       createdAt: Date.now(),
     })
   },
@@ -40,11 +41,17 @@ export const list = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx)
     if (!userId) return { ok: true as const, items: [], unread: 0 }
-    const rows = await ctx.db
-      .query("notifications")
-      .withIndex("by_user_created", (q) => q.eq("userId", userId))
-      .order("desc")
-      .take(60)
+    const [rows, unreadRows] = await Promise.all([
+      ctx.db.query("notifications")
+        .withIndex("by_user_created", (q) => q.eq("userId", userId))
+        .order("desc")
+        .take(60),
+      ctx.db.query("notifications")
+        .withIndex("by_user_readAt_createdAt", (q) =>
+          q.eq("userId", userId).eq("readAt", 0),
+        )
+        .take(5000),
+    ])
     return {
       ok: true as const,
       items: rows.map((row) => ({
@@ -53,10 +60,10 @@ export const list = query({
         title: row.title,
         body: row.body,
         href: row.href ?? null,
-        read: row.readAt !== undefined,
+        read: row.readAt !== undefined && row.readAt > 0,
         createdAt: row.createdAt,
       })),
-      unread: rows.filter((row) => row.readAt === undefined).length,
+      unread: unreadRows.length,
     }
   },
 })
@@ -68,9 +75,11 @@ export const unread = query({
     if (!userId) return 0
     const rows = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect()
-    return rows.filter((row) => row.readAt === undefined).length
+      .withIndex("by_user_readAt_createdAt", (q) =>
+        q.eq("userId", userId).eq("readAt", 0),
+      )
+      .take(5000)
+    return rows.length
   },
 })
 
@@ -81,7 +90,7 @@ export const markRead = mutation({
     if (!userId) return { ok: false as const }
     const row = await ctx.db.get(args.notificationId)
     if (!row || row.userId !== userId) return { ok: false as const }
-    if (!row.readAt) await ctx.db.patch(row._id, { readAt: Date.now() })
+    if (row.readAt === 0 || row.readAt === undefined) await ctx.db.patch(row._id, { readAt: Date.now() })
     return { ok: true as const }
   },
 })
@@ -93,11 +102,12 @@ export const markAllRead = mutation({
     if (!userId) return { ok: false as const }
     const rows = await ctx.db
       .query("notifications")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .collect()
-    for (const row of rows) {
-      if (!row.readAt) await ctx.db.patch(row._id, { readAt: Date.now() })
-    }
-    return { ok: true as const }
+      .withIndex("by_user_readAt_createdAt", (q) =>
+        q.eq("userId", userId).eq("readAt", 0),
+      )
+      .take(5000)
+    const readAt = Date.now()
+    for (const row of rows) await ctx.db.patch(row._id, { readAt })
+    return { ok: true as const, updated: rows.length, batchLimitReached: rows.length === 5000 }
   },
 })
