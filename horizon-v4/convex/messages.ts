@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values"
 import type { Doc, Id } from "./_generated/dataModel"
 import type { MutationCtx, QueryCtx } from "./_generated/server"
 import { mutation, query } from "./_generated/server"
+import { consumeOwnedUpload } from "./uploads"
 import { internal } from "./_generated/api"
 import { limitsOf, planOf } from "./billing"
 
@@ -202,6 +203,8 @@ export const send = mutation({
     if (duration > limitsOf(plan).voiceMinutes * 60 * 1000) {
       return { ok: false as const, code: "VOICE_TOO_LONG" as const }
     }
+    const owned = await consumeOwnedUpload(ctx, userId, args.mediaId, "message")
+    if (!owned) return { ok: false as const, code: "INVALID_MEDIA_OWNER" as const }
     await ctx.db.insert("messages", {
       fromId: userId,
       toId: args.toUserId,
